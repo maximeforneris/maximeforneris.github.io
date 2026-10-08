@@ -57,6 +57,12 @@ header.barre{display:flex;align-items:center;gap:14px;min-height:56px}
 header.barre h1{font-size:1.35rem;margin:0;font-weight:700;flex:1;min-width:0;text-wrap:balance}
 .rond{width:52px;height:52px;border-radius:50%;background:var(--papier);box-shadow:var(--ombre);display:grid;place-items:center;font-size:1.3rem}
 .rond:hover{background:var(--accent-pale)}
+.rond.voix-bascule{flex:none}
+/* sur téléphone, les étapes de la séance passent sous le titre : sinon il n'a plus de place */
+@media (max-width:560px){header.barre{flex-wrap:wrap;row-gap:8px} header.barre>.ligne,header.barre>.etapes{order:3;flex-basis:100%}}
+.rond.voix-bascule[aria-pressed=false]{color:var(--encre-2);background:var(--fond)}
+body.muet .btn.ecoute,body.muet .entendre-ecoute,body.muet .maphrase-dire{display:none!important}
+body.muet button.question svg{display:none}
 .etapes{display:flex;gap:6px;align-items:center}
 .etapes span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--papier);color:var(--encre-2);font-size:.85rem}
 .etapes span.fait{background:var(--accent);color:var(--sur-accent)}
@@ -2583,6 +2589,7 @@ const ICONES = {
   oreille: '<path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5.5 1.6"/><path d="M10 9.5a2 2 0 0 1 4 0"/>',
   jouer: '<path d="M8 5v14l11-7z"/>',
   haut: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  muet: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/>',
   de: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 8.5h.01M15.5 15.5h.01M12 12h.01M15.5 8.5h.01M8.5 15.5h.01"/>',
   lien: '<circle cx="12" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><circle cx="18" cy="19" r="3"/><path d="M10.6 7.7 7.4 16.3M13.4 7.7l3.2 8.6"/>',
   cadre: '<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M6 7v10M10 7v10M14 7v10M18 7v10M2 12h20"/>',
@@ -2656,6 +2663,7 @@ function appliquerAffichage() {
   b.toggle("sans-arcs", !etat.arcs);
   b.toggle("sans-muettes", !etat.muettes);
   b.toggle("couleurs", etat.couleurs);
+  b.toggle("muet", !etat.voixHaute);   // sans voix : les boutons « Écouter » s'effacent tout de suite
 }
 
 // ---------- Petits sons, étoiles, confettis ----------
@@ -2744,6 +2752,28 @@ function prononcer(t) {
   if (/^[^aeiouéèy]+e$/.test(bas)) return bas + "u";
   return t;
 }
+// Avec ou sans voix, d'un geste, depuis la barre de chaque écran : c'est le même réglage que
+// « Avec la voix » du coin des parents. Pendant un exercice, la voix se tait aussitôt
+// et les boutons « Écouter » s'effacent ; les aides écrites pour l'adulte suivent à la question d'après.
+function boutonVoix() {
+  if (!Voix.ok || (Voix.toutes > 0 && !Voix.liste.length)) return null;
+  const b = h("button", { class: "rond voix-bascule" });
+  const peindre = () => {
+    const oui = !!etat.voixHaute;
+    b.replaceChildren(ic(oui ? "haut" : "muet"));
+    b.setAttribute("aria-pressed", String(oui));
+    b.setAttribute("aria-label", "Lecture à voix haute");
+    b.title = oui ? "Avec la voix — toucher pour la couper" : "Sans voix — toucher pour la remettre";
+  };
+  b.onclick = () => {
+    etat.voixHaute = !etat.voixHaute;
+    Voix.taire(); sauver(); appliquerAffichage(); peindre();
+    if (etat.voixHaute) Voix.dire("La voix est là.");
+    if (ecran === "accueil") accueil(); else if (ecran === "parents") parents();
+  };
+  peindre();
+  return b;
+}
 function bEcouter(texte, libelle = "Écouter", lent = false) {
   if (!Voix.dispo()) return null;
   return h("button", { class: "btn ecoute", onclick: () => Voix.dire(texte, lent) }, ic("haut"), libelle);
@@ -2778,7 +2808,7 @@ function vider() { Voix.taire(); racine.replaceChildren(); window.scrollTo(0, 0)
 function barre(titre, droite) {
   return h("header", { class: "barre" },
     h("button", { class: "rond", "aria-label": "Retour à l'accueil", title: "Accueil", onclick: () => { seance = null; accueil(); } }, ic("maison")),
-    h("h1", null, titre), droite || null);
+    h("h1", null, titre), droite || null, boutonVoix());
 }
 function pastillesSeance() {
   if (!seance) return null;
@@ -11854,7 +11884,7 @@ function accueil() {
   ajoute(racine,
     h("header", { class: "barre" }, h("div", { style: "flex:1;min-width:0" },
       h("h1", { class: "titre-app" }, "Lire ensemble"),
-      h("p", { class: "sous-titre" }, "Dix minutes par jour, à deux : lire, écrire, compter."))),
+      h("p", { class: "sous-titre" }, "Dix minutes par jour, à deux : lire, écrire, compter.")), boutonVoix()),
     etat.regle ? null : h("div", { class: "bandeau" },
       h("span", null, "Premier réglage : vérifiez où en est la classe et le groupe de dictée."),
       h("button", { class: "btn", onclick: parents }, ic("parent"), "Régler")),
@@ -12050,8 +12080,8 @@ function blocVoix() {
       Voix.liste.map(v => h("option", { value: v.voiceURI, selected: Voix.choisie && v.voiceURI === Voix.choisie.voiceURI ? true : null }, v.name + " (" + v.lang + ")")))) : null;
   return bloc("La lecture à voix haute",
     sansFr ? "Aucune voix française n'est installée sur cet ordinateur : la lecture à voix haute reste muette. Elle s'ajoute dans les réglages de langue du système."
-      : "La voix lit le mot une fois qu'elle l'a lu, la phrase après sa lecture, et dicte dans « J'écris ». Elle ne dit jamais un son seul : une voix de synthèse dirait le nom de la lettre, « èle », au lieu de son son.",
-    interrupteur("voix-haute", "Lire les mots à voix haute", etat.voixHaute, v => { etat.voixHaute = v; etat.regle = true; sauver(); parents(); }),
+      : "La voix lit le mot une fois qu'elle l'a lu, la phrase après sa lecture, et dicte dans « J'écris ». Elle ne dit jamais un son seul : une voix de synthèse dirait le nom de la lettre, « èle », au lieu de son son. Sans voix, c'est vous qui lisez et dictez : la bande « Pour l'adulte » vous donne les mots. Le haut-parleur, en haut de chaque écran, coupe ou remet la voix d'un geste.",
+    interrupteur("voix-haute", "Avec la voix", etat.voixHaute, v => { etat.voixHaute = v; etat.regle = true; Voix.taire(); sauver(); appliquerAffichage(); parents(); }),
     choix,
     etat.voixHaute && !sansFr ? h("button", { class: "btn", onclick: () => Voix.dire("Bonjour ! On lit ensemble ?") }, ic("haut"), "Essayer la voix") : null);
 }
