@@ -243,6 +243,17 @@ textarea{width:100%;min-height:64px;resize:vertical}
 .methode{margin:0;padding-left:1.2em;display:grid;gap:8px;max-width:72ch;font-size:1rem}
 .danger{color:var(--faux)}
 
+/* ---------- les onglets ---------- */
+.onglets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--fond);padding-block:6px}
+.onglet{display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px;border-radius:14px;background:var(--papier);box-shadow:var(--ombre);font-weight:700;font-size:1.05rem;color:var(--encre-2)}
+.onglet svg.ic{width:1.4em;height:1.4em}
+.onglet[aria-selected="true"]{background:var(--accent);color:var(--sur-accent)}
+.panneau{display:grid;gap:18px}
+.rayon{display:grid;gap:10px}
+.niveau-maths{gap:12px}
+.niveau-maths .lbl{color:var(--encre-2)}
+@media (max-width:560px){.onglet{flex-direction:column;gap:2px;font-size:.78rem;min-height:62px;padding:4px}}
+
 /* ---------- accueil : histoires et nombres ---------- */
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .carte-d{background:var(--papier);border-radius:20px;box-shadow:var(--ombre);padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center;text-align:left}
@@ -388,7 +399,7 @@ const SONS = [
   {id:"ge", g:["ge","gi"], rep:"une girafe", e:"🦒", cont:1, dire:"« j » : g devant e et i."},
   {id:"gn", g:["gn"], rep:"un champignon", e:"🍄", dire:"« gn », comme dans montagne."},
   {id:"ill",g:["ill","il"], rep:"un papillon", e:"🦋", v:1, dire:"« ill », comme dans fille et soleil."},
-  {id:"ph", g:["ph"], rep:"un phoque", e:"🦭", cont:1, dire:"« ffff », écrit ph."},
+  {id:"ph", g:["ph"], rep:"un dauphin", e:"🐬", cont:1, dire:"« ffff », écrit ph."},
   {id:"x",  g:["x"], rep:"un taxi", e:"🚕", dire:"« ks », comme dans taxi."},
   {id:"h",  g:["h"], rep:"un hibou", e:"🦉", dire:"Le h ne se prononce pas : on lit la lettre suivante."}
 ];
@@ -486,6 +497,8 @@ const AUTOCOLLANTS = ["🦄","🐼","🦊","🐸","🐙","🦋","🐳","🦁","�
 // Une ligne : syllabes écrites séparées par « - », lettres muettes entre [ ],
 // puis les sons qu'il faut connaître pour lire le mot, puis une image facultative.
 // Un mot n'est proposé que si tous ses sons ont été vus en classe.
+// Les modules ajoutent leurs mots par LEXIQUE_PLUS.push(`…`), dans leur propre fichier donnees-*.js.
+const LEXIQUE_PLUS = [];
 const LEXIQUE = `
 # a i r o l é
 a|a
@@ -655,6 +668,8 @@ ré-pa-ré|r é p a
 o-pé-ra|o p é r a
 pu-r[e]|p u r
 pour|p ou r
+pa[s]|p a
+pa-ssé|p a s é
 pri[s]|p r i
 # t
 to-ma-t[e]|t o m a|🍅
@@ -690,6 +705,7 @@ vé-lo|v é l o|🚲
 la-v[e]|l a v
 a-vi-on|a v i on|✈️
 va|v a
+vi-t[e]|v i t
 vu|v u
 vo-lé|v o l é
 va-ch[e]|v a ch|🐄
@@ -1127,6 +1143,91 @@ const HISTOIRES = `
 2 Le dragon rit : merci, la fée !
 ? Qu'a mangé le feu ? | 🎂 | 🍞 🍐
 ? Qui a un autre gâteau ? | 🧚 | 🐉 👑
+
+= sofa | Le sofa de Mamie | 🛋️
+# 👵 🛋️
+1 Mamie a un sofa.
+2 Le sofa est sur le sol.
+# 🐀 🛋️
+1 Il y a un rat sur le sofa !
+2 Le rat lit sur le sofa.
+3 Il a sali le sofa.
+# 👵 🐀
+1 Mamie a salué le rat.
+2 Le rat a filé sur le mur.
+# 👵 😂
+1 Mamie a ri.
+2 Le rat a un mur, Mamie a un sofa.
+? Qui a sali le sofa ? | 🐀 | 👵 🦙
+? Où a filé le rat ? | 🧱 | 🛋️ 🌊
+
+= film | Le film de Léo | 🎬
+# 🧒 🎬
+1 Léo a un film.
+2 Il a mis le film sur le mur.
+# 🦙 🎬
+1 Il y a un lama dans le film !
+2 Le lama rit, il rit, il rit.
+3 Le lama rame sur la mare.
+# 🧒 😂
+1 Léo a ri.
+2 Rémi a ri, et Mamie a ri.
+# 👧 🎬
+1 Léo a mis le film à Lili.
+2 Lili rit.
+? Qui est dans le film ? | 🦙 | 🐱 🐀
+? Qu'a fait Léo ? | 😂 | 😴 📖
+
+= chariot | Le chariot de Mamie | 🛒
+# 👵 🛒
+1 Mamie marche.
+2 Mamie a un chariot.
+# 🍚 🛒
+1 Mamie a mis le riz dans le chariot.
+2 Il y a un chat sur le chariot !
+# 🐱 🍚
+1 Le chat a léché le riz.
+2 Mamie a ri : le chat est riche !
+# 🛒 🛣️
+1 Mamie a lâché le chariot.
+2 Le chariot a filé dans la rue !
+3 Le chat est sur le chariot : il rit.
+? Qui a léché le riz ? | 🐱 | 👵 🐀
+? Qui est sur le chariot ? | 🐱 | 👵 🦙
+
+= chou | Le chou qui roule | 🥬
+# 👵 🥬
+1 Mamie a un chou.
+2 Mamie a mis le chou sur le sol.
+# 🥬 💨
+1 Le chou roule, roule, roule !
+2 Il roule sous le sofa.
+3 Il roule dans la rue.
+# 🐭 🥬
+1 La souris a le chou !
+2 La souris rit.
+# 👵 🐭 😂
+1 Mamie a ri.
+2 Mamie a un ami : la souris.
+? Où roule le chou ? | 🛣️ | 🌊 🧱
+? Qui a le chou à la fin ? | 🐭 | 👵 🐱
+
+= tortue | La tortue et le lapin | 🐢
+# 🐢 🐰
+1 La tortue a un ami : le lapin.
+2 Le lapin va vite, vite !
+3 La tortue va à petit pas.
+# 🐰 😴
+1 Le lapin dort sous le pont.
+2 Il dort, il dort.
+# 🐢 🌉
+1 La tortue marche, marche.
+2 La tortue a passé le pont.
+# 🐢 🏆
+1 La tortue est là, et le lapin dort !
+2 Bravo, la tortue !
+? Qui dort sous le pont ? | 🐰 | 🐢 🐱
+? Qui va vite ? | 🐰 | 🐢 🐌
 `;
 
 // ---------- Le moteur : lecture des données et choix des exercices (aucun accès à la page) ----------
@@ -1158,7 +1259,7 @@ function niveauMot(syl) {
 
 const MOTS = [];
 const PAR_FORME = new Map();
-LEXIQUE.trim().split("\n").forEach(ligne => {
+[LEXIQUE, ...LEXIQUE_PLUS].join("\n").trim().split("\n").forEach(ligne => {
   ligne = ligne.trim();
   if (!ligne || ligne[0] === "#") return;
   const [annot, tags = "", e = ""] = ligne.split("|");
@@ -1340,7 +1441,8 @@ const ETAT_DEFAUT = {
   outils: ["un", "et", "est", "dans", "il y a"],
   niveau: 1, ecriture: "script", arcs: true, muettes: true, couleurs: false, bruit: true, voixHaute: true, voix: "",
   dictees: {}, album: [], seances: 0, derniere: "", lus: {}, difficiles: {}, maj: 0,
-  histoires: {}, maths: {}, niveauMaths: 2
+  histoires: {}, maths: {}, niveauMaths: 2,
+  onglet: "lire", suivi: {}, jours: {}, series: {}, modules: {}, fluence: [], livres: [], etapes: []
 };
 
 function etatPropre(d) {
@@ -1588,7 +1690,7 @@ function barre(titre, droite) {
 function pastillesSeance() {
   if (!seance) return null;
   return h("div", { class: "etapes", "aria-label": "Étapes de la séance" },
-    seance.etapes.map(([cle], k) => h("span", { class: k < seance.i ? "fait" : k === seance.i ? "ici" : "", title: ACTS[cle].titre }, ic(ACTS[cle].icone))));
+    seance.etapes.map((e, k) => h("span", { class: k < seance.i ? "fait" : k === seance.i ? "ici" : "", title: e.titre }, ic(ICONES[e.icone] ? e.icone : "etoile"))));
 }
 function conseil(A) {
   return h("details", { class: "conseil" }, h("summary", null, "Comment l'aider ?"), A.conseil.map(t => h("p", null, t)));
@@ -1634,19 +1736,47 @@ function finActivite(cle) {
 
 // ---------- La séance du jour ----------
 
+// Le plan de la séance : pour chaque étape, la première rubrique disponible de la liste.
+// Une rubrique entre dans la séance si elle a une méthode seance(suite).
+const PLAN_SEANCE = [["sons"], ["entendre"], ["fusion", "tour"], ["mots"], ["lisvite"], ["ecris"], ["comprendre", "phrase"]];
+// La séance de nombres, plus courte : le calcul éclair, un jeu de numération, un problème.
+const PLAN_NOMBRES = [["calcul"], ["cent", "maths-maison"], ["problemes", "maths-probleme"]];
+function etapesDe(plan) {
+  return plan.map(choix => {
+    const r = choix.map(id => RUBRIQUES.find(x => x.id === id)).find(x => x && x.seance && (!x.dispo || x.dispo()));
+    return r ? { id: r.id, titre: r.titre, icone: r.icone, lancer: r.seance } : null;
+  }).filter(Boolean);
+}
+// La séance du jour s'adapte : le domaine le plus fragile du suivi (assez de réponses pour juger,
+// moins de 70 % de réussite récente) ajoute sa rubrique avant la dernière étape.
+function etapesDuJour() {
+  const etapes = etapesDe(PLAN_SEANCE);
+  if (typeof POUR_TRAVAILLER !== "undefined") {
+    const fragile = Object.keys(DOMAINES).map(d => ({ d, b: bilanDomaine(d) }))
+      .filter(x => x.b.reponses >= 6 && x.b.taux < 0.7 && FRANCAIS.includes(x.d)).sort((a, b) => a.b.taux - b.b.taux)[0];
+    const r = fragile && RUBRIQUES.find(x => x.id === POUR_TRAVAILLER[fragile.d]);
+    if (r && r.seance && (!r.dispo || r.dispo()) && !etapes.some(e => e.id === r.id))
+      etapes.splice(Math.max(0, etapes.length - 1), 0, { id: r.id, titre: "À revoir : " + r.titre, icone: r.icone, lancer: r.seance });
+  }
+  return etapes;
+}
+function lancerSeanceNombres() {
+  seance = { i: 0, etapes: etapesDe(PLAN_NOMBRES), fin: recompense };
+  etape();
+}
 function lancerSeance() {
   ACTS.ecris.mode = null;
-  seance = { i: 0, etapes: SEANCE.filter(([cle]) => ACTS[cle].preparer(1).length > 0) };
+  seance = { i: 0, etapes: etapesDuJour(), fin: recompense };
   etape();
 }
 function etape() {
   if (!seance) return;
-  if (seance.i >= seance.etapes.length) { recompense(); return; }
-  const [cle, n] = seance.etapes[seance.i];
-  lancer(cle, n, () => { seance.i++; etape(); });
+  if (seance.i >= seance.etapes.length) { const f = seance.fin; f(); return; }
+  seance.etapes[seance.i].lancer(() => { seance.i++; etape(); });
 }
 function recompense() {
   seance = null; ecran = "fin";
+  etat.jours[aujourdhui()] = (etat.jours[aujourdhui()] || 0) + 1;
   const pas = AUTOCOLLANTS.filter(a => !etat.album.includes(a));
   const gagne = (pas.length ? pas : AUTOCOLLANTS)[Math.floor(Math.random() * (pas.length || AUTOCOLLANTS.length))];
   etat.album.push(gagne); etat.seances++; etat.derniere = new Date().toISOString().slice(0, 10); sauver();
@@ -1666,6 +1796,188 @@ function album() {
       h("div", { class: "album" }, Array.from({ length: n }, (_, k) => etat.album[k] ? h("span", null, etat.album[k]) : h("span", { class: "vide" })))));
 }
 
+// ---------- Le noyau commun : rubriques, séries d'exercices, suivi ----------
+// Chaque module s'inscrit ici. Voir CONTRAT.md avant d'écrire un module.
+
+const hasard = a => a[Math.floor(Math.random() * a.length)];
+const entier = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const aujourdhui = () => new Date().toISOString().slice(0, 10);
+
+// ----- les onglets et leurs sections, dans l'ordre d'affichage -----
+const ONGLETS = [
+  { id: "lire", titre: "Lire", icone: "mots" },
+  { id: "ecrire", titre: "Écrire", icone: "ecris" },
+  { id: "compter", titre: "Compter", icone: "diese" },
+  { id: "carnet", titre: "Mon carnet", icone: "etoile" }
+];
+const SECTIONS = {
+  lire: ["Les sons et les lettres", "Lire", "Les histoires", "Les mots et les phrases", "À imprimer"],
+  ecrire: ["Écrire", "À imprimer"],
+  compter: ["Jusqu'à 20", "Jusqu'à 100", "Calculer", "Mesurer et se repérer", "À imprimer"],
+  carnet: []
+};
+
+// ----- le registre des rubriques -----
+// rubrique({ id, onglet, section, titre, icone, court, ouvrir, ordre })
+const RUBRIQUES = [];
+function rubrique(def) {
+  if (RUBRIQUES.some(r => r.id === def.id)) { console.warn("rubrique en double : " + def.id); return; }
+  RUBRIQUES.push(Object.assign({ ordre: 50 }, def));
+}
+
+// ----- les domaines suivis, calqués sur le point d'étape national de mi-CP -----
+const DOMAINES = {
+  "sons": "Le son des lettres",
+  "lettres": "Connaître les lettres : nom, son, écritures",
+  "phonemes": "Manipuler les sons des mots",
+  "decodage": "Fusionner et lire des syllabes",
+  "lire-mots": "Lire des mots",
+  "mots-outils": "Reconnaître les mots-outils",
+  "lire-texte": "Lire un texte à voix haute",
+  "comprehension-orale": "Comprendre des phrases entendues",
+  "comprehension-ecrite": "Comprendre des phrases lues seule",
+  "vocabulaire": "Le vocabulaire",
+  "grammaire": "La phrase, le pluriel, le genre",
+  "ecrire-syllabes": "Écrire des syllabes",
+  "ecrire-mots": "Écrire des mots",
+  "ecrire-phrases": "Écrire une phrase",
+  "denombrer": "Dénombrer",
+  "nombres": "Lire et écrire les nombres",
+  "comparer": "Comparer des nombres",
+  "ligne": "Placer un nombre sur une ligne graduée",
+  "calcul": "Additionner et soustraire",
+  "calcul-mental": "Calcul mental : les faits à connaître",
+  "problemes": "Résoudre des problèmes",
+  "mesures": "Mesurer : monnaie, longueurs, temps",
+  "geometrie": "Formes et repérage"
+};
+
+// ----- le suivi : chaque réponse est notée, par domaine et par clé -----
+// suivi[domaine][cle] = { ok, ko, h: "11010" (les 8 dernières), d: date }
+let journalEtape = null;      // pendant un point d'étape, les réponses y sont aussi rangées
+function noter(domaine, cle, juste) {
+  if (!domaine) return;
+  const d = etat.suivi[domaine] || (etat.suivi[domaine] = {});
+  const s = d[cle] || (d[cle] = { ok: 0, ko: 0, h: "", d: "" });
+  if (juste) s.ok++; else s.ko++;
+  s.h = (s.h + (juste ? "1" : "0")).slice(-8);
+  s.d = aujourdhui();
+  etat.jours[s.d] = (etat.jours[s.d] || 0) + 1;
+  if (journalEtape) journalEtape.push({ domaine, cle, juste });
+  sauver();
+}
+// 0 : jamais vu · 1 : fragile · 2 : en cours · 3 : acquis (au moins 4 justes sur les 5 dernières)
+function maitrise(domaine, cle) {
+  const s = (etat.suivi[domaine] || {})[cle];
+  if (!s || !s.h) return 0;
+  const recent = s.h.slice(-5), justes = [...recent].filter(c => c === "1").length;
+  if (recent.length >= 5 && justes >= 4) return 3;
+  return justes / recent.length >= 0.6 ? 2 : 1;
+}
+// Pour un domaine entier : réponses, taux de réussite sur les plus récentes.
+function bilanDomaine(domaine) {
+  const d = etat.suivi[domaine] || {};
+  let n = 0, justes = 0, ok = 0, ko = 0;
+  Object.values(d).forEach(s => { ok += s.ok; ko += s.ko; for (const c of s.h) { n++; if (c === "1") justes++; } });
+  return { reponses: ok + ko, taux: n ? justes / n : null, cles: Object.keys(d).length };
+}
+
+// ----- le point d'étape : chaque module y apporte une courte épreuve -----
+// pointEtape("phonemes", "Les sons des mots", suite => jouerSerie(def, { n: 5, evaluation: true, finir: suite }))
+const ETAPES = [];
+function pointEtape(domaine, titre, lancer) { ETAPES.push({ domaine, titre, lancer }); }
+
+// ----- les séries d'exercices : le moteur commun -----
+// def : { id, titre, icone, conseil: [...], n: 8, domaine, question(k) → q }
+// q   : { rendre(feuille, repondre, adulte), reponse, verifier(v)?, cle?, dire?, apres(juste)?, astuce? }
+// opts : { n, evaluation: true (une seule réponse, pas d'aide), finir(resultat) }
+const SERIES = {};
+function serie(def) { SERIES[def.id] = def; return def; }
+
+function jouerSerie(def, opts) {
+  opts = opts || {};
+  const N = opts.n || def.n || 8;
+  let k = 0, etoiles = 0, justes = 0;
+  ecran = "serie";
+  function suivante() {
+    if (k >= N) return fin();
+    vider();
+    const q = def.question(k);
+    if (!q) { k = N; return fin(); }
+    const feuille = h("section", { class: "feuille" }), adulte = h("div", { class: "adulte" });
+    ajoute(racine, barre(def.titre, h("div", { class: "ligne" }, pastillesSeance(), h("span", { class: "compte" }, (k + 1) + " / " + N))),
+      feuille, adulte, opts.evaluation ? null : conseil(def));
+    let essais = 0, fini = false;
+    const passer = () => { k++; suivante(); };
+    const repondre = (val, bouton) => {
+      if (fini) return;
+      const bon = q.verifier ? q.verifier(val) : val === q.reponse;
+      if (bon || opts.evaluation) {
+        fini = true;
+        const premier = bon && !essais;
+        if (bouton) bouton.classList.add(bon ? "juste" : "non");
+        bip(bon ? "ok" : "non");
+        if (premier) { etoiles++; if (!opts.evaluation) etoile(feuille); }
+        if (bon) justes++;
+        noter(q.domaine || def.domaine, q.cle || def.id, premier);
+        if (q.apres) q.apres(bon);
+        k++; setTimeout(suivante, q.apres ? 2400 : opts.evaluation ? 700 : 1100);
+      } else {
+        essais++;
+        if (bouton) bouton.classList.add("non", "secoue");
+        bip("non");
+        if (q.aide && essais >= 2) q.aide();
+      }
+    };
+    q.rendre(feuille, repondre, adulte);
+    bandeAdulte(adulte, [astuce(q.astuce || (opts.evaluation ? "Point d'étape : une seule réponse, sans aide. Lisez la consigne si elle le demande." : def.conseil[0])),
+      q.dire && Voix.dispo() ? h("button", { class: "btn ecoute", onclick: () => Voix.dire(q.dire) }, ic("haut"), "Réécouter") : null,
+      bSuivant(passer, "Passer")]);
+    if (q.dire) setTimeout(() => Voix.dire(q.dire), 350);
+  }
+  function fin() {
+    const r = { id: def.id, etoiles, justes, n: N };
+    const rec = etat.series[def.id] || (etat.series[def.id] = { parties: 0, meilleur: 0 });
+    rec.parties++; rec.meilleur = Math.max(rec.meilleur, etoiles); rec.dernier = aujourdhui(); sauver();
+    if (opts.finir) return opts.finir(r);
+    vider(); bip("fin"); if (etoiles) pluie("⭐");
+    ajoute(racine, barre(def.titre),
+      h("section", { class: "feuille" }, h("p", { class: "bravo" }, etoiles >= N - 1 ? "Bravo !" : "Bien joué !"),
+        h("div", { class: "image" }, "⭐".repeat(etoiles) || "🙂"),
+        h("p", { class: "consigne", style: "align-self:center" }, etoiles + " étoile" + (etoiles > 1 ? "s" : "") + " sur " + N),
+        h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: () => jouerSerie(def, opts) }, ic("encore"), "Rejouer"),
+          h("button", { class: "btn", onclick: accueil }, ic("maison"), "Retour"))));
+  }
+  suivante();
+}
+
+// ----- les supports à imprimer -----
+// Les PDF vivent dans site/assets/imprimer/<thème>/ ; sur claude.ai, on les prend sur forneris.fr.
+ICONES.imprimer = '<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>';
+const BASE_IMPRIMER = SUR_SITE ? "assets/imprimer/" : "https://forneris.fr/lire/assets/imprimer/";
+function lienImprimer(chemin, texte, classe) {
+  return h("a", { class: classe || "btn", href: BASE_IMPRIMER + chemin, target: "_blank", rel: "noopener" }, ic("imprimer"), texte);
+}
+
+// Un écran simple pour un module : la barre, une feuille, la bande de l'adulte.
+function ecranModule(titre, droite) {
+  vider();
+  const feuille = h("section", { class: "feuille" }), adulte = h("div", { class: "adulte" });
+  ajoute(racine, barre(titre, droite), feuille, adulte);
+  return { feuille, adulte };
+}
+
+// La touche de chiffres, rangée par cinq jusqu'à 10, comme les doigts ; par six ou sept au-delà.
+function pave(min, max, repondre) {
+  const n = max - min + 1, cols = n <= 10 ? 5 : n <= 12 ? 6 : 7;
+  return h("div", { class: "pave", style: "grid-template-columns:repeat(" + cols + ",minmax(0,76px))" },
+    Array.from({ length: n }, (_, i) => min + i).map(v => h("button", { class: "chiffre", onclick: e => repondre(v, e.currentTarget) }, v)));
+}
+// Des réponses au choix : nombres, mots ou images ; « classe » change l'allure des boutons.
+function choix(valeurs, repondre, classe) {
+  return h("div", { class: classe || "choix" }, valeurs.map(v => h("button", { onclick: e => repondre(v, e.currentTarget) }, v)));
+}
+
 // ---------- Les six activités ----------
 
 const TENUS = new Set(SONS.filter(s => s.cont).flatMap(s => s.g));
@@ -1683,12 +1995,13 @@ function rendreSyllabe(it, { feuille, adulte, suivant }) {
     : TENUS.has(a) ? "Faites tenir le premier son, « " + a + a + a + "… », puis glisser vers « " + b + " »."
     : "Le son « " + a + " » est bref : on le colle tout de suite à « " + b + " ».";
   const depart = () => bandeAdulte(adulte, [astuce(aide)]);
+  let rate = false;
   function faire() {
     chev.classList.add("colle"); coller.hidden = true;
     setTimeout(() => { res.textContent = it.texte; res.classList.remove("vide"); res.classList.add("apparait"); }, 480);
     bandeAdulte(adulte, [astuce("Elle lit la syllabe à voix haute."),
-      bEncore(() => { chev.classList.remove("colle"); res.textContent = "?"; res.classList.add("vide"); res.classList.remove("apparait"); coller.hidden = false; depart(); }, "On recommence"),
-      bOk(() => { bip("ok"); etoile(feuille); setTimeout(suivant, 600); })]);
+      bEncore(() => { rate = true; chev.classList.remove("colle"); res.textContent = "?"; res.classList.add("vide"); res.classList.remove("apparait"); coller.hidden = false; depart(); }, "On recommence"),
+      bOk(() => { noter("decodage", it.texte, !rate); bip("ok"); etoile(feuille); setTimeout(suivant, 600); })]);
   }
   depart();
 }
@@ -1707,11 +2020,15 @@ const ACTS = {
       "Les quatre écritures sont celles de l'en-tête du fichier : attachée, script, capitale, capitale attachée.",
       "Si elle hésite, montrez le mot-repère : on l'entend dans le mot."],
     preparer(n) {
+      // Le son de la semaine, puis les sons « à revoir » (le suivi du carnet), puis les autres.
       const f = SON[etat.focus];
-      return melanger([f, ...tirer(etat.sons.map(id => SON[id]).filter(s => s !== f), n - 1)]);
+      const fragiles = etat.sons.filter(id => id !== f.id && maitrise("sons", id) === 1).map(id => SON[id]);
+      const autres = etat.sons.map(id => SON[id]).filter(s => s !== f && !fragiles.includes(s));
+      return melanger([f, ...tirer(fragiles, n - 1), ...tirer(autres, Math.max(0, n - 1 - fragiles.length))]).slice(0, n);
     },
     rendre(s, { feuille, adulte, suivant }) {
       const g = s.g[0];
+      let aide = false;
       const rep = h("div", { class: "repere", hidden: true }, h("span", { class: "emo" }, s.e), h("span", null, s.rep), bEcouter(s.rep));
       ajoute(feuille, h("p", { class: "consigne" }, "Quel son fait cette lettre ?"),
         h("div", { class: "quatre" }, h("span", { class: "f-cur" }, g), h("span", { class: "f-scr principal" }, g),
@@ -1719,8 +2036,8 @@ const ACTS = {
         s.g.length > 1 ? h("div", { class: "aussi" }, "Ce son s'écrit aussi : " + s.g.slice(1).join(", ")) : null,
         rep, h("button", { class: "btn discret", onclick: e => { rep.hidden = false; e.currentTarget.hidden = true; } }, ic("image"), "Voir le mot-repère"));
       bandeAdulte(adulte, [astuce("On dit " + s.dire),
-        bEncore(() => { rep.hidden = false; }, "On l'écoute ensemble"),
-        bOk(() => { bip("ok"); etoile(feuille); setTimeout(suivant, 650); }, "Bon son !")]);
+        bEncore(() => { rep.hidden = false; if (!aide) { aide = true; noter("sons", s.id, false); } }, "On l'écoute ensemble"),
+        bOk(() => { if (!aide) noter("sons", s.id, true); bip("ok"); etoile(feuille); setTimeout(suivant, 650); }, "Bon son !")]);
     }
   },
 
@@ -1746,12 +2063,13 @@ const ACTS = {
     preparer: n => choisirMots(etat, n, false),
     rendre(m, { feuille, adulte, suivant }) {
       const lec = h("div", { class: "lecture grand" }, rendreMot(m, m.forme));
+      let aide = false;
       const img = h("div", { class: "image", hidden: true }, m.e || "⭐");
       ajoute(feuille, h("p", { class: "consigne" }, "Lis le mot."), lec, img);
       bandeAdulte(adulte, [astuce("Elle lit seule. Vous validez quand le mot est lu en entier."),
-        bEncore(() => { lec.classList.add("decoupe"); etat.difficiles[m.forme] = (etat.difficiles[m.forme] || 0) + 1; sauver(); }),
+        bEncore(() => { aide = true; lec.classList.add("decoupe"); etat.difficiles[m.forme] = (etat.difficiles[m.forme] || 0) + 1; sauver(); }),
         bOk(() => {
-          etat.lus[m.forme] = (etat.lus[m.forme] || 0) + 1; sauver(); bip("ok");
+          etat.lus[m.forme] = (etat.lus[m.forme] || 0) + 1; noter("lire-mots", m.forme, !aide); bip("ok");
           img.hidden = false; img.classList.add("apparait"); Voix.dire(m.forme);
           ajoute(feuille, bEcouter(m.forme));
           bandeAdulte(adulte, [astuce(m.e ? "Demandez-lui ce que montre l'image : est-ce bien le mot lu ?" : "Bravo !"), bSuivant(suivant)]);
@@ -1772,7 +2090,7 @@ const ACTS = {
         h("div", { class: "lecture grand" }, rendreMot(m, m.forme)),
         h("div", { class: "choix" }, opts.map(e => h("button", { "aria-label": "Image", onclick: ev => {
           const b = ev.currentTarget;
-          if (e === m.e) { b.classList.add("juste"); bip("ok"); if (!rate) { etat.lus[m.forme] = (etat.lus[m.forme] || 0) + 1; sauver(); } Voix.dire(m.forme); setTimeout(suivant, 1400); }
+          if (e === m.e) { b.classList.add("juste"); bip("ok"); if (!rate) { etat.lus[m.forme] = (etat.lus[m.forme] || 0) + 1; } noter("lire-mots", m.forme, !rate); Voix.dire(m.forme); setTimeout(suivant, 1400); }
           else { rate = true; b.classList.add("non", "secoue"); bip("non"); etat.difficiles[m.forme] = (etat.difficiles[m.forme] || 0) + 1; sauver(); }
         } }, e))));
       bandeAdulte(adulte, [astuce("Laissez-la choisir seule. Une erreur ? On relit, puis elle choisit à nouveau."), bSuivant(suivant, "Passer")]);
@@ -1839,7 +2157,8 @@ const ACTS = {
         s.tuile.b.disabled = false; s.tuile = null; s.el.textContent = ""; s.el.classList.remove("pleine", "faux");
         verifier.disabled = true;
       }
-      function reussi() {
+      function reussi(montre) {
+        noter(it.image || /\s/.test(it.texte.trim()) || PAR_FORME.has(it.texte.toLowerCase()) && it.texte.length > 2 ? "ecrire-mots" : "ecrire-syllabes", it.texte, !montre && essais === 0);
         slots.forEach(s => { s.el.classList.add("juste"); s.el.disabled = true; });
         tuilesZone.hidden = true; verifier.hidden = true; bip("ok"); etoile(feuille); Voix.dire(it.texte);
         ajoute(feuille, h("div", { class: "lecture moyen apparait" }, rendreJetons(jetons(it.texte))));
@@ -1851,7 +2170,7 @@ const ACTS = {
         if (bon) return reussi();
         essais++; bip("non"); zone.classList.add("secoue"); setTimeout(() => zone.classList.remove("secoue"), 420);
         if (essais >= 2) bandeAdulte(adulte, [astuce("Les cases orange sont à revoir : touchez-les pour rendre l'étiquette."), voir,
-          h("button", { class: "btn encore", onclick: () => { slots.forEach(s => { if (s.tuile) retirer(s); }); slots.forEach(s => { const tu = tuiles.find(t => t.t === s.attendu && !t.b.disabled); if (tu) poser(tu); }); reussi(); } }, ic("oeil"), "Montrer la réponse")]);
+          h("button", { class: "btn encore", onclick: () => { slots.forEach(s => { if (s.tuile) retirer(s); }); slots.forEach(s => { const tu = tuiles.find(t => t.t === s.attendu && !t.b.disabled); if (tu) poser(tu); }); reussi(true); } }, ic("oeil"), "Montrer la réponse")]);
       }
       const voir = h("button", { class: "btn", onclick: () => { souffle.hidden = !souffle.hidden; } }, ic("oeil"), "Ce qu'il faut dicter");
       const ecoute = it.image ? null : bEcouter(it.texte, "Écoute", true);
@@ -1881,6 +2200,7 @@ const ACTS = {
       ajoute(feuille, h("p", { class: "consigne" }, "Lis la phrase."), lec);
       bandeAdulte(adulte, [astuce("Le doigt glisse sous la phrase. Une seconde lecture plus fluide si la première a été hachée."),
         bEncore(() => lec.classList.add("decoupe")), bOk(question, "Phrase lue !")]);
+      let rate = false;
       function question() {
         bip("ok"); Voix.direPuis(p.texte, p.q, 2000);
         ajoute(feuille, bEcouter(p.texte, "Écouter la phrase"),
@@ -1888,8 +2208,9 @@ const ACTS = {
             : h("div", { class: "question" }, "Demandez-lui : « " + p.q + " »"),
           h("div", { class: "choix" }, melanger([p.bonne, ...p.faux]).map(e => h("button", { "aria-label": "Image", onclick: ev => {
             const b = ev.currentTarget;
-            if (e === p.bonne) { b.classList.add("juste"); bip("ok"); bandeAdulte(adulte, [astuce("Bonne réponse !"), bSuivant(suivant)]); }
-            else { b.classList.add("non", "secoue"); bip("non"); }
+            if (b.classList.contains("juste")) return;
+            if (e === p.bonne) { b.classList.add("juste"); bip("ok"); noter("comprehension-ecrite", p.texte, !rate); bandeAdulte(adulte, [astuce("Bonne réponse !"), bSuivant(suivant)]); }
+            else { rate = true; b.classList.add("non", "secoue"); bip("non"); }
           } }, e))));
         bandeAdulte(adulte, [astuce(Voix.dispo() ? "La voix relit la phrase, puis pose la question. Touchez la question pour la répéter." : "Posez la question à voix haute. Elle répond en touchant une image."), bSuivant(suivant, "Passer")]);
       }
@@ -1897,6 +2218,16 @@ const ACTS = {
   }
 };
 const ORDRE_JEUX = ["sons", "fusion", "mots", "trouve", "ecris", "phrase"];
+// Combien d'exercices chaque activité donne dans la séance du jour.
+const N_SEANCE = { sons: 4, fusion: 4, mots: 5, trouve: 3, ecris: 3, phrase: 2 };
+[["sons", "lire", "Les sons et les lettres", 10], ["fusion", "lire", "Les sons et les lettres", 40],
+ ["mots", "lire", "Lire", 10], ["trouve", "lire", "Lire", 20], ["phrase", "lire", "Lire", 60],
+ ["ecris", "ecrire", "Écrire", 10]].forEach(([cle, onglet, section, ordre]) => rubrique({
+  id: cle, onglet, section, ordre, titre: ACTS[cle].titre, icone: ACTS[cle].icone, court: ACTS[cle].court,
+  ouvrir: () => { seance = null; lancer(cle, 6); },
+  seance: suite => lancer(cle, N_SEANCE[cle], suite),
+  dispo: () => ACTS[cle].preparer(1).length > 0
+}));
 
 // ---------- Les petites histoires, en lecture assistée ----------
 // Elle lit ; un mot qui résiste se touche une fois pour se couper en syllabes, deux fois
@@ -1963,6 +2294,7 @@ function lireHistoire(hist) {
     if (k >= hist.questions.length) return fin();
     vider();
     const q = hist.questions[k];
+    let rate = false;
     const feuille = h("section", { class: "feuille" });
     const adulte = h("div", { class: "adulte" });
     ajoute(racine, barre(hist.titre, h("span", { class: "compte" }, "question " + (k + 1) + " / " + hist.questions.length)), feuille, adulte);
@@ -1971,8 +2303,8 @@ function lireHistoire(hist) {
         : h("div", { class: "question" }, "Demandez-lui : « " + q.q + " »"),
       h("div", { class: "choix" }, melanger([q.bonne, ...q.faux]).map(e => h("button", { "aria-label": "Image", onclick: ev => {
         const b = ev.currentTarget;
-        if (e === q.bonne) { b.classList.add("juste"); bip("ok"); setTimeout(() => questions(k + 1), 1000); }
-        else { b.classList.add("non", "secoue"); bip("non"); }
+        if (e === q.bonne) { b.classList.add("juste"); bip("ok"); noter("comprehension-ecrite", hist.id + ":" + k, !rate); setTimeout(() => questions(k + 1), 1000); }
+        else { rate = true; b.classList.add("non", "secoue"); bip("non"); }
       } }, e))));
     bandeAdulte(adulte, [astuce(Voix.dispo() ? "La voix pose la question. Touchez-la pour la répéter." : "Posez la question à voix haute."), bSuivant(() => questions(k + 1), "Passer")]);
     setTimeout(() => Voix.dire(q.q), 500);
@@ -2021,6 +2353,9 @@ function ligneInteractive(js, mots, texte) {
   return out;
 }
 
+rubrique({ id: "histoires", onglet: "lire", section: "Les histoires", ordre: 10, titre: "Les histoires", icone: "mots",
+  court: "Des histoires à lire à deux, à son niveau", ouvrir: bibliotheque });
+
 // ---------- Les nombres : six jeux, dans l'esprit de la méthode de Singapour ----------
 // Concret, imagé, abstrait : on voit des objets, puis des jetons dans un cadre de dix,
 // puis des chiffres seuls. Le niveau (jusqu'à 5, 10 ou 20) règle les trois à la fois.
@@ -2034,8 +2369,6 @@ const OBJETS = [
 ];
 const ENFANTS = [["Léo", "il"], ["Mila", "elle"], ["Sacha", "il"], ["Lili", "elle"], ["Rémi", "il"], ["Lola", "elle"]];
 const LIMITES = [5, 10, 20];
-const hasard = a => a[Math.floor(Math.random() * a.length)];
-const entier = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const qte = (n, o) => n + " " + (n > 1 ? o.p : o.s);
 const Maj = s => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -2058,12 +2391,6 @@ const de = n => h("div", { class: "de" }, Array.from({ length: 9 }, (_, i) => h(
 const des = n => h("div", { class: "des" }, n <= 6 ? de(n) : [de(5), de(n - 5)]);
 const tas = (n, e) => h("div", { class: "tas" }, Array.from({ length: n }, () => h("span", { style: "transform:translate(" + entier(-6, 6) + "px," + entier(-6, 6) + "px) rotate(" + entier(-12, 12) + "deg)" }, e)));
 
-function pave(min, max, repondre) {
-  // Rangée par cinq jusqu'à 10, comme les doigts ; par six ou sept au-delà.
-  const n = max - min + 1, cols = n <= 10 ? 5 : n <= 12 ? 6 : 7;
-  return h("div", { class: "pave", style: "grid-template-columns:repeat(" + cols + ",minmax(0,76px))" }, Array.from({ length: max - min + 1 }, (_, i) => min + i)
-    .map(n => h("button", { class: "chiffre", onclick: e => repondre(n, e.currentTarget) }, n)));
-}
 function choixNombres(bonne, autres, repondre) {
   return h("div", { class: "pave court" }, melanger([bonne, ...autres])
     .map(n => h("button", { class: "chiffre", onclick: e => repondre(n, e.currentTarget) }, n)));
@@ -2242,94 +2569,612 @@ const JEUX_MATHS = {
 };
 const ORDRE_MATHS = ["combien", "maison", "cadre", "train", "probleme", "compare"];
 
-function nombres() {
-  ecran = "maths"; seance = null; vider();
-  const niveaux = h("div", { class: "modes", role: "group", "aria-label": "Niveau" }, [1, 2, 3].map(n =>
-    h("button", { "aria-pressed": String(etat.niveauMaths === n), onclick: () => { etat.niveauMaths = n; sauver(); nombres(); } }, "jusqu'à " + LIMITES[n - 1])));
-  ajoute(racine, barre("Les nombres", niveaux),
-    h("p", { class: "sous-titre" }, "Compter, décomposer, calculer : on voit des objets, puis des jetons, puis des chiffres. C'est la méthode de Singapour."),
-    h("div", { class: "jeux" }, ORDRE_MATHS.map(c => {
-      const J = JEUX_MATHS[c], best = (etat.maths[c] || {})[etat.niveauMaths] || 0;
-      return h("button", { class: "jeu", onclick: () => jouerMaths(c) }, h("span", { class: "pic" }, ic(J.icone)), h("b", null, J.titre),
-        h("small", null, J.court), best ? h("small", { class: "record" }, "★ " + best + " / 8") : null);
-    })),
-    conseil({ conseil: ["Le niveau se choisit en haut : jusqu'à 5 en tout début d'année, jusqu'à 10 à la Toussaint, jusqu'à 20 ensuite.",
-      "Une partie fait huit questions. Une étoile pour chaque bonne réponse du premier coup.",
-      "La méthode de Singapour avance en trois temps : manipuler de vrais objets, les représenter, puis écrire les nombres. Les jeux font les deux derniers ; le premier se fait sur la table, avec des haricots ou des Lego."] }));
+// Chaque jeu est une série du moteur commun, et une rubrique de l'onglet Compter.
+const DOMAINE_MATHS = { combien: "denombrer", maison: "calcul", cadre: "calcul", train: "nombres", probleme: "problemes", compare: "comparer" };
+ORDRE_MATHS.forEach((c, i) => {
+  const J = JEUX_MATHS[c];
+  const def = serie({ id: "maths-" + c, titre: J.titre, icone: J.icone, conseil: J.conseil, domaine: DOMAINE_MATHS[c],
+    question: () => { const q = J.question(etat.niveauMaths); q.cle = c + ":" + LIMITES[etat.niveauMaths - 1]; return q; } });
+  rubrique({ id: "maths-" + c, onglet: "compter", section: "Jusqu'à 20", ordre: 10 + i, titre: J.titre, icone: J.icone, court: J.court,
+    ouvrir: () => { seance = null; jouerSerie(def); }, seance: suite => jouerSerie(def, { n: 4, finir: suite }) });
+});
+function nombres() { etat.onglet = "compter"; accueil(); }
+
+// ---------- Mon carnet : ses sons, ses jours, ses livres ; le bilan et le point d'étape pour l'adulte ----------
+
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+// L'ordre du point d'étape : celui des épreuves nationales de mi-CP, le français puis les nombres.
+const ORDRE_ETAPE = ["lettres", "phonemes", "comprehension-orale", "comprehension-ecrite", "ecrire-syllabes", "ecrire-mots",
+  "lire-mots", "lire-texte", "nombres", "comparer", "ligne", "calcul", "problemes"];
+// Le domaine qui flanche → la rubrique qui le travaille.
+const POUR_TRAVAILLER = {
+  sons: "sons", lettres: "lettres", phonemes: "entendre", decodage: "tour", "lire-mots": "mots", "mots-outils": "outils",
+  "lire-texte": "lisvite", "comprehension-orale": "ecoute", "comprehension-ecrite": "comprendre", vocabulaire: "langue",
+  grammaire: "langue", "ecrire-syllabes": "ecris", "ecrire-mots": "ecris", "ecrire-phrases": "maphrase",
+  denombrer: "maths-combien", nombres: "cent", comparer: "cent", ligne: "cent", calcul: "calcul", "calcul-mental": "calcul",
+  problemes: "problemes", mesures: "mesures", geometrie: "formes"
+};
+const FRANCAIS = ["sons", "lettres", "phonemes", "decodage", "lire-mots", "mots-outils", "lire-texte", "comprehension-orale",
+  "comprehension-ecrite", "vocabulaire", "grammaire", "ecrire-syllabes", "ecrire-mots", "ecrire-phrases"];
+const MATHS_D = ["denombrer", "nombres", "comparer", "ligne", "calcul", "calcul-mental", "problemes", "mesures", "geometrie"];
+
+// Les deux épreuves d'écriture du point d'étape passent par « J'écris ».
+pointEtape("ecrire-syllabes", "Écrire des syllabes", suite => { ACTS.ecris.mode = "syllabes"; lancer("ecris", 4, () => { ACTS.ecris.mode = null; suite(); }); });
+pointEtape("ecrire-mots", "Écrire des mots", suite => { ACTS.ecris.mode = "images"; lancer("ecris", 4, () => { ACTS.ecris.mode = null; suite(); }); });
+
+let moisCarnet = null;
+
+// L'onglet « Mon carnet » : ce qui est à elle.
+function carnet() {
+  const vus = etat.sons.length;
+  const acquis = etat.sons.filter(id => maitrise("sons", id) === 3).length;
+  const affiche = h("div", { class: "carnet-affiche" }, SONS.map(s => {
+    const vu = etat.sons.includes(s.id), m = vu ? maitrise("sons", s.id) : -1;
+    return h("div", { class: "carnet-son m" + m + (s.id === etat.focus ? " focus" : ""), title: s.rep + (m === 3 ? " : acquis" : "") },
+      h("b", { class: "lecture" }, s.g[0]), h("span", { "aria-hidden": "true" }, s.e), m === 3 ? h("i", { class: "carnet-coche" }, ic("ok")) : null);
+  }));
+  return [
+    h("section", { class: "bloc carnet-bloc" }, h("h2", null, "Mes sons"),
+      h("p", null, vus + " sons vus en classe, " + acquis + " bien sus. Un son se colorie en vert quand il est lu juste quatre fois sur les cinq dernières."),
+      affiche,
+      h("div", { class: "carnet-legende" }, h("span", { class: "carnet-son m-1" }, "pas encore vu"), h("span", { class: "carnet-son m1" }, "à revoir"),
+        h("span", { class: "carnet-son m2" }, "en bonne voie"), h("span", { class: "carnet-son m3" }, "bien su")),
+      h("div", { class: "ligne" }, lienImprimer("carnet/affiche-des-sons.pdf", "L'affiche à imprimer et à colorier"))),
+    calendrier(),
+    livres(),
+    h("section", { class: "bloc carnet-bloc" }, h("h2", null, "Mon album"),
+      h("p", null, etat.album.length ? etat.album.length + " autocollant" + (etat.album.length > 1 ? "s" : "") + " : un par séance du jour finie." : "Le premier autocollant arrive à la fin de la première séance du jour."),
+      h("div", { class: "carnet-album" }, etat.album.slice(-12).map(a => h("span", null, a))),
+      h("button", { class: "btn", onclick: album }, ic("etoile"), "Tout l'album")),
+    h("section", { class: "bloc carnet-bloc carnet-adulte" }, h("h2", null, "Pour l'adulte"),
+      h("p", null, "Le bilan domaine par domaine, la courbe de lecture, et le point d'étape maison, calqué sur les épreuves nationales de mi-CP (en janvier)."),
+      h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: bilan }, ic("parent"), "Le bilan"),
+        h("button", { class: "btn", onclick: introPointEtape }, ic("ok"), "Faire le point d'étape"),
+        typeof guide === "function" ? h("button", { class: "btn", onclick: guide }, ic("guide"), "Le guide du CP") : null))
+  ];
 }
 
-function jouerMaths(cle) {
-  const J = JEUX_MATHS[cle], N = 8;
-  let k = 0, etoiles = 0;
-  ecran = "maths-jeu";
-  function suivante() {
-    if (k >= N) return finMaths(cle, etoiles, N);
-    vider();
-    const q = J.question(etat.niveauMaths);
-    const feuille = h("section", { class: "feuille" }), adulte = h("div", { class: "adulte" });
-    ajoute(racine, barre(J.titre, h("span", { class: "compte" }, (k + 1) + " / " + N)), feuille, adulte, conseil(J));
-    let essais = 0, fini = false;
-    const repondre = (val, bouton) => {
-      if (fini) return;
-      if (val === q.reponse) {
-        fini = true; bouton.classList.add("juste"); bip("ok");
-        if (!essais) { etoiles++; etoile(feuille); }
-        if (q.apres) q.apres();
-        k++; setTimeout(suivante, q.apres ? 2600 : 1100);
-      } else { essais++; bouton.classList.add("non", "secoue"); bip("non"); }
-    };
-    q.rendre(feuille, repondre);
-    bandeAdulte(adulte, [astuce(J.conseil[0]),
-      Voix.dispo() ? h("button", { class: "btn ecoute", onclick: () => Voix.dire(q.dire) }, ic("haut"), "Réécouter") : null,
-      bSuivant(() => { k++; suivante(); }, "Passer")]);
-    setTimeout(() => Voix.dire(q.dire), 350);
+function calendrier() {
+  const auj = new Date();
+  const m = moisCarnet || { a: auj.getFullYear(), m: auj.getMonth() };
+  const premier = new Date(m.a, m.m, 1), nb = new Date(m.a, m.m + 1, 0).getDate();
+  const decal = (premier.getDay() + 6) % 7;
+  const cle = j => m.a + "-" + String(m.m + 1).padStart(2, "0") + "-" + String(j).padStart(2, "0");
+  let jours = 0;
+  const cases = [];
+  for (let i = 0; i < decal; i++) cases.push(h("span", { class: "cal-vide" }));
+  for (let j = 1; j <= nb; j++) {
+    const fait = (etat.jours[cle(j)] || 0) > 0; if (fait) jours++;
+    const ajd = m.a === auj.getFullYear() && m.m === auj.getMonth() && j === auj.getDate();
+    cases.push(h("span", { class: "cal-jour" + (fait ? " fait" : "") + (ajd ? " ajd" : "") }, h("small", null, j), fait ? "⭐" : null));
   }
-  suivante();
+  const aller = d => { const x = new Date(m.a, m.m + d, 1); moisCarnet = { a: x.getFullYear(), m: x.getMonth() }; accueil(); };
+  return h("section", { class: "bloc carnet-bloc" },
+    h("div", { class: "ligne cal-tete" }, h("h2", null, "Mes jours de lecture"),
+      h("div", { class: "ligne" }, h("button", { class: "btn discret", onclick: () => aller(-1), "aria-label": "Mois précédent" }, "‹"),
+        h("b", null, MOIS_FR[m.m] + " " + m.a),
+        h("button", { class: "btn discret", onclick: () => aller(1), "aria-label": "Mois suivant" }, "›"))),
+    h("p", null, jours ? jours + " jour" + (jours > 1 ? "s" : "") + " de travail ce mois-ci. Dix minutes par jour valent mieux qu'une heure le dimanche." : "Une étoile s'allume chaque jour où l'on fait quelque chose ensemble."),
+    h("div", { class: "cal" }, ["L", "M", "M", "J", "V", "S", "D"].map(x => h("span", { class: "cal-nom" }, x)), cases));
 }
 
-function finMaths(cle, etoiles, n) {
-  const par = etat.maths[cle] || (etat.maths[cle] = {});
-  par[etat.niveauMaths] = Math.max(par[etat.niveauMaths] || 0, etoiles); sauver();
-  vider(); bip("fin"); if (etoiles) pluie("⭐");
-  ajoute(racine, barre(JEUX_MATHS[cle].titre),
-    h("section", { class: "feuille" }, h("p", { class: "bravo" }, etoiles >= n - 1 ? "Bravo !" : "Bien joué !"),
-      h("div", { class: "image" }, "⭐".repeat(etoiles) || "🙂"),
-      h("p", { class: "consigne", style: "align-self:center" }, etoiles + " étoile" + (etoiles > 1 ? "s" : "") + " sur " + n),
-      h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: () => jouerMaths(cle) }, ic("encore"), "Rejouer"),
-        h("button", { class: "btn", onclick: nombres }, ic("diese"), "Les nombres"))));
+function livres() {
+  const titre = h("input", { id: "livre-titre", type: "text", placeholder: "Le titre du livre", maxlength: "80", autocomplete: "off" });
+  let avis = "😍";
+  const avisB = h("div", { class: "modes", role: "group", "aria-label": "Son avis" }, ["😍", "🙂", "😐"].map(e =>
+    h("button", { "aria-pressed": String(e === avis), onclick: ev => { avis = e; [...avisB.children].forEach(b => b.setAttribute("aria-pressed", String(b === ev.currentTarget))); } }, e)));
+  const ajouter = () => {
+    const t = titre.value.trim(); if (!t) { titre.focus(); return; }
+    etat.livres.push({ t, e: avis, d: aujourdhui() }); sauver(); bip("ok"); accueil();
+  };
+  titre.addEventListener("keydown", e => { if (e.key === "Enter") ajouter(); });
+  return h("section", { class: "bloc carnet-bloc" }, h("h2", null, "Mes livres"),
+    h("p", null, etat.livres.length ? etat.livres.length + " livre" + (etat.livres.length > 1 ? "s" : "") + " lu" + (etat.livres.length > 1 ? "s" : "") + " ensemble, en vrai papier." : "Les vrais livres lus ensemble à la maison, qu'elle les lise ou qu'on les lui lise."),
+    etat.livres.length ? h("ul", { class: "livres-liste" }, etat.livres.slice().reverse().slice(0, 12).map(l =>
+      h("li", null, h("span", null, l.e), h("b", null, l.t), h("small", null, new Date(l.d + "T12:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" }))))) : null,
+    h("div", { class: "ligne livres-ajout" }, h("label", { for: "livre-titre", class: "visuellement-cache" }, "Titre du livre"), titre, avisB, h("button", { class: "btn plein", onclick: ajouter }, "Ajouter")),
+    lienImprimer("carnet/carnet-de-lecture.pdf", "Le carnet de lecture à imprimer", "btn discret"));
 }
+
+// ---------- Le bilan, pour l'adulte ----------
+
+function bilan() {
+  ecran = "bilan"; vider();
+  const ligneDomaine = d => {
+    const b = bilanDomaine(d);
+    const flu = d === "lire-mots" || d === "lire-texte" ? etat.fluence.filter(f => f.type === (d === "lire-mots" ? "mots" : "texte")).slice(-1)[0] : null;
+    let etiq = "pas encore travaillé", cls = "rien";
+    if (flu) { etiq = flu.mclm + " mots/min"; cls = flu.mclm >= (d === "lire-texte" ? 30 : 25) ? "solide" : flu.mclm >= 14 ? "cours" : "revoir"; }
+    else if (b.reponses >= 4) { etiq = Math.round(b.taux * 100) + " % de réussite récente"; cls = b.taux >= 0.85 ? "solide" : b.taux >= 0.6 ? "cours" : "revoir"; }
+    else if (b.reponses) etiq = b.reponses + " réponse" + (b.reponses > 1 ? "s" : "") + ", trop peu pour juger";
+    const r = RUBRIQUES.find(x => x.id === POUR_TRAVAILLER[d]);
+    return h("li", { class: "bilan-l " + cls },
+      h("span", { class: "bilan-nom" }, DOMAINES[d]),
+      h("span", { class: "bilan-jauge" }, h("i", { style: "width:" + (b.taux != null && !flu ? Math.round(b.taux * 100) : flu ? Math.min(100, flu.mclm * 2) : 0) + "%" })),
+      h("span", { class: "bilan-etiq" }, etiq),
+      r && cls === "revoir" ? h("button", { class: "btn discret", onclick: () => { seance = null; r.ouvrir(); } }, "Travailler : " + r.titre) : null);
+  };
+  const fragiles = etat.sons.filter(id => maitrise("sons", id) === 1).map(id => SON[id].g[0]);
+  const resistent = Object.entries(etat.difficiles).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([m]) => m);
+  const der = etat.etapes.slice(-1)[0];
+  ajoute(racine, barre("Le bilan"),
+    h("div", { class: "reglages" },
+      h("section", { class: "bloc" }, h("h2", null, "En bref"),
+        h("p", null, Object.keys(etat.jours).length + " jours de travail depuis le début, " + etat.seances + " séances du jour finies, " + etat.livres.length + " livres lus ensemble."),
+        fragiles.length ? h("p", null, "Les sons à revoir : ", h("b", { class: "lecture" }, fragiles.join(", ")), ". La séance du jour les fait revenir.") : null,
+        resistent.length ? h("p", null, "Les mots qui résistent : ", h("b", { class: "lecture" }, resistent.join(", ")), ".") : null,
+        der ? h("p", null, "Dernier point d'étape : le " + new Date(der.d + "T12:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) + ".") : null),
+      h("section", { class: "bloc" }, h("h2", null, "La lecture à voix haute"),
+        h("p", null, "En mots lus correctement par minute. Repères de fin de CP : 30 sur un texte jamais lu, 50 sur un texte préparé. En janvier, les épreuves nationales repèrent comme fragile un enfant qui lit 14 mots ou moins en une minute."),
+        typeof graphiqueFluence === "function" ? graphiqueFluence(null) : null),
+      h("section", { class: "bloc" }, h("h2", null, "Le français"), h("ul", { class: "bilan" }, FRANCAIS.map(ligneDomaine))),
+      h("section", { class: "bloc" }, h("h2", null, "Les nombres"), h("ul", { class: "bilan" }, MATHS_D.map(ligneDomaine))),
+      etat.etapes.length ? h("section", { class: "bloc" }, h("h2", null, "Les points d'étape"), tableEtapes()) : null,
+      h("section", { class: "bloc" }, h("h2", null, "Le point d'étape maison"),
+        h("p", null, "Une courte épreuve par domaine, dans l'ordre des épreuves nationales de mi-CP : une réponse par question, sans aide. Comptez vingt à trente minutes ; on peut s'arrêter et reprendre un autre jour."),
+        h("button", { class: "btn plein", onclick: introPointEtape }, ic("ok"), "Commencer le point d'étape"))));
+}
+
+function tableEtapes() {
+  const doms = ORDRE_ETAPE.filter(d => etat.etapes.some(e => e.res[d]));
+  return h("div", { class: "table-defile" }, h("table", { class: "etapes-table" },
+    h("thead", null, h("tr", null, h("th", null, "Domaine"), etat.etapes.slice(-4).map(e => h("th", null, e.d.slice(8, 10) + "/" + e.d.slice(5, 7))))),
+    h("tbody", null, doms.map(d => h("tr", null, h("th", null, DOMAINES[d]), etat.etapes.slice(-4).map(e => h("td", null, resumeEtape(e.res[d]))))))));
+}
+const resumeEtape = r => !r ? "–" : r.score != null ? r.score + " mots/min" : r.justes + " / " + r.total;
+
+// ---------- Le point d'étape maison ----------
+
+function introPointEtape() {
+  const etapes = ORDRE_ETAPE.map(d => ETAPES.find(e => e.domaine === d)).filter(Boolean)
+    .concat(ETAPES.filter(e => !ORDRE_ETAPE.includes(e.domaine)));
+  const { feuille, adulte } = ecranModule("Le point d'étape");
+  ajoute(feuille, h("p", { class: "consigne" }, "Un petit tour de tout ce qu'elle sait faire."),
+    h("ol", { class: "etape-liste" }, etapes.map(e => h("li", null, e.titre))));
+  bandeAdulte(adulte, [astuce("Une seule réponse par question, sans aide ni « on réessaie ». Lisez les consignes si elle le demande, jamais les mots à lire."),
+    h("button", { class: "btn plein", onclick: () => lancerPointEtape(etapes) }, ic("jouer"), "C'est parti")]);
+}
+function lancerPointEtape(etapes) {
+  journalEtape = [];
+  seance = { i: 0, etapes: etapes.map(e => ({ titre: e.titre, icone: "ok", lancer: e.lancer })), fin: finPointEtape };
+  etape();
+}
+function finPointEtape() {
+  const res = {};
+  (journalEtape || []).forEach(x => {
+    const r = res[x.domaine] || (res[x.domaine] = { justes: 0, total: 0 });
+    if (x.score != null) r.score = x.score;
+    else { r.total++; if (x.juste) r.justes++; }
+  });
+  journalEtape = null; seance = null;
+  etat.etapes.push({ d: aujourdhui(), res }); sauver();
+  vider(); bip("fin"); pluie("🏅");
+  const lignes = ORDRE_ETAPE.concat(Object.keys(res).filter(d => !ORDRE_ETAPE.includes(d))).filter(d => res[d]).map(d => {
+    const r = res[d];
+    const ok = r.score != null ? r.score >= 14 : r.justes / Math.max(1, r.total) >= 0.75;
+    const rub = RUBRIQUES.find(x => x.id === POUR_TRAVAILLER[d]);
+    return h("li", { class: "bilan-l " + (ok ? "solide" : "revoir") }, h("span", { class: "bilan-nom" }, DOMAINES[d] || d),
+      h("span", { class: "bilan-etiq" }, resumeEtape(r)),
+      !ok && rub ? h("button", { class: "btn discret", onclick: () => { seance = null; rub.ouvrir(); } }, "Travailler : " + rub.titre) : null);
+  });
+  ajoute(racine, barre("Le point d'étape"),
+    h("section", { class: "feuille" }, h("p", { class: "bravo" }, "Bravo, c'est fini !"), h("div", { class: "image" }, "🏅")),
+    h("div", { class: "reglages" }, h("section", { class: "bloc" }, h("h2", null, "Ce qu'il en ressort"),
+      h("p", null, "Les domaines en orange sont à travailler en priorité : le bouton ouvre la rubrique qui les fait travailler. Pour la lecture à voix haute, 14 mots par minute est le seuil que les épreuves nationales de janvier regardent."),
+      h("ul", { class: "bilan" }, lignes),
+      h("button", { class: "btn", onclick: bilan }, ic("parent"), "Le bilan complet"))));
+}
+
+(function () {
+  const st = document.createElement("style");
+  st.textContent = `
+.carnet-bloc .ligne{gap:10px}
+.carnet-affiche{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.carnet-son{position:relative;display:grid;justify-items:center;gap:0;padding:6px 4px;border-radius:12px;border:2px solid var(--trait);background:var(--papier);font-size:.9rem}
+.carnet-son b{font-size:1.5rem;font-weight:400;line-height:1.2}
+.carnet-son span{font-size:1.2rem;line-height:1}
+.carnet-son.m-1{border-style:dashed;opacity:.5}
+.carnet-son.m0{background:var(--papier)}
+.carnet-son.m1{background:var(--encore-pale);border-color:var(--encore)}
+.carnet-son.m2{background:var(--accent-pale);border-color:var(--accent)}
+.carnet-son.m3{background:var(--accent);border-color:var(--accent);color:var(--sur-accent)}
+.carnet-son.focus{box-shadow:0 0 0 3px var(--papier),0 0 0 6px var(--encore)}
+.carnet-coche{position:absolute;top:2px;right:4px}
+.carnet-coche svg{width:16px;height:16px}
+.carnet-legende{display:flex;flex-wrap:wrap;gap:8px}
+.carnet-legende .carnet-son{display:inline-block;padding:4px 10px;font-size:.85rem}
+.cal-tete{justify-content:space-between}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;max-width:520px}
+.cal-nom{text-align:center;color:var(--encre-2);font-size:.85rem;font-weight:700}
+.cal-jour{aspect-ratio:1;border-radius:10px;border:1px solid var(--trait);display:grid;place-items:center;position:relative;font-size:1.2rem;background:var(--papier)}
+.cal-jour small{position:absolute;top:2px;left:5px;font-size:.7rem;color:var(--encre-2)}
+.cal-jour.fait{background:var(--accent-pale);border-color:var(--accent)}
+.cal-jour.ajd{outline:3px solid var(--encore);outline-offset:1px}
+.livres-liste{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.livres-liste li{display:flex;gap:10px;align-items:baseline}
+.livres-liste small{color:var(--encre-2);margin-left:auto}
+.livres-ajout input{flex:1 1 220px;min-width:0;font:inherit;font-size:1rem;padding:10px 12px;border-radius:10px;border:2px solid var(--trait);background:var(--papier);color:var(--encre)}
+.visuellement-cache{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.carnet-album{display:flex;flex-wrap:wrap;gap:6px;font-size:2rem}
+.bilan{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.bilan-l{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(80px,1fr) auto;gap:6px 12px;align-items:center;padding:8px 10px;border-radius:10px;border-left:6px solid var(--trait);background:var(--fond)}
+.bilan-l.solide{border-left-color:var(--ok)} .bilan-l.cours{border-left-color:var(--accent)} .bilan-l.revoir{border-left-color:var(--encore)}
+.bilan-l .btn{grid-column:1/-1;justify-self:start;min-height:36px;padding:4px 10px}
+.bilan-jauge{height:10px;border-radius:5px;background:var(--trait);overflow:hidden}
+.bilan-jauge i{display:block;height:100%;background:var(--accent)}
+.bilan-etiq{color:var(--encre-2);font-size:.9rem;font-variant-numeric:tabular-nums;text-align:right}
+.table-defile{overflow-x:auto}
+.etapes-table{border-collapse:collapse;font-size:.95rem;font-variant-numeric:tabular-nums}
+.etapes-table th,.etapes-table td{padding:6px 10px;border-bottom:1px solid var(--trait);text-align:left}
+.etape-liste{text-align:left;margin:0;columns:2;font-size:1.05rem}
+@media (max-width:520px){.bilan-l{grid-template-columns:1fr}.bilan-etiq{text-align:left}.etape-liste{columns:1}}
+`;
+  document.head.append(st);
+})();
+
+// ---------- Le guide du CP, pour l'adulte ----------
+// La méthode, l'année, ce qui est évalué en janvier, la routine à la maison, les bons gestes.
+
+ICONES.guide = '<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h11"/>';
+
+function guide() {
+  ecran = "guide"; vider();
+  const partie = (titre, ouvert, ...contenu) => h("details", { class: "bloc guide-partie", open: ouvert || null }, h("summary", null, h("h2", null, titre)), ...contenu);
+  const lien = (id, texte) => {
+    const r = RUBRIQUES.find(x => x.id === id);
+    return r ? h("button", { class: "guide-lien", onclick: () => { seance = null; r.ouvrir(); } }, texte || r.titre) : h("span", null, texte || id);
+  };
+  ajoute(racine, barre("Le guide du CP"),
+    h("div", { class: "reglages guide" },
+      partie("La méthode de la classe, en clair", true,
+        h("p", null, "Sa classe apprend à lire par la voie syllabique, comme le recommandent les textes officiels : chaque semaine, un son nouveau, ses lettres, puis des syllabes, des mots et des phrases faits uniquement des sons déjà vus. L'enfant déchiffre, il ne devine pas."),
+        h("ul", null,
+          h("li", null, h("b", null, "Le son avant le nom : "), "on apprend « mmm », pas « ème ». Le nom des lettres vient à côté, pour l'alphabet."),
+          h("li", null, h("b", null, "La fusion : "), "un son tenu glisse vers le suivant, « mmm… a », « ma ». C'est le cœur du CP."),
+          h("li", null, h("b", null, "Lire et écrire ensemble : "), "chaque son se lit et s'écrit dans la même semaine ; la dictée de la classe en garde la trace."),
+          h("li", null, h("b", null, "Comprendre : "), "lire, c'est déchiffrer et comprendre. Les deux se travaillent dès le début, à l'oral d'abord, puis dans les phrases lues seule."),
+          h("li", null, h("b", null, "Lire vite : "), "à force de relire, les mots se reconnaissent sans effort. C'est la fluence, qui libère la place pour comprendre."))),
+      partie("L'année en un coup d'œil", false,
+        h("div", { class: "table-defile" }, h("table", { class: "etapes-table" },
+          h("thead", null, h("tr", null, h("th", null, "Période"), h("th", null, "Lire, écrire"), h("th", null, "Les nombres"))),
+          h("tbody", null,
+            h("tr", null, h("th", null, "1 · sept.-oct."), h("td", null, "Les voyelles, les consonnes qu'on peut tenir (r l s f m ch…), les premiers mots-outils."), h("td", null, "Les nombres jusqu'à 10, puis 20 : compter, décomposer, comparer.")),
+            h("tr", null, h("th", null, "2 · nov.-déc."), h("td", null, "Les consonnes brèves (p t d b…), ou, on, an ; les premières phrases."), h("td", null, "Les compléments à 10, les additions, les premiers problèmes.")),
+            h("tr", null, h("th", null, "3 · janv.-fév."), h("td", null, "Les sons complexes, la lecture de petits textes. Mi-janvier : le point d'étape national."), h("td", null, "Les dizaines et les unités, la ligne graduée.")),
+            h("tr", null, h("th", null, "4 · mars-avril"), h("td", null, "Presque tous les sons ; des textes plus longs, la ponctuation."), h("td", null, "Les nombres jusqu'à 100, le calcul en ligne.")),
+            h("tr", null, h("th", null, "5 · mai-juin"), h("td", null, "Tous les sons ; lire avec fluidité, écrire de courtes phrases."), h("td", null, "Les problèmes en deux étapes, la monnaie, les longueurs."))))),
+        h("p", { class: "guide-note" }, "Un repère courant, à ajuster sur ce que fait la classe : l'ordre des sons est celui de son fichier, et l'appli le suit par le réglage « Où en est la classe ? ».")),
+      partie("Ce qui est évalué en janvier", false,
+        h("p", null, "Toutes les classes de CP passent un point d'étape national à la mi-janvier. Le point d'étape maison du carnet en reprend les domaines ; voici ce qui les travaille dans l'appli."),
+        h("ul", null,
+          h("li", null, h("b", null, "Les lettres, nom et son : "), lien("lettres"), ", ", lien("sons")),
+          h("li", null, h("b", null, "Manipuler les sons des mots : "), lien("entendre")),
+          h("li", null, h("b", null, "Comprendre des phrases entendues : "), lien("ecoute")),
+          h("li", null, h("b", null, "Comprendre des phrases lues seule : "), lien("comprendre"), ", ", lien("phrase"), ". C'est la compétence la moins réussie en France : à travailler en priorité."),
+          h("li", null, h("b", null, "Écrire des syllabes et des mots : "), lien("ecris"), ", et la dictée de la semaine."),
+          h("li", null, h("b", null, "Lire à voix haute des mots et un texte en une minute : "), lien("lisvite"), ". Un enfant qui lit 14 mots ou moins en une minute est repéré comme fragile."),
+          h("li", null, h("b", null, "Les nombres : "), "les écrire sous la dictée, les comparer, les placer sur une ligne graduée (", lien("cent", "Jusqu'à 100"), "), additionner et soustraire (", lien("calcul"), "), résoudre des problèmes (", lien("problemes"), "), la compétence la moins réussie en mathématiques."))),
+      partie("La routine à la maison", false,
+        h("ul", null,
+          h("li", null, h("b", null, "Dix à quinze minutes par jour, cinq jours sur sept : "), "la séance du jour. Mieux vaut peu et souvent qu'une heure le dimanche."),
+          h("li", null, h("b", null, "Deux ou trois fois par semaine : "), "la séance de nombres, et une fiche d'écriture (dix minutes, sur papier)."),
+          h("li", null, h("b", null, "Le texte de la semaine : "), "trois lectures chronométrées dans la semaine ; le score monte, elle le voit."),
+          h("li", null, h("b", null, "Le soir : "), "une histoire lue par l'adulte, pour le plaisir et le vocabulaire. Les livres lus vont dans le carnet."),
+          h("li", null, h("b", null, "En voiture, à table : "), "les jeux oraux de « J'entends » se font sans écran : « Qu'entends-tu au début de chaussure ? », « Trouve un mot qui rime avec bateau », compter de 2 en 2, de 10 en 10."),
+          h("li", null, h("b", null, "Dans la vie : "), "payer à la boulangerie, peser la farine, compter les marches, lire l'heure des repas."),
+          h("li", null, h("b", null, "Le point d'étape maison : "), "début décembre, pour voir où en sont les choses avant janvier, puis en mars."))),
+      partie("Les bons gestes de l'adulte", false,
+        h("ul", null,
+          h("li", null, "Laisser chercher cinq secondes avant d'aider. Puis aider par étapes : « Quel est le premier son ? », « Et avec le suivant ? »."),
+          h("li", null, "Ne pas laisser deviner par l'image ou par le début du mot : on revient aux sons."),
+          h("li", null, "Féliciter l'effort et la méthode (« tu as bien tenu le son ») plus que le résultat."),
+          h("li", null, "S'arrêter avant la fatigue, sur une réussite. Une séance ratée se reprend demain."),
+          h("li", null, "Faire relire ce qui a été lu avec peine : la deuxième lecture est souvent la bonne, et c'est elle qu'on retient."),
+          h("li", null, "Garder le modèle de la classe : si la maîtresse forme une lettre ou nomme un son autrement, c'est elle qui fait foi."))),
+      partie("Quand en parler à la maîtresse", false,
+        h("p", null, "Les erreurs font partie de l'apprentissage. Quelques signaux méritent pourtant un mot à l'enseignante, qui saura dire s'ils se retrouvent en classe :"),
+        h("ul", null,
+          h("li", null, "en janvier, une lecture de moins de quinze mots par minute sur des mots simples ;"),
+          h("li", null, "des sons qui restent confondus semaine après semaine (f et v, ch et j, p et b) ;"),
+          h("li", null, "une grande peine à entendre les syllabes ou le premier son d'un mot ;"),
+          h("li", null, "une fatigue ou une gêne visuelle à la lecture : un contrôle de la vue et de l'audition est alors utile."))),
+      partie("Les sources", false,
+        h("ul", null,
+          h("li", null, "Le programme de français du cycle 2 (2024), en vigueur au CP depuis la rentrée 2025."),
+          h("li", null, "Le guide « Pour enseigner la lecture et l'écriture au CP » du ministère de l'Éducation nationale."),
+          h("li", null, "Les pages Eduscol sur l'évaluation de mi-CP, et les résultats publiés par la DEPP."),
+          h("li", null, "Pour les jeux, l'esprit de méthodes reconnues : la méthode de Singapour, MHM, Narramus, Phono ; les contenus de l'appli sont écrits pour elle.")))));
+}
+
+(function () {
+  const st = document.createElement("style");
+  st.textContent = `
+.guide-partie summary{cursor:pointer;list-style:none}
+.guide-partie summary::-webkit-details-marker{display:none}
+.guide-partie summary h2{display:inline}
+.guide-partie summary::after{content:"＋";float:right;color:var(--encre-2)}
+.guide-partie[open] summary::after{content:"－"}
+.guide ul{margin:0;padding-left:1.2em;display:grid;gap:6px;max-width:72ch}
+.guide p{max-width:72ch}
+.guide-lien{color:var(--accent-fort);text-decoration:underline;text-underline-offset:3px;font:inherit;padding:0}
+.guide-note{font-size:.9rem}
+`;
+  document.head.append(st);
+})();
+
+// ---------- Je lis vite : la fluence, une minute chrono ----------
+// Le format du point d'étape de mi-CP : lire à voix haute le plus de mots possible en une minute.
+// L'adulte touche les mots ratés ; la page compte les mots lus correctement par minute (MCLM).
+// Repères de fin de CP (programme 2024, tels que les académies les relaient) : 30 mots sur un
+// texte jamais lu, 50 sur un texte préparé. Le texte de la semaine reste le même sept jours :
+// c'est la lecture répétée, qui fait monter le score et la confiance.
+
+ICONES.chrono = '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/>';
+const FLUENCE_REPERES = [{ v: 30, t: "30 : fin de CP, texte jamais lu" }, { v: 50, t: "50 : fin de CP, texte préparé" }];
+
+function semaineIso(d = new Date()) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const j = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - j);
+  return Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 864e5 + 1) / 7);
+}
+
+// Les textes : les histoires entièrement lisibles avec ses sons (toutes les lignes), puis,
+// à défaut, un texte fait des phrases lisibles.
+function textesFluence() {
+  const tous = Object.assign({}, etat, { niveau: 3 });
+  const out = HISTOIRES_L.map(hh => {
+    const lignes = pagesDuGroupe(hh, tous).flatMap(p => p.lignes);
+    const js = lignes.flatMap(l => l.jetons);
+    return js.length && js.every(j => j.ponct || jetonLisible(j, etat)) ? { id: "h:" + hh.id, titre: hh.titre, lignes: lignes.map(l => l.jetons) } : null;
+  }).filter(Boolean);
+  if (!out.length) {
+    const ps = PHRASES_L.filter(p => phraseLisible(p, etat)).slice(0, 8);
+    if (ps.length >= 3) out.push({ id: "phrases", titre: "Petites phrases", lignes: ps.map(p => p.jetons) });
+  }
+  return out;
+}
+function texteDeLaSemaine(frais) {
+  const t = textesFluence();
+  if (!t.length) return null;
+  if (!frais) return t[semaineIso() % t.length];
+  const lus = new Set(etat.fluence.map(f => f.id));
+  return t.find(x => !lus.has(x.id)) || hasard(t);
+}
+function motsFluence(n) {
+  let l = parNiveau(motsLisibles(etat), etat, 20).filter(m => m.forme.length > 1);
+  if (!l.length) return [];
+  const out = [];
+  while (out.length < n) out.push(...melanger(l));
+  return out.slice(0, n);
+}
+
+// mode : "mots" ou "texte" · opts : { finir(score), etape: "lire-mots" | "lire-texte", frais }
+function lisvite(mode, opts) {
+  opts = opts || {};
+  ecran = "lisvite";
+  const texte = mode === "texte" ? texteDeLaSemaine(opts.frais) : null;
+  const mots = mode === "mots" ? motsFluence(etat.niveau === 1 ? 30 : 45) : null;
+  const choixMode = opts.finir ? null : h("div", { class: "modes", role: "group", "aria-label": "Ce qu'on lit" },
+    [["mots", "Des mots"], ["texte", "Le texte de la semaine"]].map(([m, t]) =>
+      h("button", { "aria-pressed": String(mode === m), onclick: () => lisvite(m) }, t)));
+  const { feuille, adulte } = ecranModule("Je lis vite", h("div", { class: "ligne" }, pastillesSeance(), choixMode));
+  if ((mode === "mots" && !mots.length) || (mode === "texte" && !texte)) {
+    ajoute(feuille, h("p", { class: "consigne" }, mode === "mots" ? "Pas encore assez de mots avec les sons vus en classe." :
+      "Pas encore de texte entièrement lisible avec ses sons. Essayez les mots, ou revenez dans quelques semaines."));
+    bandeAdulte(adulte, [opts.finir ? bSuivant(() => opts.finir(null), "Étape suivante") : null]);
+    return;
+  }
+  const cases = [];
+  const chrono = h("div", { class: "lisvite-chrono", "aria-live": "polite" }, "1:00");
+  const zone = h("div", { class: "lisvite-zone flou" + (mode === "mots" ? " lisvite-mots" : " lisvite-texte") });
+  const bouton = (j, el) => {
+    el.classList.add("lisvite-mot");
+    el.addEventListener("click", () => toucher(cases.length && cases.find(c => c.el === el)));
+    cases.push({ el, t: j });
+    return el;
+  };
+  if (mode === "mots") mots.forEach(m => zone.append(bouton(m.forme, h("span", { class: "lecture" }, rendreMot(m, m.forme)))));
+  else texte.lignes.forEach(js => {
+    const p = h("p", { class: "lecture" });
+    js.forEach((j, k) => {
+      if (k > 0 && !j.colle) p.append(j.ponct ? (/[?!:;]/.test(j.t) ? " " : "") : " ");
+      if (j.ponct) p.append(j.t);
+      else p.append(bouton(j.t, j.outil ? h("span", { class: "mot outil" }, j.t) : j.mot ? rendreMot(j.mot, j.t) : h("span", null, j.t)));
+    });
+    zone.append(p);
+  });
+  ajoute(feuille, h("p", { class: "consigne" }, mode === "mots" ? "Lis le plus de mots possible, dans l'ordre, ligne par ligne." : "Lis le texte à voix haute : « " + texte.titre + " »."),
+    chrono, zone);
+
+  let etatL = "pret", t0 = 0, fin = 0, horloge = null, dernier = -1;
+  function toucher(c) {
+    if (!c) return;
+    if (etatL === "lecture") c.el.classList.toggle("rate");
+    else if (etatL === "dernier") { dernier = cases.indexOf(c); resultat(); }
+  }
+  function partir() {
+    etatL = "lecture"; zone.classList.remove("flou"); t0 = Date.now();
+    // le temps se lit sur l'horloge : un onglet en arrière-plan ralentit les minuteries
+    horloge = setInterval(() => {
+      const reste = Math.max(0, 60 - (Date.now() - t0) / 1000);
+      chrono.textContent = "0:" + String(Math.ceil(reste)).padStart(2, "0");
+      chrono.classList.toggle("fin-proche", reste < 10);
+      if (reste <= 0) arreter(false);
+    }, 200);
+    bandeAdulte(adulte, [astuce("Touchez chaque mot raté ou sauté : il passe en rouge. Un mot corrigé tout seul compte juste."),
+      h("button", { class: "btn", onclick: () => arreter(true) }, ic("ok"), "Elle a tout lu")]);
+  }
+  function arreter(toutLu) {
+    clearInterval(horloge); fin = Date.now();
+    if (toutLu) { dernier = cases.length - 1; return resultat(); }
+    etatL = "dernier"; chrono.textContent = "0:00"; bip("fin");
+    zone.classList.add("choisir");
+    bandeAdulte(adulte, [astuce("Le temps est fini. Touchez le dernier mot qu'elle a lu.")]);
+  }
+  function resultat() {
+    etatL = "fini"; zone.classList.remove("choisir");
+    // Au moins 15 secondes : un « Elle a tout lu » touché trop tôt ne fabrique pas un score absurde.
+    const secondes = Math.min(60, Math.max(15, (fin - t0) / 1000));
+    const erreurs = cases.slice(0, dernier + 1).filter(c => c.el.classList.contains("rate")).length;
+    const justes = Math.max(0, dernier + 1 - erreurs);
+    const mclm = Math.round(justes * 60 / secondes);
+    cases.forEach((c, i) => { if (i > dernier) c.el.classList.add("pas-lu"); });
+    const id = mode === "mots" ? "mots" : texte.id;
+    const avant = etat.fluence.filter(f => f.id === id && mode === "texte").slice(-1)[0];
+    etat.fluence.push({ d: aujourdhui(), type: mode, id, mclm, err: erreurs, lus: dernier + 1 });
+    etat.jours[aujourdhui()] = (etat.jours[aujourdhui()] || 0) + 1;
+    if (journalEtape) journalEtape.push({ domaine: opts.etape || (mode === "mots" ? "lire-mots" : "lire-texte"), score: mclm });
+    sauver(); bip("ok");
+    const msg = h("div", { class: "lisvite-score" }, h("b", null, mclm), h("span", null, "mots lus correctement en une minute"),
+      erreurs ? h("small", null, erreurs + " mot" + (erreurs > 1 ? "s" : "") + " raté" + (erreurs > 1 ? "s" : "")) : null,
+      avant ? h("small", null, mclm > avant.mclm ? "+" + (mclm - avant.mclm) + " depuis la dernière lecture de ce texte !" : "La dernière fois : " + avant.mclm + ".") : null);
+    feuille.prepend(msg);
+    if (mclm > (avant ? avant.mclm : 0)) etoile(feuille);
+    if (opts.finir) { bandeAdulte(adulte, [bSuivant(() => opts.finir(mclm), "Étape suivante")]); return; }
+    ajoute(feuille, graphiqueFluence(mode));
+    bandeAdulte(adulte, [astuce(mode === "texte" ? "Relire le même texte demain : le score monte, et la lecture devient plus fluide." : "Les mots changent à chaque fois."),
+      h("button", { class: "btn", onclick: () => lisvite(mode) }, ic("encore"), mode === "texte" ? "Relire le texte" : "D'autres mots"),
+      bSuivant(accueil, "Retour")]);
+  }
+  bandeAdulte(adulte, [astuce("Elle lit à voix haute, le doigt sous les mots. Vous lancez le chrono quand elle est prête."),
+    h("button", { class: "btn plein", onclick: partir }, ic("chrono"), "Partez !")]);
+}
+
+// La courbe des scores, à l'échelle, avec les deux repères de fin de CP.
+function graphiqueFluence(type) {
+  const pts = etat.fluence.filter(f => !type || f.type === type).slice(-12);
+  if (!pts.length) return h("p", { class: "lisvite-vide" }, "La courbe apparaîtra après la première lecture chronométrée.");
+  const L = 640, H = 240, g = 44, d = 16, hautG = 16, basG = 34;
+  const max = Math.max(60, ...pts.map(p => p.mclm)) + 5;
+  const x = i => g + (pts.length === 1 ? (L - g - d) / 2 : i * (L - g - d) / (pts.length - 1));
+  const y = v => H - basG - v * (H - basG - hautG) / max;
+  const NS = "http://www.w3.org/2000/svg";
+  const s = document.createElementNS(NS, "svg");
+  s.setAttribute("viewBox", "0 0 " + L + " " + H); s.setAttribute("class", "lisvite-courbe"); s.setAttribute("role", "img");
+  s.setAttribute("aria-label", "Mots lus par minute : " + pts.map(p => p.mclm).join(", "));
+  let c = "";
+  for (let v = 0; v <= max; v += 10) c += '<line class="fl-grille" x1="' + g + '" x2="' + (L - d) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text class="fl-txt" x="' + (g - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + v + "</text>";
+  FLUENCE_REPERES.forEach(r => { c += '<line class="fl-cible" x1="' + g + '" x2="' + (L - d) + '" y1="' + y(r.v) + '" y2="' + y(r.v) + '"/><text class="fl-cible-t" x="' + (L - d) + '" y="' + (y(r.v) - 5) + '" text-anchor="end">' + r.t + "</text>"; });
+  c += '<polyline class="fl-ligne" points="' + pts.map((p, i) => x(i) + "," + y(p.mclm)).join(" ") + '"/>';
+  pts.forEach((p, i) => {
+    c += '<circle class="fl-point" cx="' + x(i) + '" cy="' + y(p.mclm) + '" r="' + (i === pts.length - 1 ? 6 : 4) + '"/>';
+    c += '<text class="fl-txt" x="' + x(i) + '" y="' + (H - 12) + '" text-anchor="middle">' + p.d.slice(8, 10) + "/" + p.d.slice(5, 7) + "</text>";
+  });
+  const der = pts[pts.length - 1];
+  c += '<text class="fl-val" x="' + x(pts.length - 1) + '" y="' + (y(der.mclm) - 12) + '" text-anchor="middle">' + der.mclm + "</text>";
+  s.innerHTML = c;
+  return h("figure", { class: "lisvite-fig" }, s, h("figcaption", null, type === "texte" ? "Le texte, en mots par minute" : type === "mots" ? "Les listes de mots, en mots par minute" : "Mots par minute"));
+}
+
+rubrique({ id: "lisvite", onglet: "lire", section: "Lire", ordre: 45, titre: "Je lis vite", icone: "chrono",
+  court: "Une minute pour lire le plus de mots", ouvrir: () => lisvite("mots"),
+  seance: suite => lisvite("mots", { finir: suite }), dispo: () => motsLisibles(etat).length >= 10 });
+pointEtape("lire-mots", "Lire des mots en une minute", suite => lisvite("mots", { finir: suite, etape: "lire-mots" }));
+pointEtape("lire-texte", "Lire un texte en une minute", suite => lisvite("texte", { finir: suite, etape: "lire-texte", frais: true }));
+
+(function () {
+  const st = document.createElement("style");
+  st.textContent = `
+.lisvite-chrono{font-family:var(--f-lecture);font-size:2.6rem;font-variant-numeric:tabular-nums;background:var(--papier);padding:2px 18px;border-radius:12px;border:3px solid var(--trait)}
+.lisvite-chrono.fin-proche{border-color:var(--encore);color:var(--encore)}
+.lisvite-zone{width:100%;transition:filter .3s}
+.lisvite-zone.flou{filter:blur(9px);pointer-events:none;user-select:none}
+.lisvite-mots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 8px;font-size:clamp(1.3rem,3.2vw,2rem)}
+.lisvite-texte{text-align:left;font-size:clamp(1.4rem,3.4vw,2.2rem);line-height:1.9}
+.lisvite-texte p{margin:0 0 .3em}
+.lisvite-mot{cursor:pointer;border-radius:8px;padding:0 4px}
+.lisvite-mots .lisvite-mot{display:block;text-align:center;padding:4px 2px}
+.lisvite-mot.rate{background:var(--encore-pale);color:var(--faux);text-decoration:line-through;text-decoration-thickness:2px}
+.lisvite-zone.choisir .lisvite-mot{outline:2px dashed var(--accent-pale)}
+.lisvite-zone.choisir .lisvite-mot:hover{background:var(--accent-pale)}
+.lisvite-mot.pas-lu{opacity:.35}
+.lisvite-score{display:grid;justify-items:center;gap:2px;text-align:center}
+.lisvite-score b{font-family:var(--f-lecture);font-size:4rem;line-height:1;color:var(--accent-fort)}
+.lisvite-score small{color:var(--encre-2);font-size:1rem}
+.lisvite-fig{margin:0;width:100%;max-width:680px}
+.lisvite-courbe{width:100%;height:auto;display:block}
+.lisvite-fig figcaption{color:var(--encre-2);font-size:.95rem;text-align:center}
+.fl-grille{stroke:var(--trait);stroke-width:1}
+.fl-cible{stroke:var(--encore);stroke-width:2;stroke-dasharray:7 6}
+.fl-cible-t{fill:var(--encore);font:13px var(--f-ui)}
+.fl-ligne{stroke:var(--accent);stroke-width:3;fill:none;stroke-linejoin:round}
+.fl-point{fill:var(--accent)}
+.fl-txt{fill:var(--encre-2);font:12px var(--f-ui)}
+.fl-val{fill:var(--accent-fort);font:700 16px var(--f-ui)}
+.lisvite-vide{color:var(--encre-2);margin:0}
+@media (max-width:520px){.lisvite-mots{grid-template-columns:repeat(3,minmax(0,1fr))}}
+`;
+  document.head.append(st);
+})();
 
 // ---------- L'accueil ----------
 
 function accueil() {
-  ecran = "accueil"; seance = null; vider();
-  ajoute(racine, 
+  ecran = "accueil"; seance = null; journalEtape = null; vider();
+  const o = ONGLETS.some(x => x.id === etat.onglet) ? etat.onglet : "lire";
+  const barreOnglets = h("nav", { class: "onglets", role: "tablist", "aria-label": "Les rubriques" }, ONGLETS.map(x =>
+    h("button", { role: "tab", class: "onglet", "aria-selected": String(x.id === o), onclick: () => { etat.onglet = x.id; sauver(); accueil(); } },
+      ic(x.icone), h("span", null, x.titre))));
+  ajoute(racine,
     h("header", { class: "barre" }, h("div", { style: "flex:1;min-width:0" },
       h("h1", { class: "titre-app" }, "Lire ensemble"),
-      h("p", { class: "sous-titre" }, "Dix minutes de lecture à deux, avec les sons de la classe."))),
+      h("p", { class: "sous-titre" }, "Dix minutes par jour, à deux : lire, écrire, compter."))),
     etat.regle ? null : h("div", { class: "bandeau" },
       h("span", null, "Premier réglage : vérifiez où en est la classe et le groupe de dictée."),
       h("button", { class: "btn", onclick: parents }, ic("parent"), "Régler")),
-    h("div", { class: "classe" }, h("span", { class: "lbl" }, "Les sons de la classe :"),
-      etat.sons.map(id => h("span", { class: "puce" + (id === etat.focus ? " focus" : ""), title: id === etat.focus ? "Le son de la semaine" : null }, SON[id].g[0]))),
-    h("button", { class: "seance", onclick: lancerSeance },
-      h("span", { class: "jouer" }, ic("jouer")),
-      h("span", null, h("span", { class: "gros" }, "La séance du jour"), h("br"),
-        h("span", { class: "petit" }, "Six petites étapes, une dizaine de minutes, un autocollant à la fin.")),
-      h("span", { class: "pas" }, SEANCE.map(([c]) => h("span", null, ic(ACTS[c].icone), ACTS[c].titre)))),
-    h("div", { class: "duo" },
-      h("button", { class: "carte-d", onclick: bibliotheque }, h("span", { class: "emo", "aria-hidden": "true" }, "📚"),
-        h("b", null, "Les histoires"), h("small", null, HISTOIRES_L.filter(x => partLisible(x, etat) >= SEUIL_HISTOIRE).length + " petites histoires à lire à deux, à son niveau")),
-      h("button", { class: "carte-d", onclick: nombres }, h("span", { class: "emo", "aria-hidden": "true" }, "🔢"),
-        h("b", null, "Les nombres"), h("small", null, "Six jeux pour compter et calculer, méthode de Singapour"))),
-    h("p", { class: "etiquette-j" }, "Les jeux de lecture"),
-    h("div", { class: "jeux" }, ORDRE_JEUX.map(c => h("button", { class: "jeu", onclick: () => { seance = null; lancer(c, 6); } },
-      h("span", { class: "pic" }, ic(ACTS[c].icone)), h("b", null, ACTS[c].titre), h("small", null, ACTS[c].court)))),
+    barreOnglets,
+    h("div", { class: "panneau", role: "tabpanel" }, o === "carnet" ? carnet() : contenuOnglet(o)),
     h("div", { class: "pied" },
-      h("button", { class: "btn", onclick: album }, ic("etoile"), "Mon album · " + etat.album.length),
       boutonParents(),
       SUR_SITE ? h("a", { class: "btn discret", href: "/mentions-legales.html" }, "Mentions légales") : null));
 }
+
+function carteRubrique(r) {
+  const rec = etat.series[r.id];
+  return h("button", { class: "jeu", onclick: () => { seance = null; r.ouvrir(); } },
+    h("span", { class: "pic" }, ic(ICONES[r.icone] ? r.icone : "etoile")), h("b", null, r.titre), h("small", null, r.court),
+    rec && rec.meilleur ? h("small", { class: "record" }, "★ " + rec.meilleur + " au mieux") : null);
+}
+
+function contenuOnglet(o) {
+  const out = [];
+  if (o === "lire") {
+    const etapes = etapesDuJour();
+    out.push(
+      h("div", { class: "classe" }, h("span", { class: "lbl" }, "Les sons de la classe :"),
+        etat.sons.map(id => h("span", { class: "puce" + (id === etat.focus ? " focus" : ""), title: id === etat.focus ? "Le son de la semaine" : null }, SON[id].g[0]))),
+      h("button", { class: "seance", onclick: lancerSeance },
+        h("span", { class: "jouer" }, ic("jouer")),
+        h("span", null, h("span", { class: "gros" }, "La séance du jour"), h("br"),
+          h("span", { class: "petit" }, etapes.length + " petites étapes, une dizaine de minutes, un autocollant à la fin.")),
+        h("span", { class: "pas" }, etapes.map(e => h("span", null, ic(ICONES[e.icone] ? e.icone : "etoile"), e.titre)))));
+  }
+  if (o === "compter") {
+    const etn = etapesDe(PLAN_NOMBRES);
+    if (etn.length) out.push(h("button", { class: "seance", onclick: lancerSeanceNombres },
+      h("span", { class: "jouer" }, ic("jouer")),
+      h("span", null, h("span", { class: "gros" }, "La séance de nombres"), h("br"),
+        h("span", { class: "petit" }, etn.length + " étapes, cinq minutes : calculer vite, compter, résoudre un problème.")),
+      h("span", { class: "pas" }, etn.map(e => h("span", null, ic(ICONES[e.icone] ? e.icone : "etoile"), e.titre)))));
+  }
+  if (o === "compter") out.push(h("div", { class: "ligne niveau-maths" }, h("span", { class: "lbl" }, "Les nombres jusqu'à :"),
+    h("div", { class: "modes", role: "group", "aria-label": "Niveau en nombres" }, [1, 2, 3].map(n =>
+      h("button", { "aria-pressed": String(etat.niveauMaths === n), onclick: () => { etat.niveauMaths = n; sauver(); accueil(); } }, String(LIMITES[n - 1]))))));
+  const sections = SECTIONS[o].concat([...new Set(RUBRIQUES.filter(r => r.onglet === o && !SECTIONS[o].includes(r.section)).map(r => r.section))]);
+  sections.forEach(sec => {
+    const rs = RUBRIQUES.filter(r => r.onglet === o && r.section === sec).sort((a, b) => a.ordre - b.ordre);
+    if (rs.length) out.push(h("section", { class: "rayon" }, h("h2", { class: "etiquette-j" }, sec), h("div", { class: "jeux" }, rs.map(carteRubrique))));
+  });
+  return out;
+}
+
+// Les fiches d'écriture : une rubrique de l'onglet Écrire, et un bloc du coin des parents.
+function ecranFiches() {
+  ecran = "fiches"; vider();
+  ajoute(racine, barre("Les fiches d'écriture"), h("div", { class: "reglages" }, blocFiches()));
+}
+rubrique({ id: "fiches", onglet: "ecrire", section: "À imprimer", ordre: 10, titre: "Les fiches d'écriture", icone: "ecris",
+  court: "Une fiche par son, à imprimer en taille réelle", ouvrir: ecranFiches });
 
 function boutonParents() {
   const b = h("button", { class: "btn discret maintien", title: "Maintenir appuyé pour ouvrir" },
@@ -2405,6 +3250,9 @@ function parents() {
   ajoute(racine, 
     barre("Coin des parents"),
     h("div", { class: "reglages" },
+      typeof guide === "function" ? bloc("Le guide du CP", "La méthode de la classe, l'année en un coup d'œil, ce qui est évalué en janvier, la routine à la maison et les bons gestes.",
+        h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: guide }, ic("guide"), "Ouvrir le guide"),
+          typeof bilan === "function" ? h("button", { class: "btn", onclick: bilan }, ic("parent"), "Le bilan") : null)) : null,
       bloc("Où en est la classe ?", "Choisissez le dernier son vu en classe : les sons d'avant se cochent, et celui-ci devient le son de la semaine. Pour la période 1, l'ordre est celui des dictées de la classe : a, i, puis r, o, l, é, u, s, f, e, m, ch, ou.",
         h("div", { class: "ligne" }, h("label", { for: "classe-en" }, "La classe en est à"), classeEn)),
       bloc("Les sons déjà vus", "Touchez un son pour le cocher ou le décocher, si la classe ne suit pas cet ordre. Le son de la semaine revient plus souvent dans les exercices.",
