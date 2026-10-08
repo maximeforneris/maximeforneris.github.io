@@ -7,10 +7,10 @@
 <meta name="description" content="Dix minutes de lecture à deux, au CP, avec les sons de la classe.">
 <meta name="stockage" content="lire-ensemble-v1 : les sons cochés, les réglages, les mots lus et l'album d'autocollants">
 <title>Lire ensemble</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@300;400&display=swap">
 <style>
+@font-face{font-family:"Andika";font-style:normal;font-weight:400;font-display:swap;src:url(assets/polices/andika-400-latin.woff2) format("woff2")}
+@font-face{font-family:"Andika";font-style:normal;font-weight:700;font-display:swap;src:url(assets/polices/andika-700-latin.woff2) format("woff2")}
+@font-face{font-family:"Playwrite FR Moderne";font-style:normal;font-weight:100 400;font-display:swap;src:url(assets/polices/playwrite-fr-moderne.woff2) format("woff2")}
 /* Un cahier d'écolier : la page de lecture est une feuille Seyès, la pochette verte de la classe donne l'accent. */
 :root{
   --fond:#eef1e8; --papier:#fffefb; --encre:#1e2532; --encre-2:#5a6271; --trait:#d9ddd2;
@@ -183,6 +183,7 @@ svg.ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;s
 .secoue{animation:secoue .4s}
 @keyframes secoue{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .question{background:var(--accent-pale);border-radius:12px;padding:10px 16px;font-size:1.1rem}
+button.question{display:inline-flex;align-items:center;gap:10px;color:var(--encre)}
 
 /* ---------- j'écris ---------- */
 .modes{display:flex;gap:8px;flex-wrap:wrap}
@@ -242,7 +243,91 @@ textarea{width:100%;min-height:64px;resize:vertical}
 .methode{margin:0;padding-left:1.2em;display:grid;gap:8px;max-width:72ch;font-size:1rem}
 .danger{color:var(--faux)}
 
+/* ---------- accueil : histoires et nombres ---------- */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.carte-d{background:var(--papier);border-radius:20px;box-shadow:var(--ombre);padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center;text-align:left}
+.carte-d:hover{outline:3px solid var(--accent-pale)}
+.carte-d .emo{grid-row:span 2;font-size:2.8rem;line-height:1}
+.carte-d b{font-size:1.35rem}
+.carte-d small{color:var(--encre-2);font-size:.95rem}
+.etiquette-j{margin:4px 0 -6px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--encre-2)}
+.fiches a{display:inline-grid;place-items:center;text-decoration:none;color:var(--encre);font-family:var(--f-lecture);font-size:1.2rem;min-width:52px;height:48px;padding:0 12px;border-radius:12px;border:2px solid var(--trait)}
+.fiches a.vu{background:var(--accent-pale);border-color:var(--accent)}
+.fiches a.focus{box-shadow:0 0 0 3px var(--papier),0 0 0 6px var(--encore)}
+a.btn{text-decoration:none;color:inherit}
+
+/* ---------- les histoires ---------- */
+.livres{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.livre{background:var(--papier);border-radius:var(--rayon);box-shadow:var(--ombre);padding:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;text-align:left;position:relative}
+.livre:hover{outline:3px solid var(--accent-pale)}
+.livre .couverture{font-size:3rem;line-height:1}
+.livre b{font-size:1.4rem;font-weight:400}
+.livre small{color:var(--encre-2);font-size:.95rem}
+.livre.ferme{opacity:.55;cursor:default;box-shadow:none;border:2px dashed var(--trait);outline:0}
+.livre .lue{position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--ok)}
+.scene{font-size:clamp(3rem,8vw,4.4rem);line-height:1.1;letter-spacing:.12em}
+.recit{text-align:left;max-width:100%}
+.recit p{margin:0 0 .25em}
+.touche{cursor:pointer;border-radius:6px}
+.touche:hover{background:var(--accent-pale)}
+.mot.grand{color:var(--encre-2);text-decoration:underline dotted var(--muette);text-decoration-thickness:.06em;text-underline-offset:.14em}
+.mot.grand .syl::after{display:none}
+.mot.suivi{background:var(--accent-pale);box-shadow:0 0 0 3px var(--accent-pale)}
+
+/* ---------- les nombres ---------- */
+.vue{min-height:140px;display:grid;place-items:center}
+.cadres{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.cadre{display:grid;grid-template-columns:repeat(5,52px);grid-auto-rows:52px;border:3px solid var(--encre-2);border-radius:6px;background:var(--papier)}
+.cc{border:1px solid var(--trait);display:grid;place-items:center}
+.jeton{width:38px;height:38px;border-radius:50%;display:block}
+.jeton.a{background:var(--syl2)} .jeton.b{background:var(--syl1)}
+.jeton.v{border:3px dashed var(--muette);background:transparent}
+.des{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.de{width:112px;height:112px;border:3px solid var(--encre-2);border-radius:18px;display:grid;grid-template-columns:repeat(3,1fr);padding:10px;background:var(--papier)}
+.de span{display:grid;place-items:center}
+.de i{width:22px;height:22px;border-radius:50%;background:var(--encre)}
+.tas{display:flex;flex-wrap:wrap;gap:10px 14px;max-width:420px;justify-content:center;font-size:2.6rem;line-height:1.1}
+.pave{display:grid;gap:10px;width:100%;justify-content:center}
+.pave.court{grid-template-columns:repeat(auto-fit,minmax(84px,1fr));max-width:420px}
+.chiffre{height:64px;border-radius:14px;background:var(--papier);box-shadow:var(--ombre);font-family:var(--f-lecture);font-size:1.9rem;font-variant-numeric:tabular-nums;border:3px solid transparent}
+.chiffre:hover{border-color:var(--accent-pale)}
+.chiffre.juste{border-color:var(--ok);background:var(--ok-pale)}
+.chiffre.non{opacity:.35}
+svg.lien{width:min(260px,100%);height:auto}
+.nb-cercle{fill:var(--papier);stroke:var(--encre-2);stroke-width:3}
+.nb-inconnu{fill:var(--encore-pale);stroke:var(--encore);stroke-width:3}
+.nb-trait{stroke:var(--encre-2);stroke-width:3;fill:none}
+.nb-txt{fill:var(--encre);font-family:var(--f-lecture);font-size:30px}
+.train-n{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;justify-content:center;padding-bottom:14px}
+.loco{font-size:3.4rem;line-height:1}
+.wagon{min-width:72px;height:64px;border-radius:10px;border:3px solid var(--encre-2);display:grid;place-items:center;font-family:var(--f-lecture);font-size:2rem;background:var(--papier);position:relative;font-variant-numeric:tabular-nums}
+.wagon::after{content:"";position:absolute;bottom:-13px;left:12px;right:12px;height:10px;background:radial-gradient(circle,var(--encre-2) 4px,transparent 5px) 0 0/50% 100% repeat-x}
+.wagon.trou{border-style:dashed;border-color:var(--encore);background:var(--encore-pale);color:var(--encore)}
+.enonce{font-size:1.25rem;max-width:56ch;margin:0;text-align:left;background:var(--papier);padding:4px 8px;border-radius:8px}
+.objets{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;font-size:2rem}
+.groupe-o.parti{opacity:.35;text-decoration:line-through}
+.groupe-o.nouveau{outline:2px dashed var(--syl1);border-radius:10px;padding:0 6px}
+.modele{width:min(560px,100%);display:grid;gap:6px;padding-bottom:40px}
+.barre-m{display:flex;height:56px;border:3px solid var(--encre-2);border-radius:6px;overflow:hidden;background:var(--papier)}
+.seg{display:grid;place-items:center;font-family:var(--f-lecture);font-size:1.6rem;border-right:3px solid var(--encre-2);min-width:44px}
+.seg:last-child{border-right:0}
+.seg.a{background:var(--ok-pale)} .seg.b{background:var(--seyes)}
+.seg.v{background:var(--encore-pale);color:var(--encore)}
+.seg.barre{background:repeating-linear-gradient(45deg,var(--trait) 0 6px,transparent 6px 12px)}
+.accolade{height:24px;border:3px solid var(--encre-2);border-top:0;border-radius:0 0 14px 14px;position:relative}
+.accolade span{position:absolute;left:50%;top:100%;transform:translate(-50%,2px);font-family:var(--f-lecture);font-size:1.6rem;background:var(--papier);padding:0 8px;border-radius:8px}
+.deux{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.boite{min-width:200px;min-height:160px;padding:16px;border-radius:20px;background:var(--papier);box-shadow:var(--ombre);border:4px solid transparent;display:grid;place-items:center}
+.boite:hover{border-color:var(--accent-pale)}
+.boite.juste{border-color:var(--ok);background:var(--ok-pale)} .boite.non{opacity:.35}
+.gros-n{font-family:var(--f-lecture);font-size:4.6rem;line-height:1}
+.jeu small.record{color:var(--accent-fort);font-weight:700}
+
 @media (max-width:760px){
+  .duo{grid-template-columns:1fr}
+  .cadre{grid-template-columns:repeat(5,44px);grid-auto-rows:44px}
+  .jeton{width:32px;height:32px}
+  .boite{min-width:140px}
   .jeux{grid-template-columns:repeat(2,minmax(0,1fr))}
   .feuille{padding:22px 16px 22px 30px;background-image:linear-gradient(90deg,transparent 0 18px,var(--marge) 18px 20px,transparent 20px),repeating-linear-gradient(180deg,transparent 0 31px,var(--seyes-fort) 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,var(--seyes) 7px 8px)}
   .seance{grid-template-columns:1fr auto;padding:20px}
@@ -425,6 +510,7 @@ a-lo-r[s]|a l o r
 rô-l[e]|r o l
 li-la[s]|l i a
 l'|l
+là|l a
 # u
 lu|l u
 ru[e]|r u|🛣️
@@ -440,6 +526,7 @@ sa-lu[t]|s a l u|👋
 sa-lu[e]|s a l u
 sa-li|s a l i
 sa-lé|s a l é
+sa-lu-é|s a l u é
 sa-l[e]|s a l
 Sa-ra|s a r
 so-lo|s o l
@@ -455,6 +542,7 @@ sa-fa-ri|s a f r i|🦒
 ra-fa-l[e]|r a f l
 fi-ra|f i r a
 fé-ri-é|f é r i
+fi-lé|f i l é
 So-fi-a|s o f i a
 # e
 le|l e
@@ -488,6 +576,7 @@ mal|m a l
 mâ[t]|m a
 mo[t]|m o
 mi[s]|m i
+re-mi[s]|r e m i
 mu-l[e]|m u l
 ma-r[e]|m a r
 mé-mo|m é o
@@ -566,6 +655,7 @@ ré-pa-ré|r é p a
 o-pé-ra|o p é r a
 pu-r[e]|p u r
 pour|p ou r
+pri[s]|p r i
 # t
 to-ma-t[e]|t o m a|🍅
 tor-tu[e]|t o r u|🐢
@@ -580,6 +670,7 @@ tu-li-p[e]|t u l i p|🌷
 pi-ra-t[e]|p i r a t|🏴‍☠️
 tu-tu|t u|🩰
 tê-t[e]|t è
+tris-t[e]|t r i s
 # on
 mou-ton|m ou t on|🐑
 pon[t]|p on|🌉
@@ -608,6 +699,7 @@ na-vi-r[e]|n a v i r|🚢
 vou[s]|v ou
 vi-o-lon|v i o l on|🎻
 sa-von|s a v on|🧼
+bra-vo|b r a v o
 # d
 dé|d é|🎲
 du|d u
@@ -645,6 +737,7 @@ chan-son|ch an s on|🎵
 dan-s[e]|d an s|💃
 ten-t[e]|t an|⛺
 man-g[e]|m an ge
+man-gé|m an ge é
 # j
 ju[s]|j u|🧃
 jou-é|j ou é
@@ -672,6 +765,7 @@ bi-jou|b i j ou|💍
 bo-bo|b o|🩹
 ba-la-d[e]|b a l d
 ru-ban|r u b an|🎀
+ta-bl[e]|t a b l
 # k
 co-l[e]|k o l
 ca-fé|k a f é|☕
@@ -776,6 +870,7 @@ beau|b au
 seau|s au|🪣
 cou-teau|k ou t au|🔪
 sau-mon|s au m on
+au-tr[e]|au t r
 # eu
 feu|f eu|🔥
 jeu|j eu
@@ -787,6 +882,8 @@ fleur|f l eu r|🌸
 beur-r[e]|b eu r|🧈
 heu-r[e]|h eu r|🕐
 peur|p eu r|😱
+pleu-r[e]|p l eu r
+souf-flé|s ou f l é
 cœur|k eu r
 œuf|eu f|🥚
 sœur|s eu r
@@ -883,6 +980,155 @@ ha-ri-co[t]|h a r i k o
 hi-ver|h i v è r|⛄
 `;
 
+// Les petites histoires, à lire à deux.
+// « = id | titre | image » ouvre une histoire, « # images » ouvre une page,
+// « 1 », « 2 », « 3 » : la ligne est lue à partir de ce groupe (1, 2 ou 3 œufs),
+// « ? question | bonne image | deux autres » : les questions de la fin, posées par la voix.
+// Chaque mot doit être dans le lexique : verifier.js le contrôle. Un mot dont les sons
+// ne sont pas encore vus en classe s'affiche comme un mot que l'adulte lit.
+const HISTOIRES = `
+= lama | Le lama de Mila | 🦙
+# 👧 🦙
+1 Mila a un lama.
+2 Le lama a un ami : le rat.
+# 🦙 🧱
+1 Le lama est sur le mur.
+2 Il a mal ? Il rit !
+3 Le rat lit sur le mur.
+# 👵 😂
+1 Mamie a ri.
+2 Mamie a mis le lama sur le sofa.
+# 🛋️ 🦙
+1 Il y a un lama sur le sofa !
+2 Mila rit, et le lama rit.
+3 Le rat lit sur le sofa.
+? Où est le lama à la fin ? | 🛋️ | 🧱 🌊
+? Qui est l'ami du lama ? | 🐀 | 🐱 🧚
+
+= fee | La fée et le rat | 🧚
+# 🧚 🧵
+1 La fée Lili a un fil.
+2 Le fil est à Mamie.
+# 🐀 🧵
+1 Le rat a filé : il a le fil !
+2 Il a mis le fil sur le mur.
+3 Le rat rit sur le mur.
+# 🧚 🧱
+1 La fée file sur le mur.
+2 La fée a salué le rat.
+# 🧚 🐀 😂
+1 La fée a ri. Le rat a ri.
+2 Le rat a remis le fil à la fée.
+3 La fée a un ami : le rat.
+? Qui a pris le fil ? | 🐀 | 🧚 🦙
+? À qui est le fil ? | 👵 | 🐀 🦙
+
+= rame | La rame de Malo | 🚣
+# 🧒 🚣
+1 Malo rame sur la mare.
+2 Il rame, il rame.
+# 🌊
+1 La rame a filé sur la mare !
+2 Malo a mal.
+# 🐀 🚣
+1 Il y a un rat sur la mare.
+2 Le rat a la rame !
+3 Il rame, et il rit.
+# 🧒 🐀 😂
+1 Le rat a remis la rame à Malo.
+2 Malo a ri.
+3 Malo rame, et le rat rame.
+? Qui a pris la rame ? | 🐀 | 🧒 🦙
+? Où rame Malo ? | 🌊 | 🛣️ 🛋️
+
+= chat | Le chat de Sacha | 🐱
+# 🧒 🐱
+1 Sacha a un chat.
+2 Le chat a un fil.
+# 🐱 🧱
+1 Le chat est sur le mur.
+2 Il a lâché le fil.
+3 Le fil a filé dans la rue.
+# 🐀 🛣️
+1 Il y a un rat dans la rue.
+2 Le rat a le fil !
+3 Le chat a filé dans la rue.
+# 🐱 🐀 😂
+1 Le chat a le fil. Le rat a ri.
+2 Sacha a mis le chat sur le sofa.
+3 Le chat rit, le rat rit, Sacha rit.
+? Qui a un chat ? | 🧒 | 👵 🧚
+? Où a filé le fil ? | 🛣️ | 🛋️ 🌊
+
+= souris | La souris et le loup | 🐭
+# 🐭 🥬
+1 La souris a un chou.
+2 Le chou est sur le sol.
+# 🐺
+1 Il y a un loup !
+2 Le loup roule sur le sol.
+3 Il a mal, il a mal !
+# 🐭 😊
+1 La souris a souri.
+2 La souris a mis le chou sur le loup.
+# 🐺 🥬 😂
+1 Le loup a le chou.
+2 Le loup rit. La souris rit.
+3 La souris a un ami : le loup.
+? Qu'a la souris au début ? | 🥬 | 🍎 🦴
+? Qui roule sur le sol ? | 🐺 | 🐭 🐱
+
+= pirate | Le pirate et le mouton | 🏴‍☠️
+# 🏴‍☠️ 🚢
+1 Le pirate a un navire.
+2 Sur le navire, il y a un mouton.
+3 Le mouton a une tomate.
+# 🐑 💃
+1 Le mouton danse sur le pont.
+2 Le pirate danse avec le mouton.
+# 🌙
+1 La lune est là.
+2 Le mouton dort sur le pont.
+3 Le pirate dort dans le navire.
+# ☀️ 🐑
+1 Le matin, le mouton danse.
+2 Le pirate a ri : bravo, petit mouton !
+? Qui danse avec le pirate ? | 🐑 | 🐱 🐭
+? Qu'a le mouton ? | 🍅 | 🍎 🍌
+
+= roi | Le roi et la poire | 👑
+# 👑 🍐
+1 Le roi a une poire.
+2 La poire est sur la table.
+# 🦆
+1 Un canard a vu la poire.
+2 Il a filé sur la table.
+# 🦆 🍐
+1 Le canard a pris la poire !
+2 Le roi a vu le canard.
+# 👑 😂
+1 Le roi a ri : bravo, canard !
+2 Le canard a mis la poire sur la tête du roi.
+? Qui a pris la poire ? | 🦆 | 👑 🐱
+? Qu'a le roi au début ? | 🍐 | 🍎 🍌
+
+= dragon | Le gâteau du dragon | 🐉
+# 🐉 🎂
+1 Le dragon a un gâteau.
+2 C'est la fête du dragon !
+# 🔥
+1 Le dragon a soufflé.
+2 Le feu a mangé le gâteau !
+# 😢
+1 Le dragon est triste.
+2 Il pleure.
+# 🧚 🧁
+1 La fée a un autre gâteau.
+2 Le dragon rit : merci, la fée !
+? Qu'a mangé le feu ? | 🎂 | 🍞 🍐
+? Qui a un autre gâteau ? | 🧚 | 🐉 👑
+`;
+
 // ---------- Le moteur : lecture des données et choix des exercices (aucun accès à la page) ----------
 
 const ID_SONS = SONS.map(s => s.id);
@@ -937,7 +1183,7 @@ function jetons(texte) {
     if (m) { fin = m[0]; w = w.slice(0, -fin.length); }
     const parts = [];
     const ap = w.indexOf("'");
-    if (ap >= 0 && ap < w.length - 1) { parts.push(w.slice(0, ap + 1), w.slice(ap + 1)); } else parts.push(w);
+    if (ap >= 0 && ap < w.length - 1) { parts.push(w.slice(0, ap + 1), w.slice(ap + 1)); } else if (w) parts.push(w);
     parts.forEach((p, k) => {
       const bas = p.toLowerCase();
       const outil = OUTIL_DE.get(bas) || null;
@@ -954,6 +1200,34 @@ const PHRASES_L = PHRASES.trim().split("\n").filter(l => l.trim()).map(l => {
   const nb = j.filter(x => !x.ponct).length;
   return { texte, q, bonne, faux: faux.split(/\s+/), jetons: j, niveau: nb <= 4 ? 1 : nb <= 6 ? 2 : 3 };
 });
+
+// Les histoires : des pages, des lignes réservées à un groupe d'œufs, des questions.
+const HISTOIRES_L = (typeof HISTOIRES === "undefined" ? "" : HISTOIRES).trim().split(/\n(?==)/).map(bloc => {
+  const lignes = bloc.split("\n").map(l => l.trim()).filter(Boolean);
+  const [id, titre, image] = lignes[0].slice(1).split("|").map(x => x.trim());
+  const hist = { id, titre, image, pages: [], questions: [] };
+  lignes.slice(1).forEach(l => {
+    if (l[0] === "#") hist.pages.push({ image: l.slice(1).trim(), lignes: [] });
+    else if (l[0] === "?") {
+      const [q, bonne, faux] = l.slice(1).split("|").map(x => x.trim());
+      hist.questions.push({ q, bonne, faux: faux.split(/\s+/) });
+    } else {
+      const m = l.match(/^([123])\s+(.*)$/);
+      hist.pages[hist.pages.length - 1].lignes.push({ niveau: +m[1], texte: m[2], jetons: jetons(m[2]) });
+    }
+  });
+  return hist;
+});
+
+const jetonLisible = (j, etat) => j.outil ? etat.outils.includes(j.outil) : !!(j.mot && lisible(j.mot, etat));
+// Les pages telles que ce groupe les lit : les lignes des groupes au-dessus sont retirées.
+const pagesDuGroupe = (hist, etat) =>
+  hist.pages.map(p => ({ image: p.image, lignes: p.lignes.filter(l => l.niveau <= etat.niveau) })).filter(p => p.lignes.length);
+// La part des mots qu'elle sait déjà lire seule, de 0 à 1.
+function partLisible(hist, etat) {
+  const mots = pagesDuGroupe(hist, etat).flatMap(p => p.lignes.flatMap(l => l.jetons)).filter(j => !j.ponct);
+  return mots.length ? mots.filter(j => jetonLisible(j, etat)).length / mots.length : 0;
+}
 
 // Découpe un texte en graphèmes (« chou » -> ch, ou), avec les graphèmes à plusieurs lettres des sons donnés.
 function decouper(texte, tags) {
@@ -1065,7 +1339,8 @@ const ETAT_DEFAUT = {
   sons: ["a", "i", "r", "o", "l", "é", "u", "s", "f", "e", "m"], focus: "m",
   outils: ["un", "et", "est", "dans", "il y a"],
   niveau: 1, ecriture: "script", arcs: true, muettes: true, couleurs: false, bruit: true, voixHaute: true, voix: "",
-  dictees: {}, album: [], seances: 0, derniere: "", lus: {}, difficiles: {}, maj: 0
+  dictees: {}, album: [], seances: 0, derniere: "", lus: {}, difficiles: {}, maj: 0,
+  histoires: {}, maths: {}, niveauMaths: 2
 };
 
 function etatPropre(d) {
@@ -1074,6 +1349,7 @@ function etatPropre(d) {
   e.sons = ID_SONS.filter(s => e.sons.includes(s));
   if (!e.sons.includes(e.focus)) e.focus = e.sons[e.sons.length - 1] || "a";
   if (![1, 2, 3].includes(e.niveau)) e.niveau = 1;
+  if (![1, 2, 3].includes(e.niveauMaths)) e.niveauMaths = 2;
   return e;
 }
 
@@ -1112,6 +1388,13 @@ const ICONES = {
   oreille: '<path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5.5 1.6"/><path d="M10 9.5a2 2 0 0 1 4 0"/>',
   jouer: '<path d="M8 5v14l11-7z"/>',
   haut: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  de: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 8.5h.01M15.5 15.5h.01M12 12h.01M15.5 8.5h.01M8.5 15.5h.01"/>',
+  lien: '<circle cx="12" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><circle cx="18" cy="19" r="3"/><path d="M10.6 7.7 7.4 16.3M13.4 7.7l3.2 8.6"/>',
+  cadre: '<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M6 7v10M10 7v10M14 7v10M18 7v10M2 12h20"/>',
+  train: '<rect x="5" y="3" width="14" height="13" rx="3"/><path d="M5 10h14M9 20l-2 2M15 20l2 2M9 13h.01M15 13h.01"/>',
+  barres: '<rect x="3" y="6" width="11" height="5"/><rect x="14" y="6" width="7" height="5"/><path d="M3 14c0 2 1 3 3 3h12c2 0 3-1 3-3M12 17v3"/>',
+  balance: '<path d="M12 3v18M7 21h10M4 7h16M4 7l-2.5 6a2.5 2 0 0 0 5 0zM20 7l-2.5 6a2.5 2 0 0 0 5 0z"/>',
+  diese: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>'
 };
 function ic(n) {
@@ -1207,7 +1490,7 @@ function pluie(emoji) {
 
 const Voix = {
   ok: typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined",
-  toutes: 0, liste: [], choisie: null,
+  toutes: 0, liste: [], choisie: null, jeton: 0,
   charger() {
     if (!this.ok) return;
     try {
@@ -1223,7 +1506,10 @@ const Voix = {
   dispo() { return this.ok && etat.voixHaute && (this.toutes === 0 || this.liste.length > 0); },
   // Rend une promesse : vrai quand la voix a commencé, faux si le navigateur l'a refusée
   // (une lecture lancée sans geste de l'utilisateur, sous Safari surtout).
-  dire(texte, lent) {
+  // opts.fin : quand la voix a fini · opts.mot(i) : le mot qui commence au caractère i.
+  dire(texte, lent, opts) {
+    opts = opts || {};
+    const jeton = ++this.jeton;
     if (!this.dispo()) return Promise.resolve(false);
     try {
       const s = speechSynthesis;
@@ -1236,6 +1522,8 @@ const Voix = {
       const parti = new Promise(ok => {
         u.onstart = () => ok(true); u.onerror = () => ok(false); setTimeout(() => ok(false), 2500);
       });
+      if (opts.fin) u.onend = () => { if (this.jeton === jeton) opts.fin(); };
+      if (opts.mot) u.onboundary = e => { if (this.jeton === jeton && (!e.name || e.name === "word")) opts.mot(e.charIndex); };
       const lancer = () => { try { s.resume(); s.speak(u); } catch (e) {} };
       // Chrome laisse tomber un énoncé demandé dans le même instant qu'un cancel() :
       // on ne coupe que ce qui parle, et on attend un peu avant de reparler.
@@ -1243,7 +1531,11 @@ const Voix = {
       return parti;
     } catch (e) { return Promise.resolve(false); }
   },
-  taire() { try { if (this.ok && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel(); } catch (e) {} }
+  // Lit un texte puis, après une pause, un second : la question après la phrase.
+  direPuis(texte, suite, pause) {
+    return this.dire(texte, false, { fin: () => { const j = this.jeton; setTimeout(() => { if (this.jeton === j) this.dire(suite); }, pause); } });
+  },
+  taire() { this.jeton++; try { if (this.ok && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel(); } catch (e) {} }
 };
 if (Voix.ok) { Voix.charger(); try { speechSynthesis.addEventListener("voiceschanged", () => { Voix.charger(); if (ecran === "parents") parents(); }); } catch (e) {} }
 
@@ -1590,19 +1882,422 @@ const ACTS = {
       bandeAdulte(adulte, [astuce("Le doigt glisse sous la phrase. Une seconde lecture plus fluide si la première a été hachée."),
         bEncore(() => lec.classList.add("decoupe")), bOk(question, "Phrase lue !")]);
       function question() {
-        bip("ok"); Voix.dire(p.texte);
-        ajoute(feuille, bEcouter(p.texte, "Écouter la phrase"), h("div", { class: "question" }, "Demandez-lui : « " + p.q + " »"),
+        bip("ok"); Voix.direPuis(p.texte, p.q, 2000);
+        ajoute(feuille, bEcouter(p.texte, "Écouter la phrase"),
+          Voix.dispo() ? h("button", { class: "question", onclick: () => Voix.dire(p.q) }, ic("haut"), "« " + p.q + " »")
+            : h("div", { class: "question" }, "Demandez-lui : « " + p.q + " »"),
           h("div", { class: "choix" }, melanger([p.bonne, ...p.faux]).map(e => h("button", { "aria-label": "Image", onclick: ev => {
             const b = ev.currentTarget;
             if (e === p.bonne) { b.classList.add("juste"); bip("ok"); bandeAdulte(adulte, [astuce("Bonne réponse !"), bSuivant(suivant)]); }
             else { b.classList.add("non", "secoue"); bip("non"); }
           } }, e))));
-        bandeAdulte(adulte, [astuce("Posez la question à voix haute. Elle répond en touchant une image."), bSuivant(suivant, "Passer")]);
+        bandeAdulte(adulte, [astuce(Voix.dispo() ? "La voix relit la phrase, puis pose la question. Touchez la question pour la répéter." : "Posez la question à voix haute. Elle répond en touchant une image."), bSuivant(suivant, "Passer")]);
       }
     }
   }
 };
 const ORDRE_JEUX = ["sons", "fusion", "mots", "trouve", "ecris", "phrase"];
+
+// ---------- Les petites histoires, en lecture assistée ----------
+// Elle lit ; un mot qui résiste se touche une fois pour se couper en syllabes, deux fois
+// pour s'entendre. Les mots qu'elle ne peut pas encore déchiffrer sont pour l'adulte.
+
+const SEUIL_HISTOIRE = 0.5;
+
+function bibliotheque() {
+  ecran = "histoires"; seance = null; vider();
+  const cartes = HISTOIRES_L.map(hist => {
+    const part = partLisible(hist, etat), lue = etat.histoires[hist.id] || 0;
+    const ouverte = part >= SEUIL_HISTOIRE;
+    const badge = !ouverte ? "Plus tard, avec d'autres sons"
+      : part >= 0.999 ? "Elle peut tout lire seule"
+      : "À deux : elle lit " + Math.round(part * 100) + " % des mots";
+    return h("button", { class: "livre" + (ouverte ? "" : " ferme"), disabled: !ouverte, onclick: () => lireHistoire(hist) },
+      h("span", { class: "couverture" }, hist.image),
+      h("b", { class: "lecture" }, hist.titre),
+      h("small", null, badge),
+      lue ? h("span", { class: "lue" }, ic("ok"), lue > 1 ? "lue " + lue + " fois" : "déjà lue") : null);
+  });
+  ajoute(racine, barre("Les histoires"),
+    h("p", { class: "sous-titre" }, "Des histoires faites des sons de la classe. Le groupe d'œufs règle leur longueur."),
+    h("div", { class: "livres" }, cartes),
+    conseil({ conseil: [
+      "Elle lit, le doigt sous les mots. Un mot qui résiste : touchez-le une fois, il se coupe en syllabes ; une deuxième fois, la voix le lit.",
+      "Les mots en pointillés contiennent des sons pas encore vus en classe : c'est vous qui les lisez, ou la voix quand on les touche. C'est la lecture partagée.",
+      "Après chaque page, « Écouter la page » fait entendre une lecture fluide, les mots s'éclairant au fil de la voix.",
+      "À la fin, la voix pose deux questions. Comprendre l'histoire, c'est le but de la lecture."] }));
+}
+
+function lireHistoire(hist) {
+  ecran = "histoire";
+  const pages = pagesDuGroupe(hist, etat);
+  let p = 0;
+
+  function page() {
+    vider();
+    const pg = pages[p];
+    const feuille = h("section", { class: "feuille histoire" });
+    const adulte = h("div", { class: "adulte" });
+    const mots = [];
+    const texte = { t: "" };
+    const lignes = pg.lignes.map(l => {
+      const el = h("p", null, ligneInteractive(l.jetons, mots, texte));
+      texte.t += " ";
+      return el;
+    });
+    ajoute(racine, barre(hist.titre, h("span", { class: "compte" }, "page " + (p + 1) + " / " + pages.length)),
+      feuille, adulte);
+    ajoute(feuille, h("div", { class: "scene", "aria-hidden": "true" }, pg.image), h("div", { class: "lecture moyen recit" }, lignes));
+    const ecouter = Voix.dispo() ? h("button", { class: "btn ecoute", onclick: () => {
+      Voix.dire(texte.t, false, {
+        mot: i => mots.forEach(m => m.el.classList.toggle("suivi", i >= m.debut && i < m.fin)),
+        fin: () => mots.forEach(m => m.el.classList.remove("suivi"))
+      });
+    } }, ic("haut"), "Écouter la page") : null;
+    const apres = p + 1 < pages.length ? bSuivant(() => { p++; page(); }, "Page suivante") : bSuivant(() => questions(0), "Les questions");
+    bandeAdulte(adulte, [astuce("Un mot difficile : une touche le coupe, deux touches le font lire. Les mots en pointillés sont pour vous."),
+      bOk(() => { bip("ok"); bandeAdulte(adulte, [astuce("Bravo ! On peut réécouter la page, en suivant les mots."), ecouter, apres]); }, "Page lue !")]);
+  }
+
+  function questions(k) {
+    if (k >= hist.questions.length) return fin();
+    vider();
+    const q = hist.questions[k];
+    const feuille = h("section", { class: "feuille" });
+    const adulte = h("div", { class: "adulte" });
+    ajoute(racine, barre(hist.titre, h("span", { class: "compte" }, "question " + (k + 1) + " / " + hist.questions.length)), feuille, adulte);
+    ajoute(feuille, h("div", { class: "scene", "aria-hidden": "true" }, hist.image),
+      Voix.dispo() ? h("button", { class: "question", onclick: () => Voix.dire(q.q) }, ic("haut"), "« " + q.q + " »")
+        : h("div", { class: "question" }, "Demandez-lui : « " + q.q + " »"),
+      h("div", { class: "choix" }, melanger([q.bonne, ...q.faux]).map(e => h("button", { "aria-label": "Image", onclick: ev => {
+        const b = ev.currentTarget;
+        if (e === q.bonne) { b.classList.add("juste"); bip("ok"); setTimeout(() => questions(k + 1), 1000); }
+        else { b.classList.add("non", "secoue"); bip("non"); }
+      } }, e))));
+    bandeAdulte(adulte, [astuce(Voix.dispo() ? "La voix pose la question. Touchez-la pour la répéter." : "Posez la question à voix haute."), bSuivant(() => questions(k + 1), "Passer")]);
+    setTimeout(() => Voix.dire(q.q), 500);
+  }
+
+  function fin() {
+    etat.histoires[hist.id] = (etat.histoires[hist.id] || 0) + 1; sauver();
+    vider(); bip("fin"); pluie(hist.image);
+    ajoute(racine, barre(hist.titre),
+      h("section", { class: "feuille" }, h("p", { class: "bravo" }, "Bravo, histoire finie !"), h("div", { class: "image" }, hist.image),
+        h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: bibliotheque }, ic("mots"), "Une autre histoire"),
+          h("button", { class: "btn", onclick: () => lireHistoire(hist) }, ic("encore"), "La relire"))));
+  }
+
+  page();
+}
+
+// Une ligne d'histoire : chaque mot se touche. Le texte lu par la voix est gardé
+// en parallèle, avec la place de chaque mot, pour l'éclairer au fil de la lecture.
+function ligneInteractive(js, mots, texte) {
+  const out = [];
+  js.forEach((j, k) => {
+    if (k > 0 && !j.colle) {
+      if (j.ponct) { if (/[?!:;]/.test(j.t)) { out.push(" "); texte.t += " "; } }
+      else { out.push(" "); texte.t += " "; }
+    }
+    if (j.ponct) { out.push(j.t); texte.t += j.t; return; }
+    const seul = jetonLisible(j, etat);
+    const el = j.outil ? h("span", { class: "mot outil" }, j.t) : j.mot ? rendreMot(j.mot, j.t) : h("span", { class: "mot" }, j.t);
+    el.classList.add("touche");
+    if (!seul) el.classList.add("grand");
+    el.setAttribute("role", "button"); el.tabIndex = 0;
+    el.title = seul ? "Une touche : les syllabes. Deux touches : la voix." : "Un mot pour l'adulte : touchez pour l'entendre.";
+    let n = 0;
+    const aider = () => {
+      n++;
+      if (seul && !j.outil && n === 1) el.classList.add("decoupe");
+      else Voix.dire(j.t);
+    };
+    el.addEventListener("click", aider);
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); aider(); } });
+    mots.push({ el, debut: texte.t.length, fin: texte.t.length + j.t.length });
+    texte.t += j.t;
+    out.push(el);
+  });
+  return out;
+}
+
+// ---------- Les nombres : six jeux, dans l'esprit de la méthode de Singapour ----------
+// Concret, imagé, abstrait : on voit des objets, puis des jetons dans un cadre de dix,
+// puis des chiffres seuls. Le niveau (jusqu'à 5, 10 ou 20) règle les trois à la fois.
+
+const OBJETS = [
+  { e: "🍎", s: "pomme", p: "pommes", mange: 1 }, { e: "🍓", s: "fraise", p: "fraises", mange: 1 },
+  { e: "🍪", s: "biscuit", p: "biscuits", mange: 1 }, { e: "🧁", s: "gâteau", p: "gâteaux", mange: 1 },
+  { e: "🎈", s: "ballon", p: "ballons" }, { e: "🐟", s: "poisson", p: "poissons" },
+  { e: "🌸", s: "fleur", p: "fleurs" }, { e: "⭐", s: "étoile", p: "étoiles" },
+  { e: "🐞", s: "coccinelle", p: "coccinelles" }, { e: "🚗", s: "petite voiture", p: "petites voitures" }
+];
+const ENFANTS = [["Léo", "il"], ["Mila", "elle"], ["Sacha", "il"], ["Lili", "elle"], ["Rémi", "il"], ["Lola", "elle"]];
+const LIMITES = [5, 10, 20];
+const hasard = a => a[Math.floor(Math.random() * a.length)];
+const entier = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const qte = (n, o) => n + " " + (n > 1 ? o.p : o.s);
+const Maj = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+// ----- ce qu'on montre -----
+
+// Un ou deux cadres de dix ; groupes = [{n, c}] avec c = "a" (rouge), "b" (bleu), "v" (case vide marquée)
+function cadres(groupes, taille = 10) {
+  const jetons = groupes.flatMap(g => Array(g.n).fill(g.c));
+  const total = Math.max(taille, Math.ceil(jetons.length / taille) * taille);
+  const el = h("div", { class: "cadres" });
+  for (let d = 0; d < total; d += taille)
+    el.append(h("div", { class: "cadre" + (taille === 5 ? " cinq" : "") },
+      Array.from({ length: taille }, (_, i) => h("span", { class: "cc" }, jetons[d + i] ? h("i", { class: "jeton " + jetons[d + i] }) : null))));
+  return el;
+}
+// La face d'un dé, de 1 à 6
+const FACES = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+const de = n => h("div", { class: "de" }, Array.from({ length: 9 }, (_, i) => h("span", null, FACES[n].includes(i) ? h("i") : null)));
+// Au-delà de 6 : cinq, et encore… La structure « 5 et quelque chose » est celle des doigts.
+const des = n => h("div", { class: "des" }, n <= 6 ? de(n) : [de(5), de(n - 5)]);
+const tas = (n, e) => h("div", { class: "tas" }, Array.from({ length: n }, () => h("span", { style: "transform:translate(" + entier(-6, 6) + "px," + entier(-6, 6) + "px) rotate(" + entier(-12, 12) + "deg)" }, e)));
+
+function pave(min, max, repondre) {
+  // Rangée par cinq jusqu'à 10, comme les doigts ; par six ou sept au-delà.
+  const n = max - min + 1, cols = n <= 10 ? 5 : n <= 12 ? 6 : 7;
+  return h("div", { class: "pave", style: "grid-template-columns:repeat(" + cols + ",minmax(0,76px))" }, Array.from({ length: max - min + 1 }, (_, i) => min + i)
+    .map(n => h("button", { class: "chiffre", onclick: e => repondre(n, e.currentTarget) }, n)));
+}
+function choixNombres(bonne, autres, repondre) {
+  return h("div", { class: "pave court" }, melanger([bonne, ...autres])
+    .map(n => h("button", { class: "chiffre", onclick: e => repondre(n, e.currentTarget) }, n)));
+}
+
+// La maison du nombre : le tout en haut, les deux parties en bas.
+function maisonNombre(tout, a, b) {
+  const NS = "http://www.w3.org/2000/svg";
+  const s = document.createElementNS(NS, "svg");
+  s.setAttribute("viewBox", "0 0 260 180"); s.setAttribute("class", "lien"); s.setAttribute("role", "img");
+  s.setAttribute("aria-label", "Le tout " + tout + ", les parties " + a + " et " + b);
+  const rond = (x, y, v) => {
+    const g = document.createElementNS(NS, "g");
+    g.innerHTML = '<circle cx="' + x + '" cy="' + y + '" r="34" class="' + (v === "?" ? "nb-inconnu" : "nb-cercle") + '"/>'
+      + '<text x="' + x + '" y="' + (y + 11) + '" text-anchor="middle" class="nb-txt">' + v + "</text>";
+    s.append(g);
+  };
+  s.innerHTML = '<path d="M112 70 72 112M148 70l40 42" class="nb-trait"/>';
+  rond(130, 42, tout); rond(60, 136, a); rond(200, 136, b);
+  return s;
+}
+
+// Le modèle en barres : deux morceaux, et l'accolade du tout.
+function barres(parties, total) {
+  return h("div", { class: "modele" },
+    h("div", { class: "barre-m" }, parties.map(p => h("span", { class: "seg " + p.c, style: "flex:" + Math.max(p.n, 1) }, p.label))),
+    h("div", { class: "accolade" }, h("span", null, total)));
+}
+
+// ----- les jeux -----
+
+const JEUX_MATHS = {
+  combien: {
+    titre: "Combien ?", icone: "de", court: "Je vois combien, sans compter",
+    conseil: ["Au début, elle compte en touchant. Peu à peu, elle « voit » le nombre d'un coup d'œil : c'est ce qu'on veut.",
+      "Au-delà de 5, les points se rangent en « 5 et encore… », comme les doigts d'une main et de l'autre.",
+      "Aux niveaux 10 et 20, l'image s'efface au bout de deux secondes : on retient la forme, on ne compte pas un par un."],
+    question(niv) {
+      const n = entier(1, niv === 1 ? 5 : 10), o = hasard(OBJETS);
+      const forme = niv === 1 ? "tas" : hasard(n <= 6 ? ["des", "cadre", "tas"] : ["des", "cadre"]);
+      const image = forme === "tas" ? tas(n, o.e) : forme === "des" ? des(n) : cadres([{ n, c: "a" }]);
+      const nom = forme === "tas" ? o.p : forme === "des" ? "points" : "jetons";
+      return {
+        reponse: n, dire: "Combien de " + nom + " ?",
+        rendre(feuille, repondre) {
+          const zone = h("div", { class: "vue" }, image);
+          const revoir = h("button", { class: "btn discret", hidden: true, onclick: () => { image.style.visibility = ""; revoir.hidden = true; cacher(); } }, ic("oeil"), "Revoir");
+          const cacher = () => { if (niv > 1) setTimeout(() => { image.style.visibility = "hidden"; revoir.hidden = false; }, niv === 2 ? 2500 : 1600); };
+          ajoute(feuille, h("p", { class: "consigne" }, "Combien de " + nom + " ?"), zone, revoir, pave(1, niv === 1 ? 5 : 10, repondre));
+          cacher();
+        }
+      };
+    }
+  },
+
+  maison: {
+    titre: "La maison du nombre", icone: "lien", court: "Je décompose un nombre",
+    conseil: ["En haut, le tout ; en bas, ses deux parties. 7, c'est 3 et 4 : on cherche la partie qui manque.",
+      "Avec de vrais objets d'abord : sept haricots, on en cache trois sous la main, combien en reste-t-il ?",
+      "Ces décompositions sont la base du calcul : 8 + 5, c'est 8 + 2 + 3."],
+    question(niv) {
+      const tout = entier(niv === 1 ? 2 : 4, LIMITES[niv - 1]), a = entier(0, tout), b = tout - a;
+      return {
+        reponse: b, dire: tout + ", c'est " + a + " et combien ?",
+        rendre(feuille, repondre) {
+          ajoute(feuille, h("p", { class: "consigne" }, tout + ", c'est " + a + " et combien ?"), maisonNombre(tout, a, "?"),
+            niv < 3 ? cadres([{ n: a, c: "a" }, { n: b, c: "v" }]) : null, pave(0, tout, repondre));
+        }
+      };
+    }
+  },
+
+  cadre: {
+    titre: "Le cadre de dix", icone: "cadre", court: "Je complète jusqu'à 10",
+    conseil: ["Combien de jetons pour remplir le cadre ? Ce sont les compléments : 6 et 4 font 10.",
+      "Elle peut regarder les cases vides : c'est le passage de l'image au nombre.",
+      "Une fois le cadre plein, faites-lui dire la phrase : « 6 et 4, ça fait 10 »."],
+    question(niv) {
+      const taille = niv === 1 ? 5 : 10, double = niv === 3 && Math.random() < 0.5;
+      const plein = double ? 20 : taille, n = entier(double ? 11 : 1, plein - 1);
+      let vue;
+      return {
+        reponse: plein - n, dire: "Combien de jetons pour remplir " + (double ? "les deux cadres" : "le cadre") + " ?",
+        rendre(feuille, repondre) {
+          vue = h("div", { class: "vue" }, cadres([{ n, c: "a" }], taille));
+          ajoute(feuille, h("p", { class: "consigne" }, "Combien de jetons pour remplir " + (double ? "les deux cadres" : "le cadre") + " ?"), vue, pave(0, double ? 10 : taille, repondre));
+        },
+        apres() { vue.replaceChildren(cadres([{ n, c: "a" }, { n: plein - n, c: "b" }], taille)); Voix.dire(n + " et " + (plein - n) + ", ça fait " + plein + "."); }
+      };
+    }
+  },
+
+  train: {
+    titre: "Le train des nombres", icone: "train", court: "Je trouve le wagon qui manque",
+    conseil: ["Les nombres se suivent comme des wagons. Elle peut réciter la suite du début, puis de plus en plus loin.",
+      "Au niveau 20, le train compte aussi à rebours : 15, 14, 13…",
+      "Si elle hésite, faites-lui dire le wagon d'avant, puis le suivant, à voix haute."],
+    question(niv) {
+      const longueur = 5, haut = [10, 20, 30][niv - 1];
+      const pas = niv === 3 && Math.random() < 0.35 ? -1 : 1;
+      let debut = entier(pas > 0 ? (niv === 1 ? 1 : 0) : longueur, haut - (pas > 0 ? longueur - 1 : 0));
+      if (pas > 0 && debut + longueur - 1 > haut) debut = haut - longueur + 1;
+      const wagons = Array.from({ length: longueur }, (_, i) => debut + i * pas);
+      const trou = entier(1, longueur - 1), bonne = wagons[trou];
+      const autres = [bonne - 2, bonne - 1, bonne + 1, bonne + 2].filter(x => x >= 0 && x !== bonne);
+      return {
+        reponse: bonne, dire: "Quel nombre manque dans le train ?",
+        rendre(feuille, repondre) {
+          ajoute(feuille, h("p", { class: "consigne" }, "Quel nombre manque dans le train ?"),
+            h("div", { class: "train-n" }, h("span", { class: "loco", "aria-hidden": "true" }, "🚂"),
+              wagons.map((w, i) => h("span", { class: "wagon" + (i === trou ? " trou" : "") }, i === trou ? "?" : w))),
+            choixNombres(bonne, tirer(autres, 3), repondre));
+        }
+      };
+    }
+  },
+
+  probleme: {
+    titre: "Petits problèmes", icone: "barres", court: "J'écoute, je dessine, je calcule",
+    conseil: ["La voix lit l'histoire. Faites-la redire avec ses mots : qui, combien, et ce qui se passe.",
+      "Le modèle en barres est le cœur de la méthode de Singapour : chaque morceau est une quantité, l'accolade dit le tout.",
+      "Au début, elle peut jouer l'histoire avec de vrais objets. Le dessin vient ensuite, les chiffres à la fin."],
+    question(niv) {
+      const max = LIMITES[niv - 1], o = hasard(OBJETS), [nom, pr] = hasard(ENFANTS);
+      const genre = hasard(["ajout", "retrait", "complement"]);
+      let texte, reponse, parties, total, images;
+      if (genre === "ajout") {
+        const a = entier(1, max - 1), b = entier(1, max - a);
+        texte = nom + " a " + qte(a, o) + ". " + Maj(pr) + " en reçoit " + b + " de plus. Combien de " + o.p + " a " + nom + " maintenant ?";
+        reponse = a + b; parties = [{ n: a, c: "a", label: a }, { n: b, c: "b", label: b }]; total = "?";
+        images = [{ n: a, e: o.e }, { n: b, e: o.e, c: "nouveau" }];
+      } else if (genre === "retrait") {
+        const a = entier(2, max), b = entier(1, a - 1);
+        texte = nom + " a " + qte(a, o) + ". " + Maj(pr) + " en " + (o.mange ? "mange " : "donne ") + b + ". Combien lui en reste-t-il ?";
+        reponse = a - b; parties = [{ n: a - b, c: "a", label: "?" }, { n: b, c: "barre", label: b }]; total = a;
+        images = [{ n: a - b, e: o.e }, { n: b, e: o.e, c: "parti" }];
+      } else {
+        const t = entier(2, max), a = entier(1, t - 1);
+        texte = nom + " veut " + qte(t, o) + ". " + Maj(pr) + " en a déjà " + a + ". Combien lui en manque-t-il ?";
+        reponse = t - a; parties = [{ n: a, c: "a", label: a }, { n: t - a, c: "v", label: "?" }]; total = t;
+        images = [{ n: a, e: o.e }];
+      }
+      return {
+        reponse, dire: texte,
+        rendre(feuille, repondre) {
+          ajoute(feuille, h("p", { class: "enonce" }, texte),
+            niv < 3 ? h("div", { class: "objets" }, images.map(g => h("span", { class: "groupe-o " + (g.c || "") }, Array(g.n).fill(g.e).join(" ")))) : null,
+            barres(parties, total), pave(0, max, repondre));
+        }
+      };
+    }
+  },
+
+  compare: {
+    titre: "Le plus grand", icone: "balance", court: "Je compare deux quantités",
+    conseil: ["Où y en a-t-il le plus ? Elle peut aligner les objets deux à deux dans sa tête : celui qui en a encore gagne.",
+      "Au niveau 20, on compare les nombres écrits : le chiffre des dizaines décide d'abord.",
+      "Faites-lui dire la phrase : « 7, c'est plus que 5 »."],
+    question(niv) {
+      const max = LIMITES[niv - 1];
+      let a = entier(1, max), b = entier(1, max);
+      while (b === a) b = entier(1, max);
+      const plusPetit = niv === 3 && Math.random() < 0.4;
+      const bonne = plusPetit ? (a < b ? 0 : 1) : (a > b ? 0 : 1);
+      const o = hasard(OBJETS), question = plusPetit ? "Où y en a-t-il le moins ?" : niv === 3 ? "Quel est le plus grand nombre ?" : "Où y en a-t-il le plus ?";
+      return {
+        reponse: bonne, dire: question,
+        rendre(feuille, repondre) {
+          const boite = (n, i) => h("button", { class: "boite", onclick: e => repondre(i, e.currentTarget) },
+            niv === 3 ? h("span", { class: "gros-n" }, n) : n <= 10 ? tas(n, o.e) : cadres([{ n, c: i ? "b" : "a" }]));
+          ajoute(feuille, h("p", { class: "consigne" }, question), h("div", { class: "deux" }, boite(a, 0), boite(b, 1)));
+        }
+      };
+    }
+  }
+};
+const ORDRE_MATHS = ["combien", "maison", "cadre", "train", "probleme", "compare"];
+
+function nombres() {
+  ecran = "maths"; seance = null; vider();
+  const niveaux = h("div", { class: "modes", role: "group", "aria-label": "Niveau" }, [1, 2, 3].map(n =>
+    h("button", { "aria-pressed": String(etat.niveauMaths === n), onclick: () => { etat.niveauMaths = n; sauver(); nombres(); } }, "jusqu'à " + LIMITES[n - 1])));
+  ajoute(racine, barre("Les nombres", niveaux),
+    h("p", { class: "sous-titre" }, "Compter, décomposer, calculer : on voit des objets, puis des jetons, puis des chiffres. C'est la méthode de Singapour."),
+    h("div", { class: "jeux" }, ORDRE_MATHS.map(c => {
+      const J = JEUX_MATHS[c], best = (etat.maths[c] || {})[etat.niveauMaths] || 0;
+      return h("button", { class: "jeu", onclick: () => jouerMaths(c) }, h("span", { class: "pic" }, ic(J.icone)), h("b", null, J.titre),
+        h("small", null, J.court), best ? h("small", { class: "record" }, "★ " + best + " / 8") : null);
+    })),
+    conseil({ conseil: ["Le niveau se choisit en haut : jusqu'à 5 en tout début d'année, jusqu'à 10 à la Toussaint, jusqu'à 20 ensuite.",
+      "Une partie fait huit questions. Une étoile pour chaque bonne réponse du premier coup.",
+      "La méthode de Singapour avance en trois temps : manipuler de vrais objets, les représenter, puis écrire les nombres. Les jeux font les deux derniers ; le premier se fait sur la table, avec des haricots ou des Lego."] }));
+}
+
+function jouerMaths(cle) {
+  const J = JEUX_MATHS[cle], N = 8;
+  let k = 0, etoiles = 0;
+  ecran = "maths-jeu";
+  function suivante() {
+    if (k >= N) return finMaths(cle, etoiles, N);
+    vider();
+    const q = J.question(etat.niveauMaths);
+    const feuille = h("section", { class: "feuille" }), adulte = h("div", { class: "adulte" });
+    ajoute(racine, barre(J.titre, h("span", { class: "compte" }, (k + 1) + " / " + N)), feuille, adulte, conseil(J));
+    let essais = 0, fini = false;
+    const repondre = (val, bouton) => {
+      if (fini) return;
+      if (val === q.reponse) {
+        fini = true; bouton.classList.add("juste"); bip("ok");
+        if (!essais) { etoiles++; etoile(feuille); }
+        if (q.apres) q.apres();
+        k++; setTimeout(suivante, q.apres ? 2600 : 1100);
+      } else { essais++; bouton.classList.add("non", "secoue"); bip("non"); }
+    };
+    q.rendre(feuille, repondre);
+    bandeAdulte(adulte, [astuce(J.conseil[0]),
+      Voix.dispo() ? h("button", { class: "btn ecoute", onclick: () => Voix.dire(q.dire) }, ic("haut"), "Réécouter") : null,
+      bSuivant(() => { k++; suivante(); }, "Passer")]);
+    setTimeout(() => Voix.dire(q.dire), 350);
+  }
+  suivante();
+}
+
+function finMaths(cle, etoiles, n) {
+  const par = etat.maths[cle] || (etat.maths[cle] = {});
+  par[etat.niveauMaths] = Math.max(par[etat.niveauMaths] || 0, etoiles); sauver();
+  vider(); bip("fin"); if (etoiles) pluie("⭐");
+  ajoute(racine, barre(JEUX_MATHS[cle].titre),
+    h("section", { class: "feuille" }, h("p", { class: "bravo" }, etoiles >= n - 1 ? "Bravo !" : "Bien joué !"),
+      h("div", { class: "image" }, "⭐".repeat(etoiles) || "🙂"),
+      h("p", { class: "consigne", style: "align-self:center" }, etoiles + " étoile" + (etoiles > 1 ? "s" : "") + " sur " + n),
+      h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: () => jouerMaths(cle) }, ic("encore"), "Rejouer"),
+        h("button", { class: "btn", onclick: nombres }, ic("diese"), "Les nombres"))));
+}
 
 // ---------- L'accueil ----------
 
@@ -1622,6 +2317,12 @@ function accueil() {
       h("span", null, h("span", { class: "gros" }, "La séance du jour"), h("br"),
         h("span", { class: "petit" }, "Six petites étapes, une dizaine de minutes, un autocollant à la fin.")),
       h("span", { class: "pas" }, SEANCE.map(([c]) => h("span", null, ic(ACTS[c].icone), ACTS[c].titre)))),
+    h("div", { class: "duo" },
+      h("button", { class: "carte-d", onclick: bibliotheque }, h("span", { class: "emo", "aria-hidden": "true" }, "📚"),
+        h("b", null, "Les histoires"), h("small", null, HISTOIRES_L.filter(x => partLisible(x, etat) >= SEUIL_HISTOIRE).length + " petites histoires à lire à deux, à son niveau")),
+      h("button", { class: "carte-d", onclick: nombres }, h("span", { class: "emo", "aria-hidden": "true" }, "🔢"),
+        h("b", null, "Les nombres"), h("small", null, "Six jeux pour compter et calculer, méthode de Singapour"))),
+    h("p", { class: "etiquette-j" }, "Les jeux de lecture"),
     h("div", { class: "jeux" }, ORDRE_JEUX.map(c => h("button", { class: "jeu", onclick: () => { seance = null; lancer(c, 6); } },
       h("span", { class: "pic" }, ic(ACTS[c].icone)), h("b", null, ACTS[c].titre), h("small", null, ACTS[c].court)))),
     h("div", { class: "pied" },
@@ -1718,6 +2419,7 @@ function parents() {
         interrupteur("muettes", "Lettres muettes en gris", etat.muettes, v => { etat.muettes = v; refaire(); }),
         interrupteur("couleurs", "Syllabes en couleur, une sur deux", etat.couleurs, v => { etat.couleurs = v; refaire(); }),
         interrupteur("bruit", "Petits sons de réussite", etat.bruit, v => { etat.bruit = v; refaire(); })),
+      blocFiches(),
       blocVoix(),
       bloc("Où elle en est", null,
         h("div", { class: "chiffres" },
@@ -1738,6 +2440,16 @@ function parents() {
         ? "Les réglages et les progrès sont enregistrés dans votre compte : vous les retrouvez depuis un autre ordinateur."
         : "Les réglages et les progrès sont enregistrés dans ce navigateur, sur cet ordinateur.", raz)));
   window.scrollTo(0, y);
+}
+
+function blocFiches() {
+  const base = SUR_SITE ? "assets/fiches/" : "https://forneris.fr/lire/assets/fiches/";
+  const lien = (fichier, texte, cls) => h("a", { class: cls || "", href: base + fichier, target: "_blank", rel: "noopener" }, texte);
+  return bloc("Les fiches d'écriture à imprimer",
+    "Une fiche par son, dans l'ordre de la classe : la lettre en attachée, son point de départ, le geste à dire en traçant, puis des syllabes et des mots qu'elle sait lire. Dix minutes par fiche. Imprimez en taille réelle (100 %), sans « ajuster à la page » : les lignes sont aux mesures du cahier de CP.",
+    h("div", { class: "coches fiches" }, SONS.map((s, k) => lien("fiche-" + String(k + 1).padStart(2, "0") + ".pdf", s.g[0],
+      (etat.sons.includes(s.id) ? "vu" : "") + (s.id === etat.focus ? " focus" : "")))),
+    h("div", { class: "ligne" }, lien("periode-1.pdf", "Toute la période 1 (13 fiches)", "btn"), lien("toutes-les-fiches.pdf", "Toutes les fiches", "btn discret")));
 }
 
 function blocVoix() {
