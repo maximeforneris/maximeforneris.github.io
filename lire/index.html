@@ -1,0 +1,1770 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="description" content="Dix minutes de lecture à deux, au CP, avec les sons de la classe.">
+<meta name="stockage" content="lire-ensemble-v1 : les sons cochés, les réglages, les mots lus et l'album d'autocollants">
+<title>Lire ensemble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@300;400&display=swap">
+<style>
+/* Un cahier d'écolier : la page de lecture est une feuille Seyès, la pochette verte de la classe donne l'accent. */
+:root{
+  --fond:#eef1e8; --papier:#fffefb; --encre:#1e2532; --encre-2:#5a6271; --trait:#d9ddd2;
+  --accent:#4e8a1e; --accent-fort:#3b6b13; --accent-pale:#e4efd6; --sur-accent:#ffffff;
+  --seyes:#dcd8f0; --seyes-fort:#bdb6e2; --marge:#ec9d97;
+  --muette:#a3a8b0; --arc:#3c4556; --syl1:#2160c4; --syl2:#c8372d;
+  --ok:#2f8a4f; --ok-pale:#dff2e5; --encore:#c86f17; --encore-pale:#fbead6; --faux:#c8372d;
+  --oeuf1:#d9534f; --oeuf2:#2e9e8f; --oeuf3:#ee9a3a;
+  --ombre:0 1px 2px rgba(30,37,50,.06),0 6px 18px rgba(30,37,50,.07);
+  --f-lecture:"Andika","Andika New Basic","Trebuchet MS",system-ui,sans-serif;
+  --f-cursive:"Playwrite FR Moderne","Segoe Script","Brush Script MT",cursive;
+  --f-ui:"Andika","Trebuchet MS",system-ui,sans-serif;
+  --rayon:14px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --fond:#14181d; --papier:#1f242b; --encre:#eef0f3; --encre-2:#a9b1bc; --trait:#323943;
+  --accent:#8cc152; --accent-fort:#a6d46e; --accent-pale:#26311c; --sur-accent:#14200a;
+  --seyes:#2b2f45; --seyes-fort:#3b3f5e; --marge:#6e3431;
+  --muette:#6f7680; --arc:#c3cad5; --syl1:#7fb0ff; --syl2:#ff8a80;
+  --ok:#4cc27a; --ok-pale:#173325; --encore:#f0a04b; --encore-pale:#3a2a17; --faux:#ff8a80;
+  --ombre:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --fond:#14181d; --papier:#1f242b; --encre:#eef0f3; --encre-2:#a9b1bc; --trait:#323943;
+  --accent:#8cc152; --accent-fort:#a6d46e; --accent-pale:#26311c; --sur-accent:#14200a;
+  --seyes:#2b2f45; --seyes-fort:#3b3f5e; --marge:#6e3431;
+  --muette:#6f7680; --arc:#c3cad5; --syl1:#7fb0ff; --syl2:#ff8a80;
+  --ok:#4cc27a; --ok-pale:#173325; --encore:#f0a04b; --encore-pale:#3a2a17; --faux:#ff8a80;
+  --ombre:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--fond);color:var(--encre);font-family:var(--f-ui);font-size:18px;line-height:1.45;margin:0}
+.app{max-width:1000px;margin:0 auto;padding-inline:20px;padding-block:18px 48px;display:flex;flex-direction:column;gap:18px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+svg.ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- barre du haut ---------- */
+.barre{display:flex;align-items:center;gap:14px;min-height:56px}
+.barre h1{font-size:1.35rem;margin:0;font-weight:700;flex:1;min-width:0;text-wrap:balance}
+.rond{width:52px;height:52px;border-radius:50%;background:var(--papier);box-shadow:var(--ombre);display:grid;place-items:center;font-size:1.3rem}
+.rond:hover{background:var(--accent-pale)}
+.etapes{display:flex;gap:6px;align-items:center}
+.etapes span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--papier);color:var(--encre-2);font-size:.85rem}
+.etapes span.fait{background:var(--accent);color:var(--sur-accent)}
+.etapes span.ici{outline:3px solid var(--accent);outline-offset:1px;color:var(--accent-fort)}
+.compte{font-variant-numeric:tabular-nums;color:var(--encre-2);font-size:1rem;white-space:nowrap}
+
+/* ---------- la feuille Seyès ---------- */
+.feuille{background-color:var(--papier);border-radius:var(--rayon);box-shadow:var(--ombre);position:relative;
+  background-image:
+    linear-gradient(90deg,transparent 0 54px,var(--marge) 54px 56px,transparent 56px),
+    repeating-linear-gradient(90deg,transparent 0 31px,var(--seyes) 31px 32px),
+    repeating-linear-gradient(180deg,transparent 0 31px,var(--seyes-fort) 31px 32px),
+    repeating-linear-gradient(180deg,transparent 0 7px,var(--seyes) 7px 8px);
+  padding:28px 28px 28px 78px;min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center}
+.consigne{font-size:1.25rem;font-weight:700;margin:0;align-self:flex-start;text-align:left;background:var(--papier);padding:0 6px;border-radius:6px}
+
+/* ---------- l'écriture de lecture ---------- */
+.lecture{font-family:var(--f-lecture);font-weight:400;letter-spacing:.01em}
+.cursive .lecture{font-family:var(--f-cursive);font-weight:400;letter-spacing:0;line-height:2.1}
+.grand{font-size:clamp(3.4rem,10vw,6.6rem);line-height:1.35}
+.moyen{font-size:clamp(2rem,5vw,3.2rem);line-height:1.7}
+.cursive .grand{font-size:clamp(2.6rem,8vw,5.2rem)}
+.cursive .moyen{font-size:clamp(1.6rem,4vw,2.6rem)}
+.mot{white-space:nowrap}
+.syl{position:relative}
+.syl::after{content:"";position:absolute;left:10%;right:10%;bottom:-.12em;height:.2em;border-bottom:max(2px,.045em) solid var(--arc);border-radius:0 0 50% 50%/0 0 100% 100%;pointer-events:none}
+.cursive .syl::after{bottom:-.02em}
+.sans-arcs .syl::after{display:none}
+.muette{color:var(--muette)}
+.sans-muettes .muette{color:inherit}
+.couleurs .syl.s1{color:var(--syl1)} .couleurs .syl.s2{color:var(--syl2)}
+.couleurs .syl .muette{color:var(--muette)}
+.decoupe .syl{margin-inline:.18em}
+.outil{font-weight:400}
+.phrase{max-width:100%;text-wrap:balance}
+
+/* ---------- boutons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 22px;border-radius:999px;font-weight:700;font-size:1.1rem;min-height:56px;background:var(--papier);box-shadow:var(--ombre)}
+.btn:hover{filter:brightness(.97)}
+.btn.plein{background:var(--accent);color:var(--sur-accent)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.encore{background:var(--encore-pale);color:var(--encore)}
+.btn.ecoute{background:var(--accent-pale);color:var(--accent-fort);box-shadow:none}
+.btn.ecoute.dictee{font-size:1.5rem;min-height:76px;padding:14px 34px}
+.btn.ecoute.dictee svg.ic{width:1.6em;height:1.6em}
+.btn.ecoute.appel{animation:appel 1.1s ease-in-out infinite}
+@keyframes appel{50%{transform:scale(1.07);box-shadow:0 0 0 8px var(--accent-pale)}}
+.btn.discret{background:transparent;box-shadow:none;color:var(--encre-2);font-weight:400;min-height:44px;padding:8px 14px}
+.btn[disabled]{opacity:.45;cursor:default}
+
+/* ---------- la bande de l'adulte ---------- */
+.adulte{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:flex-end;background:var(--papier);border:2px dashed var(--trait);border-radius:var(--rayon);padding:12px 14px}
+.adulte .qui{margin-right:auto;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--encre-2);display:flex;align-items:center;gap:8px}
+.astuce{flex:1 1 260px;text-align:left;font-size:1rem;color:var(--encre-2);max-width:62ch}
+.gagne{position:absolute;top:12px;right:18px;font-size:2.4rem;animation:pop .5s ease}
+.conseil{background:var(--papier);border-radius:var(--rayon);padding:4px 16px;color:var(--encre-2);font-size:1rem}
+.conseil summary{cursor:pointer;padding:10px 0;font-weight:700;color:var(--encre)}
+.conseil p{margin:0 0 12px;max-width:68ch}
+
+/* ---------- accueil ---------- */
+.titre-app{font-family:var(--f-cursive);font-size:clamp(2.2rem,5vw,3.2rem);font-weight:400;margin:6px 0 0;line-height:1.6}
+.sous-titre{margin:0;color:var(--encre-2)}
+.classe{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.classe .lbl{color:var(--encre-2);font-size:.95rem;margin-right:4px}
+.puce{font-family:var(--f-lecture);font-size:1.35rem;min-width:46px;height:46px;padding:0 10px;border-radius:12px;background:var(--papier);display:inline-grid;place-items:center;box-shadow:var(--ombre)}
+.puce.focus{background:var(--accent);color:var(--sur-accent);box-shadow:0 0 0 3px var(--accent-pale)}
+.cursive .puce{font-family:var(--f-cursive);font-size:1.15rem}
+.seance{display:grid;grid-template-columns:auto 1fr;gap:18px 24px;align-items:center;background:var(--accent);color:var(--sur-accent);border-radius:20px;padding:24px 28px;text-align:left;box-shadow:var(--ombre)}
+.seance:hover{background:var(--accent-fort)}
+.seance .gros{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:700;line-height:1.2}
+.seance .petit{opacity:.9}
+.seance .jouer{width:72px;height:72px;border-radius:50%;background:var(--sur-accent);color:var(--accent);display:grid;place-items:center}
+.seance .jouer svg{width:34px;height:34px;fill:currentColor;stroke:none}
+.seance .pas{display:flex;gap:8px;grid-column:1/-1;flex-wrap:wrap}
+.seance .pas span{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;font-size:.95rem}
+.jeux{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.jeu{background:var(--papier);border-radius:var(--rayon);box-shadow:var(--ombre);padding:18px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;min-height:132px}
+.jeu:hover{outline:3px solid var(--accent-pale)}
+.jeu .pic{width:52px;height:52px;border-radius:14px;background:var(--accent-pale);color:var(--accent-fort);display:grid;place-items:center}
+.jeu .pic svg{width:28px;height:28px}
+.jeu b{font-size:1.2rem}
+.jeu small{color:var(--encre-2);font-size:.92rem;line-height:1.3}
+.pied{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.bandeau{background:var(--encore-pale);color:var(--encre);border-radius:var(--rayon);padding:14px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.maintien{position:relative;overflow:hidden}
+.maintien::before{content:"";position:absolute;inset:0;background:var(--accent-pale);transform:scaleX(0);transform-origin:left;transition:transform .1s linear;z-index:0}
+.maintien.appui::before{transform:scaleX(1);transition:transform 1.1s linear}
+.maintien>*{position:relative;z-index:1}
+
+/* ---------- les sons ---------- */
+.quatre{display:flex;gap:clamp(14px,3vw,36px);align-items:baseline;justify-content:center;flex-wrap:wrap}
+.quatre span{font-size:clamp(2.6rem,7vw,4.6rem);line-height:1.5}
+.quatre .principal{font-size:clamp(4.6rem,13vw,8rem)}
+.f-cur{font-family:var(--f-cursive)}
+.f-scr{font-family:var(--f-lecture)}
+.aussi{color:var(--encre-2);font-size:1.05rem}
+.repere{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;font-size:1.4rem}
+.repere .emo{font-size:3.4rem;line-height:1}
+
+/* ---------- la fusion ---------- */
+.fusion{display:flex;align-items:center;justify-content:center;gap:clamp(10px,2vw,22px);flex-wrap:wrap}
+.chevrons{display:flex;align-items:center;transition:gap .5s ease;gap:28px}
+.chevrons.colle{gap:0}
+.chev{position:relative;width:clamp(96px,14vw,140px);height:clamp(84px,12vw,118px);clip-path:polygon(0 0,74% 0,100% 50%,74% 100%,0 100%);background:var(--encre-2);display:grid;place-items:center}
+.chev::before{content:"";position:absolute;inset:3px;clip-path:inherit;background:var(--papier)}
+.chev.v2{clip-path:polygon(0 0,74% 0,100% 50%,74% 100%,0 100%,24% 50%)}
+.chev.v2 span{padding-left:14%}
+.chev span{position:relative;font-size:clamp(2.4rem,6vw,3.6rem);padding-right:14%}
+.chev.cons::before{background:var(--accent-pale)}
+.fleche{color:var(--encre-2)}
+.fleche svg{width:46px;height:46px}
+.resultat{min-width:clamp(120px,18vw,180px);height:clamp(84px,12vw,118px);border:3px solid var(--encre-2);border-radius:16px;display:grid;place-items:center;background:var(--papier);font-size:clamp(2.6rem,7vw,4rem)}
+.resultat.vide{color:var(--trait)}
+.apparait{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+.train{display:flex;flex-wrap:wrap;gap:12px 18px;justify-content:center;max-width:760px}
+.train button{font-size:clamp(2rem,5vw,3rem);padding:4px 16px;border-radius:12px;border:3px solid transparent;background:var(--papier)}
+.train button.dur{border-color:var(--encore);background:var(--encore-pale)}
+
+/* ---------- mots, images, choix ---------- */
+.image{font-size:clamp(4rem,10vw,6rem);line-height:1}
+.choix{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.choix button{width:clamp(104px,15vw,140px);height:clamp(104px,15vw,140px);border-radius:22px;background:var(--papier);box-shadow:var(--ombre);font-size:clamp(3.2rem,7vw,4.4rem);border:4px solid transparent;line-height:1}
+.choix button:hover{border-color:var(--accent-pale)}
+.choix button.juste{border-color:var(--ok);background:var(--ok-pale)}
+.choix button.non{opacity:.35}
+.secoue{animation:secoue .4s}
+@keyframes secoue{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.question{background:var(--accent-pale);border-radius:12px;padding:10px 16px;font-size:1.1rem}
+
+/* ---------- j'écris ---------- */
+.modes{display:flex;gap:8px;flex-wrap:wrap}
+.modes button{padding:8px 16px;border-radius:999px;background:var(--papier);box-shadow:var(--ombre);font-size:1rem}
+.modes button[aria-pressed="true"]{background:var(--accent);color:var(--sur-accent)}
+.cases{display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:center}
+.cases .m{display:flex;gap:8px}
+.case{min-width:66px;height:80px;padding:0 8px;border-radius:12px;border:3px dashed var(--seyes-fort);background:var(--papier);font-size:2.6rem;display:grid;place-items:center}
+.case.pleine{border-style:solid;border-color:var(--encre-2)}
+.case.chut{border-color:var(--muette)}
+.case.chut:not(.pleine)::after{content:"chut";font-size:.8rem;color:var(--muette);font-family:var(--f-ui)}
+.case.faux{border-color:var(--faux);background:var(--encore-pale)}
+.case.juste{border-color:var(--ok);background:var(--ok-pale)}
+.tuiles{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:720px}
+.tuile{min-width:66px;height:72px;padding:0 12px;border-radius:12px;background:var(--accent-pale);box-shadow:var(--ombre);font-size:2.4rem}
+.tuile[disabled]{opacity:.25;cursor:default}
+.oreille{display:flex;align-items:center;gap:14px;font-size:1.25rem}
+.oreille svg{width:54px;height:54px;color:var(--accent)}
+.souffle{font-size:1.4rem;padding:4px 12px;border-radius:8px;background:var(--encore-pale)}
+
+/* ---------- récompense et album ---------- */
+.bravo{font-family:var(--f-cursive);font-size:clamp(2.4rem,6vw,3.6rem);margin:0}
+.autocollant{font-size:clamp(6rem,16vw,9rem);line-height:1;animation:pop .7s ease}
+.album{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:12px;width:100%}
+.album span{aspect-ratio:1;border-radius:18px;display:grid;place-items:center;font-size:2.6rem;background:var(--papier);box-shadow:var(--ombre);max-width:100%}
+.album span.vide{box-shadow:none;border:2px dashed var(--trait);background:transparent}
+.pluie{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.pluie i{position:absolute;top:-60px;font-style:normal;font-size:2rem;animation:tombe 2.6s linear forwards}
+@keyframes tombe{to{transform:translateY(110vh) rotate(260deg)}}
+
+/* ---------- coin des parents ---------- */
+.reglages{display:grid;gap:16px}
+.bloc{background:var(--papier);border-radius:var(--rayon);box-shadow:var(--ombre);padding:18px 20px;display:grid;gap:12px}
+.bloc h2{margin:0;font-size:1.2rem}
+.bloc p{margin:0;color:var(--encre-2);max-width:70ch;font-size:1rem}
+.coches{display:flex;flex-wrap:wrap;gap:8px}
+.coches button{font-family:var(--f-lecture);font-size:1.2rem;min-width:52px;height:48px;padding:0 12px;border-radius:12px;border:2px solid var(--trait);background:var(--papier)}
+.coches button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sur-accent)}
+.coches button.focus{box-shadow:0 0 0 3px var(--papier),0 0 0 6px var(--encore)}
+.ligne{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+select,textarea{font:inherit;font-size:1rem;color:var(--encre);background:var(--papier);border:2px solid var(--trait);border-radius:10px;padding:8px 10px}
+select{min-height:46px}
+textarea{width:100%;min-height:64px;resize:vertical}
+.oeufs{display:flex;gap:10px;flex-wrap:wrap}
+.oeufs button{display:flex;align-items:center;gap:4px;padding:8px 14px;border-radius:12px;border:2px solid var(--trait);min-height:52px}
+.oeufs button[aria-pressed="true"]{border-color:var(--encre);background:var(--accent-pale)}
+.oeuf{width:20px;height:26px}
+.interrupteur{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:6px 0;text-align:left;width:100%}
+.interrupteur .rail{width:52px;height:30px;border-radius:999px;background:var(--trait);position:relative;flex:none;transition:background .2s}
+.interrupteur .rail::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--papier);transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.interrupteur[aria-checked="true"] .rail{background:var(--accent)}
+.interrupteur[aria-checked="true"] .rail::after{transform:translateX(22px)}
+.chiffres{display:flex;gap:24px;flex-wrap:wrap}
+.chiffres div{display:grid}
+.chiffres b{font-size:2rem;font-variant-numeric:tabular-nums}
+.chiffres span{color:var(--encre-2);font-size:.95rem}
+.methode{margin:0;padding-left:1.2em;display:grid;gap:8px;max-width:72ch;font-size:1rem}
+.danger{color:var(--faux)}
+
+@media (max-width:760px){
+  .jeux{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .feuille{padding:22px 16px 22px 30px;background-image:linear-gradient(90deg,transparent 0 18px,var(--marge) 18px 20px,transparent 20px),repeating-linear-gradient(180deg,transparent 0 31px,var(--seyes-fort) 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,var(--seyes) 7px 8px)}
+  .seance{grid-template-columns:1fr auto;padding:20px}
+  .seance .jouer{grid-row:1;grid-column:2}
+  .etapes span{width:26px;height:26px;font-size:.7rem}
+  .etapes span svg{width:14px;height:14px}
+}
+@media (max-width:420px){ .jeux{grid-template-columns:1fr} .app{padding-inline:16px} }
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} .pluie{display:none} }
+</style>
+</head>
+<body>
+
+
+<main class="app" id="app"></main>
+<script>
+"use strict";
+const SUR_SITE = true;
+// Les sons, dans l'ordre de la classe pour la période 1 (a, i, puis la liste des dictées :
+// r o l é u s f e m ch ou), puis dans un ordre courant pour la suite de l'année.
+// v : voyelle · cont : consonne qui se prolonge (on peut la « tenir »)
+const SONS = [
+  {id:"a",  g:["a"], rep:"un ananas", e:"🍍", v:1, dire:"« a », bouche grande ouverte."},
+  {id:"i",  g:["i","y"], rep:"une île", e:"🏝️", v:1, dire:"« i », on sourit."},
+  {id:"r",  g:["r"], rep:"un rat", e:"🐀", cont:1, dire:"« rrrr », comme un moteur, et non « erre »."},
+  {id:"o",  g:["o"], rep:"un robot", e:"🤖", v:1, dire:"« o », bouche ronde."},
+  {id:"l",  g:["l"], rep:"un lapin", e:"🐰", cont:1, dire:"« llll », la langue derrière les dents, et non « elle »."},
+  {id:"é",  g:["é"], rep:"un éléphant", e:"🐘", v:1, dire:"« é », comme dans bébé."},
+  {id:"u",  g:["u"], rep:"une tortue", e:"🐢", v:1, dire:"« u », les lèvres en avant."},
+  {id:"s",  g:["s","ss"], rep:"un serpent", e:"🐍", cont:1, dire:"« ssss », le serpent, et non « esse »."},
+  {id:"f",  g:["f"], rep:"une fusée", e:"🚀", cont:1, dire:"« ffff », on souffle, et non « effe »."},
+  {id:"e",  g:["e"], rep:"un renard", e:"🦊", v:1, dire:"« e », comme dans le, me, se."},
+  {id:"m",  g:["m"], rep:"une maison", e:"🏠", cont:1, dire:"« mmmm », les lèvres fermées, et non « ème »."},
+  {id:"ch", g:["ch"], rep:"un chat", e:"🐱", cont:1, dire:"« chhhh », comme pour dire chut. Deux lettres, un seul son."},
+  {id:"ou", g:["ou"], rep:"un loup", e:"🐺", v:1, dire:"« ou », deux lettres, un seul son."},
+  {id:"n",  g:["n"], rep:"un nez", e:"👃", cont:1, dire:"« nnnn », et non « ène »."},
+  {id:"p",  g:["p"], rep:"une pomme", e:"🍎", dire:"« p », très bref, sans ajouter « eu »."},
+  {id:"t",  g:["t"], rep:"une tomate", e:"🍅", dire:"« t », très bref."},
+  {id:"on", g:["on","om"], rep:"un bonbon", e:"🍬", v:1, dire:"« on ». Devant m, b, p, il s'écrit om."},
+  {id:"v",  g:["v"], rep:"un vélo", e:"🚲", cont:1, dire:"« vvvv », et non « vé »."},
+  {id:"d",  g:["d"], rep:"un dé", e:"🎲", dire:"« d », bref."},
+  {id:"an", g:["an","en","am","em"], rep:"une orange", e:"🍊", v:1, dire:"« an », qui s'écrit an, en, am ou em."},
+  {id:"j",  g:["j"], rep:"une jambe", e:"🦵", cont:1, dire:"« jjjj », et non « ji »."},
+  {id:"b",  g:["b"], rep:"un bébé", e:"👶", dire:"« b », bref."},
+  {id:"k",  g:["c","k"], rep:"un canard", e:"🦆", dire:"« k », bref. Le c fait « k » devant a, o, u."},
+  {id:"oi", g:["oi"], rep:"un roi", e:"👑", v:1, dire:"« oi », deux lettres, un seul son."},
+  {id:"è",  g:["è","ê"], rep:"une chèvre", e:"🐐", v:1, dire:"« è », comme dans mère. Aussi le e de mer, sel, belle."},
+  {id:"z",  g:["z","s"], rep:"un zèbre", e:"🦓", cont:1, dire:"« zzzz ». Un s entre deux voyelles fait aussi « z »."},
+  {id:"g",  g:["g"], rep:"un dragon", e:"🐉", dire:"« g », bref, devant a, o, u."},
+  {id:"in", g:["in","im","ain","ein","un"], rep:"un sapin", e:"🎄", v:1, dire:"« in », qui s'écrit in, im, ain, ein ou un."},
+  {id:"au", g:["au","eau"], rep:"un bateau", e:"⛵", v:1, dire:"« o », écrit au ou eau."},
+  {id:"eu", g:["eu","œu"], rep:"le feu", e:"🔥", v:1, dire:"« eu », comme dans feu et fleur."},
+  {id:"ai", g:["ai","ei"], rep:"du lait", e:"🥛", v:1, dire:"« è », écrit ai ou ei."},
+  {id:"er", g:["er","ez"], rep:"un panier", e:"🧺", v:1, dire:"« é » en fin de mot, écrit er ou ez."},
+  {id:"qu", g:["qu"], rep:"un requin", e:"🦈", dire:"« k », écrit qu."},
+  {id:"gu", g:["gu"], rep:"une guitare", e:"🎸", dire:"« g », écrit gu devant e et i."},
+  {id:"ç",  g:["ce","ci","ç"], rep:"un citron", e:"🍋", cont:1, dire:"« s » : c devant e et i, ç devant a, o, u."},
+  {id:"ge", g:["ge","gi"], rep:"une girafe", e:"🦒", cont:1, dire:"« j » : g devant e et i."},
+  {id:"gn", g:["gn"], rep:"un champignon", e:"🍄", dire:"« gn », comme dans montagne."},
+  {id:"ill",g:["ill","il"], rep:"un papillon", e:"🦋", v:1, dire:"« ill », comme dans fille et soleil."},
+  {id:"ph", g:["ph"], rep:"un phoque", e:"🦭", cont:1, dire:"« ffff », écrit ph."},
+  {id:"x",  g:["x"], rep:"un taxi", e:"🚕", dire:"« ks », comme dans taxi."},
+  {id:"h",  g:["h"], rep:"un hibou", e:"🦉", dire:"Le h ne se prononce pas : on lit la lettre suivante."}
+];
+
+// Les mots-outils : ils ne se déchiffrent pas encore, on les reconnaît.
+// Ils s'affichent en gras et sans arcs, comme dans le fichier de la classe.
+const OUTILS = [
+  {id:"un"}, {id:"et"}, {id:"est"}, {id:"dans"}, {id:"il y a", mots:["y"]},
+  {id:"une"}, {id:"les"}, {id:"des"}, {id:"elle", mots:["elle","elles"]},
+  {id:"avec"}, {id:"c'est", mots:["c'"]}, {id:"mes"}, {id:"ses"}, {id:"qui"},
+  {id:"que"}, {id:"sont"}, {id:"très"}, {id:"mais"}
+];
+
+// Les dictées de la classe, période 1 : une liste par son, en trois colonnes.
+// Groupe 1 œuf : première colonne · 2 œufs : les deux premières · 3 œufs : les trois.
+const DICTEES = {
+  r:  [["ra","ri","ar","ir","un"], [], []],
+  o:  [["ro","ra","ri","or"], [], []],
+  l:  [["lo","li","al","lar"], [], []],
+  "é":[["ré","lé","Léo"], [], []],
+  u:  [["ru","lu","il","ar"], ["un","ul"], ["un élu"]],
+  s:  [["si","sa","sé","os","il y a"], ["sur"], ["un iris"]],
+  f:  [["fi","fo","fu","af","et"], ["fol"], ["un sofa"]],
+  e:  [["le","re","se","fe","est"], ["lire"], ["la file"]],
+  m:  [["mi","mo","mu","mal","dans"], ["un lama"], ["la mamie"]],
+  ch: [["chi","cho","che","chu"], ["un char"], ["riche","il marche"]],
+  ou: [["rou","lou","sou","fou"], ["un chou","la souris"], ["La fourmi marche."]]
+};
+
+// Les phrases : texte | question que l'adulte pose | bonne image | deux autres images.
+const PHRASES = `
+Léo a ri.|Qu'a fait Léo ?|😂|📖 🚲
+Lili a lu.|Qu'a fait Lili ?|📖|😂 🚲
+Le rat a ri.|Qui a ri ?|🐀|🐰 🦊
+Il y a un os sur le sol.|Qu'y a-t-il sur le sol ?|🦴|🧵 🍚
+Lola a un fil.|Qu'a Lola ?|🧵|🦴 🎈
+Sofia lit sur le sofa.|Où lit Sofia ?|🛋️|🛏️ 🌳
+La fée a ri.|Qui a ri ?|🧚|🐀 🦁
+Le rat est sur le sofa.|Qui est sur le sofa ?|🐀|🧚 🦴
+Sara fera un safari.|Que fera Sara ?|🦒|🚲 🎈
+Mila a un lama.|Qu'a Mila ?|🦙|🐱 🐀
+Le lama est sur le mur.|Qui est sur le mur ?|🦙|🐀 🧚
+Mamie a ri.|Qui a ri ?|👵|🦙 🧚
+Il y a un lama dans la rue.|Qui est dans la rue ?|🦙|👵 🐀
+Rémi a lu le mot à Mamie.|À qui Rémi a lu le mot ?|👵|🦙 🧚
+Le chat est sur le mur.|Qui est sur le mur ?|🐱|🐀 🦙
+Le chat a mis le rat sur le sofa.|Où est le rat ?|🛋️|🧱 🌊
+Mila marche sur le mur.|Où marche Mila ?|🧱|🛋️ 🌊
+La souris est sur le mur.|Qui est sur le mur ?|🐭|🐱 🦙
+Le loup a mal.|Qui a mal ?|🐺|🐭 🐱
+La fourmi marche sur le chou.|Sur quoi marche la fourmi ?|🥬|🛋️ 🧱
+La mouche est sur le loup.|Qui est sur le loup ?|🪰|🐜 🐭
+Le chat a souri à la souris.|À qui le chat a souri ?|🐭|🐺 🐜
+L'ours a mal.|Qui a mal ?|🐻|🐺 🐱
+Lou a un chou.|Qu'a Lou ?|🥬|🦴 🧵
+Nina a vu la lune.|Qu'a vu Nina ?|🌙|☀️ ⭐
+Le petit lapin a une tomate.|Qu'a le lapin ?|🍅|🍎 🥕
+Papa a mis la pomme dans la soupe.|Qu'y a-t-il dans la soupe ?|🍎|🍅 🦴
+Le mouton dort sur le pont.|Qui dort sur le pont ?|🐑|🐺 🐱
+Léon a un vélo.|Qu'a Léon ?|🚲|🛋️ 🎈
+La vache a vu le pirate.|Qui a vu le pirate ?|🐄|🐑 🐱
+Maman danse avec papa.|Que fait maman ?|💃|📖 🚲
+Le bébé a un bonbon.|Qu'a le bébé ?|🍬|🍎 🎈
+Le robot a une banane.|Qu'a le robot ?|🍌|🍎 🍅
+Le canard est sur le lac.|Qui est sur le lac ?|🦆|🐄 🐑
+Le koala dort.|Qui dort ?|🐨|🦆 🐑
+Le roi a une étoile.|Qu'a le roi ?|⭐|🌙 🍐
+La poire est sur la voiture.|Qu'y a-t-il sur la voiture ?|🍐|🍎 ⭐
+Le poisson est dans la mer.|Qui est dans la mer ?|🐟|🐄 🐨
+La chèvre a mal à la tête.|Qui a mal à la tête ?|🐐|🦓 🐄
+Le zèbre a vu une rose.|Qu'a vu le zèbre ?|🌹|🍐 ⭐
+Le lapin est sous le sapin.|Qui est sous le sapin ?|🐰|🐑 🐐
+Le lutin a du pain.|Qu'a le lutin ?|🍞|🧀 🍌
+Le bateau est sur l'eau.|Qu'y a-t-il sur l'eau ?|⛵|🚗 🎂
+L'oiseau a un chapeau.|Qu'a l'oiseau ?|🎩|🎂 🎁
+Le chat a peur du feu.|De quoi le chat a peur ?|🔥|💧 🎈
+La baleine a vu la reine.|Qui a vu la reine ?|🐋|🐟 🐬
+Le panier est sur le rocher.|Qu'y a-t-il sur le rocher ?|🧺|🎁 🎩
+Le requin a vu un phoque.|Qu'a vu le requin ?|🦭|🐬 🐟
+Le dragon joue de la guitare.|De quoi joue le dragon ?|🎸|🎻 🎤
+Le garçon a un citron.|Qu'a le garçon ?|🍋|🍊 🍒
+La girafe mange une orange.|Que mange la girafe ?|🍊|🍋 🍒
+Le papillon est sur le champignon.|Où est le papillon ?|🍄|🌹 ⭐
+Le hibou dort dans le sapin.|Où dort le hibou ?|🎄|🏠 🚗
+`;
+
+// La séance du jour : six étapes courtes, une dizaine de minutes en tout.
+const SEANCE = [["sons",4],["fusion",4],["mots",5],["trouve",3],["ecris",3],["phrase",2]];
+
+// L'album : un autocollant par séance terminée.
+const AUTOCOLLANTS = ["🦄","🐼","🦊","🐸","🐙","🦋","🐳","🦁","🐧","🦉","🐢","🐝","🦕","🐬","🦩","🐞",
+  "🌈","⭐","🌻","🍓","🍉","🧁","🍭","🎈","🚀","🪁","🎨","🎪","🏰","🌙","☀️","🍀","🐹","🐨","🦔","🐿️"];
+
+// Lexique des mots décodables.
+// Une ligne : syllabes écrites séparées par « - », lettres muettes entre [ ],
+// puis les sons qu'il faut connaître pour lire le mot, puis une image facultative.
+// Un mot n'est proposé que si tous ses sons ont été vus en classe.
+const LEXIQUE = `
+# a i r o l é
+a|a
+à|a
+la|l a
+il|i l
+li[t]|l i|🛏️
+ri[t]|r i
+ri|r i
+ri[z]|r i|🍚
+ra[t]|r a|🐀
+Lé-o|l é o
+Lé-a|l é a
+Li-li|l i
+Lo-la|l o a
+A-li|a l i
+i-ra|i r a
+li-ra|l i r a
+ri-ra|r i a
+o-ral|o r a l
+a-lo-r[s]|a l o r
+rô-l[e]|r o l
+li-la[s]|l i a
+l'|l
+# u
+lu|l u
+ru[e]|r u|🛣️
+é-lu|é l u
+Lu-lu|l u
+# s
+sa|s a
+sur|s u r
+sol|s o l
+os|o s|🦴
+i-ris|i r s
+sa-lu[t]|s a l u|👋
+sa-lu[e]|s a l u
+sa-li|s a l i
+sa-lé|s a l é
+sa-l[e]|s a l
+Sa-ra|s a r
+so-lo|s o l
+la-sso|l a s o
+# f
+fil|f i l|🧵
+fi-l[e]|f i l
+fo-l[e]|f o l
+fol|f o l
+fé[e]|f é|🧚
+so-fa|s o f a|🛋️
+sa-fa-ri|s a f r i|🦒
+ra-fa-l[e]|r a f l
+fi-ra|f i r a
+fé-ri-é|f é r i
+So-fi-a|s o f i a
+# e
+le|l e
+re-lu|r e l u
+re-li-r[e]|r e l i
+li-r[e]|l i r|📖
+ri-r[e]|r i|😂
+se-ra|s e r a
+fe-ra|f e r a
+# m
+ma|m a
+me|m e
+mur|m u r|🧱
+la-ma|l a m|🦙
+ma-mi[e]|m a i|👵
+a-mi|a m i
+a-mi[e]|a m i
+Mi-la|m i l a
+Mi-lo|m i l o
+Ma-lo|m a l o
+Ré-mi|r é m i
+Sa-mi|s a m i
+É-mi-li[e]|é m i l
+Ma-ri[e]|m a r i
+ma-ri|m a r i
+mo-mi[e]|m o i
+ra-m[e]|r a m|🚣
+ri-m[e]|r i m
+li-m[e]|l i m
+mal|m a l
+mâ[t]|m a
+mo[t]|m o
+mi[s]|m i
+mu-l[e]|m u l
+ma-r[e]|m a r
+mé-mo|m é o
+a-mi-ral|a m i r l
+mur-mu-r[e]|m u r
+ar-mu-r[e]|a r m u
+fu-mé[e]|f u m é|💨
+ma-ré[e]|m a r é|🌊
+ra-mé|r a m é
+film|f i l m|🎬
+mo-ral|m o r a l
+# ch
+cha[t]|ch a|🐱
+ri-ch[e]|r i ch|💰
+char|ch a r
+mar-ch[e]|m a r ch
+mar-ché|m a r ch é
+ché-ri|ch é r i
+chi-mi[e]|ch i m
+fi-ch[e]|f i ch
+a-ffi-ch[e]|a f i ch
+mâ-ché|m a ch é
+lâ-ché|l a ch é
+Sa-cha|s a ch
+cha-ri-o[t]|ch a r i o
+ru-ch[e]|r u ch
+mâ-ch[e]|m a ch
+lé-ché|l é ch
+# ou
+lou[p]|l ou|🐺
+chou|ch ou|🥬
+fou|f ou
+sou-ri[s]|s ou r i|🐭
+four-mi|f ou r m i|🐜
+mou-ch[e]|m ou ch|🪰
+ours|ou r s|🐻
+rou[e]|r ou|🛞
+lou-ch[e]|l ou ch
+mou|m ou
+sou-ri-r[e]|s ou r i|😊
+sou-ri|s ou r i
+a-mour|a m ou r|❤️
+Lou|l ou
+mou-l[e]|m ou l
+rou-l[e]|r ou l
+four|f ou r
+sou[s]|s ou
+fou-l[e]|f ou l
+rou-lé|r ou l é
+ou|ou
+chou-chou|ch ou
+# n
+nu|n u
+â-n[e]|a n|🫏
+lu-n[e]|l u n|🌙
+ma-ri-n[e]|m a r i n
+ma-chi-n[e]|m a ch i n
+Ni-na|n i a
+a-na-na[s]|a n|🍍
+fa-ri-n[e]|f a r i n
+na-ri-n[e]|n a r i
+mi-nou|m i n ou|🐈
+nou[s]|n ou
+# p
+pa-pa|p a
+pi-l[e]|p i l|🔋
+pom-m[e]|p o m|🍎
+pu-ré[e]|p u r é
+pa-ri|p a r i
+Pa-ri[s]|p a r i
+pou-pé[e]|p ou é|🪆
+sou-p[e]|s ou p|🍲
+lou-p[e]|l ou p|🔍
+po-li|p o l i
+ré-pa-ré|r é p a
+o-pé-ra|o p é r a
+pu-r[e]|p u r
+pour|p ou r
+# t
+to-ma-t[e]|t o m a|🍅
+tor-tu[e]|t o r u|🐢
+mo-to|m o t|🏍️
+pe-ti[t]|p e t i
+pe-ti-t[e]|p e t i
+tu|t u
+tou[t]|t ou
+tou-t[e]|t ou
+mi-nu-t[e]|m i n u t
+tu-li-p[e]|t u l i p|🌷
+pi-ra-t[e]|p i r a t|🏴‍☠️
+tu-tu|t u|🩰
+tê-t[e]|t è
+# on
+mou-ton|m ou t on|🐑
+pon[t]|p on|🌉
+on|on
+son|s on
+mon|m on
+ton|t on
+non|n on
+ma-rron|m a r on|🌰
+sa-lon|s a l on
+li-on|l i on|🦁
+Lé-on|l é on
+ton-ton|t on
+tor-chon|t o r ch on
+# v
+vé-lo|v é l o|🚲
+la-v[e]|l a v
+a-vi-on|a v i on|✈️
+va|v a
+vu|v u
+vo-lé|v o l é
+va-ch[e]|v a ch|🐄
+che-val|ch e v a l|🐴
+o-li-v[e]|o l i v|🫒
+na-vi-r[e]|n a v i r|🚢
+vou[s]|v ou
+vi-o-lon|v i o l on|🎻
+sa-von|s a v on|🧼
+# d
+dé|d é|🎲
+du|d u
+de|d e
+dur|d u r
+dor[t]|d o r
+di[t]|d i
+dou[x]|d ou
+ma-la-d[e]|m a l d
+sa-la-d[e]|s a l d|🥗
+mi-di|m i d
+ra-di[s]|r a d i
+dou-ch[e]|d ou ch|🚿
+dor-mi|d o r m i
+li-mo-na-d[e]|l i m o n a d
+da-m[e]|d a m
+mon-d[e]|m on d
+ron-d[e]|r on d
+dé-fi|d é f i
+ma-la-di[e]|m a l d i
+do-mi-no|d o m i n
+# an
+ma-man|m a an
+an|an
+en|an
+den[t]|d an|🦷
+pan-da|p an d a|🐼
+en-fan[t]|an f
+ven[t]|v an|🌬️
+tan-t[e]|t an
+pan-ta-lon|p an t a l on|👖
+mé-chan[t]|m é ch an
+chan-té|ch an t é
+chan-son|ch an s on|🎵
+dan-s[e]|d an s|💃
+ten-t[e]|t an|⛺
+man-g[e]|m an ge
+# j
+ju[s]|j u|🧃
+jou-é|j ou é
+jo-li|j o l i
+jour|j ou r
+ju-do|j u d o|🥋
+dé-jà|d é j a
+jou[e]|j ou
+jam-b[e]|j an b|🦵
+pi-ja-ma|p i j a m
+# b
+bé-bé|b é|👶
+ba-na-n[e]|b a n|🍌
+bus|b u s|🚌
+bou-ch[e]|b ou ch|👄
+bal|b a l
+bol|b o l|🥣
+bu|b u
+ro-bo[t]|r o b|🤖
+bou-ton|b ou t on
+bal-lon|b a l on|🎈
+bon|b on
+bon-bon|b on|🍬
+bi-jou|b i j ou|💍
+bo-bo|b o|🩹
+ba-la-d[e]|b a l d
+ru-ban|r u b an|🎀
+# k
+co-l[e]|k o l
+ca-fé|k a f é|☕
+co-co|k o|🥥
+cou|k ou
+ca-nar[d]|k a n r|🦆
+co-chon|k o ch on|🐷
+lac|l a k
+sac|s a k|🎒
+é-co-l[e]|é k o l|🏫
+ko-a-la|k o a l|🐨
+ca-ro-tt[e]|k a r o t|🥕
+ca-mi-on|k a m i on|🚚
+cou-cou|k ou
+mi-cro|m i k r o|🎤
+cro-co-di-l[e]|k r o d i l|🐊
+ca-ba-n[e]|k a b n
+# oi
+roi|r oi|👑
+moi|m oi
+toi|t oi
+soir|s oi r
+noir|n oi r
+poi[s]|p oi
+boi[s]|b oi
+poi-r[e]|p oi r|🍐
+é-toi-l[e]|é t oi l|⭐
+voi-tu-r[e]|v oi t u r|🚗
+poi-sson|p oi s on|🐟
+mi-roir|m i r oi
+ar-moi-r[e]|a r m oi
+# è
+mè-r[e]|m è r
+pè-r[e]|p è r
+frè-r[e]|f r è
+mer|m è r
+fê-t[e]|f è t|🎉
+bê-t[e]|b è t
+sel|s è l|🧂
+chè-vr[e]|ch è v r|🐐
+fo-rê[t]|f o r è|🌲
+lè-vr[e]|l è v r
+fer|f è r
+ser-pen[t]|s è r p an|🐍
+bel-l[e]|b è l
+pel-l[e]|p è l
+vi-pè-r[e]|v i p è r
+mè-ch[e]|m è ch
+# z
+zé-ro|z é r o
+zè-br[e]|z è b r|🦓
+ro-s[e]|r o z|🌹
+ro-sé|r o z é
+ru-sé|r u z é
+fu-sé[e]|f u z é|🚀
+che-mi-s[e]|ch e m i z|👕
+bi-son|b i z on|🦬
+lé-zar[d]|l é z a r|🦎
+a-mu-sé|a m u z é
+bi-s[e]|b i z
+mi-mo-sa|m i o z a
+# g
+gom-m[e]|g o m
+lé-gu-m[e]|l é g u m
+ga-lo[p]|g a l o
+ga-min|g a m in
+ri-go-lo|r i g o l
+dra-gon|d r a g on|🐉
+ga-r[e]|g a r
+ma-ga-sin|m a g z in
+lé-go|l é g o
+# in
+la-pin|l a p in|🐰
+sa-pin|s a p in|🎄
+ma-tin|m a t in
+lu-tin|l u t in|🧝
+vin|v in|🍷
+pin|p in
+fin|f in
+ma-lin|m a l in
+mou-lin|m ou l in
+pain|p in|🍞
+main|m in|✋
+bain|b in|🛁
+lun-di|l in d i
+ma-rin|m a r in
+pou-ssin|p ou s in|🐥
+# au
+au|au
+eau|au|💧
+cha-peau|ch a p au|🎩
+ba-teau|b a t au|⛵
+gâ-teau|g a t au|🎂
+châ-teau|ch a t au|🏰
+mar-teau|m a r t au|🔨
+ca-deau|k a d au|🎁
+tau-reau|t au r|🐂
+oi-seau|oi z au|🐦
+ri-deau|r i d au
+peau|p au
+beau|b au
+seau|s au|🪣
+cou-teau|k ou t au|🔪
+sau-mon|s au m on
+# eu
+feu|f eu|🔥
+jeu|j eu
+peu|p eu
+deu[x]|d eu
+che-veu|ch e v eu
+neuf|n eu f
+fleur|f l eu r|🌸
+beur-r[e]|b eu r|🧈
+heu-r[e]|h eu r|🕐
+peur|p eu r|😱
+cœur|k eu r
+œuf|eu f|🥚
+sœur|s eu r
+jeu-di|j eu d i
+# ai
+lai[t]|l ai|🥛
+mai-son|m ai z on|🏠
+frai-s[e]|f r ai z|🍓
+ba-lei-n[e]|b a l ai n|🐋
+nei-g[e]|n ai ge|❄️
+rei-n[e]|r ai n|👸
+ai-mé|ai m é
+ai-l[e]|ai l
+chai-s[e]|ch ai z|🪑
+ai-gl[e]|ai g l|🦅
+ja-mai[s]|j a m ai
+# er
+nez|n er|👃
+pa-nier|p a n i er|🧺
+ro-cher|r o ch er|🪨
+dî-ner|d i n er
+chez|ch er
+as-sez|a s er
+jou-er|j ou er
+man-ger|m an ge er
+sau-ter|s au t er
+cou-per|k ou p er
+pa-pier|p a p i er|📄
+la-ver|l a v er
+# qu
+re-quin|r e qu in|🦈
+mous-ti-qu[e]|m ou s t i qu|🦟
+pi-qu[e]|p i qu
+mu-si-qu[e]|m u z i qu|🎶
+qui-ch[e]|qu i ch|🥧
+# gu
+gui-ta-r[e]|gu i t a r|🎸
+ba-gu[e]|b a gu
+gui-don|gu i d on
+lan-gu[e]|l an gu|👅
+va-gu[e]|v a gu
+# ç
+ci-tron|ç i t r on|🍋
+ce-ri-s[e]|ç e r i z|🍒
+gar-çon|g a r ç on|👦
+le-çon|l e ç on
+ma-çon|m a ç on|👷
+pu-c[e]|p u ç
+ci-né-ma|ç i n é m a
+ra-ci-n[e]|r a ç i n
+pou-c[e]|p ou ç|👍
+mer-ci|m è r ç i|🙏
+re-çu|r e ç u
+# ge
+gi-ra-f[e]|ge i r a f|🦒
+pa-g[e]|p a ge
+o-ran-g[e]|o r an ge|🍊
+gé-an[t]|ge é an
+bou-gi[e]|b ou ge i|🕯️
+fro-ma-g[e]|f r o m a ge|🧀
+an-g[e]|an ge|👼
+# gn
+cham-pi-gnon|ch an p i gn on|🍄
+li-gn[e]|l i gn
+mon-ta-gn[e]|m on t a gn|⛰️
+ga-gné|g a gn é
+pei-gn[e]|p ai gn
+cy-gn[e]|ç i gn|🦢
+vi-gn[e]|v i gn|🍇
+# ill
+pa-pi-llon|p a ill on|🦋
+fi-ll[e]|f ill|👧
+bi-ll[e]|b ill
+a-bei-ll[e]|a b ai ill|🐝
+fa-mi-ll[e]|f a m ill
+go-ri-ll[e]|g o r ill|🦍
+so-leil|s o l è ill|☀️
+gre-nouil-l[e]|g r e n ou ill|🐸
+# ph
+pho-qu[e]|ph o qu|🦭
+pha-r[e]|ph a r
+dau-phin|d au ph in|🐬
+é-lé-phan[t]|é l ph an|🐘
+pho-to|ph o t|📷
+# x
+ta-xi|t a x i|🚕
+bo-x[e]|b o x|🥊
+Max|m a x
+sa-xo-pho-n[e]|s a x o ph n|🎷
+# h
+hi-bou|h i b ou|🦉
+hé-ri-sson|h é r i s on|🦔
+ha-ri-co[t]|h a r i k o
+hi-ver|h i v è r|⛄
+`;
+
+// ---------- Le moteur : lecture des données et choix des exercices (aucun accès à la page) ----------
+
+const ID_SONS = SONS.map(s => s.id);
+const SON = Object.fromEntries(SONS.map(s => [s.id, s]));
+const GRAPHEMES = Object.fromEntries(SONS.map(s => [s.id, s.g]));
+
+// « lu-n[e] » -> [[{c:'l'},{c:'u'}], [{c:'n'},{c:'e',m:true}]]
+function analyser(annot) {
+  const syls = []; let cur = []; let muet = false;
+  for (const ch of annot) {
+    if (ch === "-") { syls.push(cur); cur = []; }
+    else if (ch === "[") muet = true;
+    else if (ch === "]") muet = false;
+    else cur.push({ c: ch, m: muet });
+  }
+  syls.push(cur);
+  return syls;
+}
+const sansMarques = a => a.replace(/[-\[\]]/g, "");
+
+function niveauMot(syl) {
+  const muette = syl.some(s => s.some(l => l.m));
+  const longue = syl.some(s => s.filter(l => !l.m).length >= 3);
+  const c = syl.length + (muette ? 1 : 0) + (longue ? 1 : 0);
+  return c <= 2 ? 1 : c <= 3 ? 2 : 3;
+}
+
+const MOTS = [];
+const PAR_FORME = new Map();
+LEXIQUE.trim().split("\n").forEach(ligne => {
+  ligne = ligne.trim();
+  if (!ligne || ligne[0] === "#") return;
+  const [annot, tags = "", e = ""] = ligne.split("|");
+  const syl = analyser(annot);
+  const mot = { annot, forme: sansMarques(annot), tags: tags.trim().split(/\s+/).filter(Boolean), e: e.trim(), syl };
+  mot.niveau = niveauMot(syl);
+  mot.muettes = syl.flat().some(l => l.m);
+  MOTS.push(mot);
+  const cle = mot.forme.toLowerCase();
+  if (!PAR_FORME.has(cle)) PAR_FORME.set(cle, mot);
+});
+
+const OUTIL_DE = new Map();
+OUTILS.forEach(o => (o.mots || [o.id]).forEach(m => OUTIL_DE.set(m, o.id)));
+
+// Découpe une phrase en jetons : mots, mots-outils, ponctuation. « L'ours » donne « L' » + « ours ».
+function jetons(texte) {
+  const out = [];
+  texte.trim().split(/\s+/).forEach(brut => {
+    let w = brut, fin = "";
+    const m = w.match(/[.,!?;:]+$/);
+    if (m) { fin = m[0]; w = w.slice(0, -fin.length); }
+    const parts = [];
+    const ap = w.indexOf("'");
+    if (ap >= 0 && ap < w.length - 1) { parts.push(w.slice(0, ap + 1), w.slice(ap + 1)); } else parts.push(w);
+    parts.forEach((p, k) => {
+      const bas = p.toLowerCase();
+      const outil = OUTIL_DE.get(bas) || null;
+      out.push({ t: p, outil, mot: outil ? null : (PAR_FORME.get(bas) || null), colle: k > 0 });
+    });
+    if (fin) out.push({ t: fin, ponct: true });
+  });
+  return out;
+}
+
+const PHRASES_L = PHRASES.trim().split("\n").filter(l => l.trim()).map(l => {
+  const [texte, q, bonne, faux] = l.split("|").map(x => x.trim());
+  const j = jetons(texte);
+  const nb = j.filter(x => !x.ponct).length;
+  return { texte, q, bonne, faux: faux.split(/\s+/), jetons: j, niveau: nb <= 4 ? 1 : nb <= 6 ? 2 : 3 };
+});
+
+// Découpe un texte en graphèmes (« chou » -> ch, ou), avec les graphèmes à plusieurs lettres des sons donnés.
+function decouper(texte, tags) {
+  const multi = [];
+  tags.forEach(t => (GRAPHEMES[t] || []).forEach(g => { if (g.length > 1 && !multi.includes(g)) multi.push(g); }));
+  multi.sort((a, b) => b.length - a.length);
+  return texte.toLowerCase().replace(/[.,!?;:]/g, "").trim().split(/\s+/).map(w => {
+    const out = []; let i = 0;
+    while (i < w.length) {
+      const g = multi.find(x => w.startsWith(x, i));
+      if (g) { out.push(g); i += g.length; } else { out.push(w[i]); i++; }
+    }
+    return out;
+  });
+}
+
+// Pour un mot connu du lexique, dit quelles cases du découpage sont des lettres muettes.
+function casesMuettes(mot, cases) {
+  if (!mot) return cases.map(() => false);
+  const lettres = mot.syl.flat();
+  let i = 0;
+  return cases.map(c => { const tranche = lettres.slice(i, i + c.length); i += c.length; return tranche.length > 0 && tranche.every(l => l.m); });
+}
+
+// ---------- Ce qui est disponible selon les réglages ----------
+
+const lisible = (mot, etat) => mot.tags.every(t => etat.sons.includes(t));
+
+function phraseLisible(p, etat) {
+  return p.jetons.every(j => j.ponct || (j.outil ? etat.outils.includes(j.outil) : (j.mot && lisible(j.mot, etat))));
+}
+
+function parNiveau(liste, etat, min) {
+  const filtre = liste.filter(x => x.niveau <= etat.niveau);
+  return filtre.length >= min ? filtre : liste;
+}
+
+function tirer(liste, n, poids) {
+  const pool = liste.map(x => ({ x, w: Math.max(0.01, poids ? poids(x) : 1) }));
+  const out = [];
+  while (out.length < n && pool.length) {
+    let r = Math.random() * pool.reduce((s, p) => s + p.w, 0), i = 0;
+    for (; i < pool.length - 1; i++) { r -= pool[i].w; if (r <= 0) break; }
+    out.push(pool[i].x); pool.splice(i, 1);
+  }
+  return out;
+}
+
+const poidsMot = etat => m => (m.tags.includes(etat.focus) ? 3 : 1) / (1 + (etat.lus[m.forme] || 0) * 0.5) * (1 + (etat.difficiles[m.forme] || 0));
+
+function motsLisibles(etat) {
+  const vus = new Set();
+  return MOTS.filter(m => {
+    if (m.forme === "l'" || m.forme.length < 2 || vus.has(m.forme.toLowerCase())) return false;
+    if (!lisible(m, etat)) return false;
+    vus.add(m.forme.toLowerCase());
+    return true;
+  });
+}
+
+function choisirMots(etat, n, avecImage) {
+  let l = motsLisibles(etat);
+  if (avecImage) l = l.filter(m => m.e);
+  return tirer(parNiveau(l, etat, Math.max(6, n)), n, poidsMot(etat));
+}
+
+function choisirPhrases(etat, n) {
+  const l = PHRASES_L.filter(p => phraseLisible(p, etat));
+  const recentes = l.filter(p => p.jetons.some(j => j.mot && j.mot.tags.includes(etat.focus)));
+  return tirer(parNiveau(l, etat, n), n, p => recentes.includes(p) ? 3 : 1);
+}
+
+// Images que l'on peut proposer comme mauvaises réponses.
+const IMAGES = [...new Set(MOTS.filter(m => m.e).map(m => m.e))];
+
+// ---------- Les syllabes ----------
+
+const FUSION_C = { l: "l", r: "r", m: "m", s: "s", f: "f", ch: "ch", n: "n", p: "p", t: "t", v: "v", d: "d", j: "j", b: "b", k: "c", g: "g", z: "z", ph: "ph" };
+const FUSION_V = { a: "a", i: "i", o: "o", u: "u", e: "e", "é": "é", ou: "ou", on: "on", an: "an", oi: "oi", "è": "è", in: "in", eu: "eu", au: "au", ai: "ai" };
+const DURES = ["a", "o", "u", "ou", "on", "an", "oi", "au"];
+const INVERSES_C = ["l", "r", "m", "s", "f"], INVERSES_V = ["a", "i", "o", "u"];
+
+function syllabes(etat, n, inverses = 0.25) {
+  const cs = etat.sons.filter(s => FUSION_C[s]);
+  const vs = etat.sons.filter(s => FUSION_V[s]);
+  if (!cs.length || !vs.length) return [];
+  const toutes = [];
+  cs.forEach(c => vs.forEach(v => {
+    if ((c === "k" || c === "g") && !DURES.includes(v)) return;
+    const poids = (c === etat.focus || v === etat.focus) ? 3 : 1;
+    toutes.push({ c: FUSION_C[c], v: FUSION_V[v], inverse: false, w: poids });
+    if (INVERSES_C.includes(c) && INVERSES_V.includes(v)) toutes.push({ c: FUSION_C[c], v: FUSION_V[v], inverse: true, w: poids * inverses * 2 });
+  }));
+  return tirer(toutes, n, x => x.w).map(s => ({ ...s, texte: s.inverse ? s.v + s.c : s.c + s.v }));
+}
+
+// ---------- Les dictées ----------
+
+function listeDictee(etat, son) {
+  const cols = (etat.dictees && etat.dictees[son]) || DICTEES[son];
+  if (!cols) return [];
+  return cols.slice(0, etat.niveau).flat().filter(Boolean);
+}
+
+// ---------- L'état ----------
+
+const ETAT_DEFAUT = {
+  v: 1, regle: false,
+  sons: ["a", "i", "r", "o", "l", "é", "u", "s", "f", "e", "m"], focus: "m",
+  outils: ["un", "et", "est", "dans", "il y a"],
+  niveau: 1, ecriture: "script", arcs: true, muettes: true, couleurs: false, bruit: true, voixHaute: true, voix: "",
+  dictees: {}, album: [], seances: 0, derniere: "", lus: {}, difficiles: {}, maj: 0
+};
+
+function etatPropre(d) {
+  const e = JSON.parse(JSON.stringify(ETAT_DEFAUT));
+  if (d && typeof d === "object") for (const k in e) if (k in d && typeof d[k] === typeof e[k]) e[k] = d[k];
+  e.sons = ID_SONS.filter(s => e.sons.includes(s));
+  if (!e.sons.includes(e.focus)) e.focus = e.sons[e.sons.length - 1] || "a";
+  if (![1, 2, 3].includes(e.niveau)) e.niveau = 1;
+  return e;
+}
+
+// ---------- L'application : écrans et activités ----------
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  if (props) for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  return el;
+}
+function ajoute(el, ...k) { el.append(...k.flat(Infinity).filter(x => x != null && x !== false)); }
+const melanger = a => tirer(a, a.length);
+const majuscule = g => g.charAt(0).toUpperCase() + g.slice(1);
+
+const ICONES = {
+  maison: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+  sons: '<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/>',
+  fusion: '<path d="M2 6h6l4 6-4 6H2l4-6z"/><path d="M11 6h6l4 6-4 6h-6l4-6z"/>',
+  mots: '<path d="M2 5c3-1.2 6-1 10 1 4-2 7-2.2 10-1v14c-3-1.2-6-1-10 1-4-2-7-2.2-10-1z"/><path d="M12 6v14"/>',
+  trouve: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>',
+  ecris: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/>',
+  phrase: '<path d="M3 7h18M3 12h18M3 17h11"/>',
+  etoile: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  parent: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>',
+  ok: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  encore: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/>',
+  suivant: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  oeil: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  oreille: '<path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5.5 1.6"/><path d="M10 9.5a2 2 0 0 1 4 0"/>',
+  jouer: '<path d="M8 5v14l11-7z"/>',
+  haut: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>'
+};
+function ic(n) {
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("class", "ic"); s.setAttribute("aria-hidden", "true");
+  s.innerHTML = ICONES[n]; return s;
+}
+function oeufs(n, couleur) {
+  return Array.from({ length: n }, () => {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("viewBox", "0 0 20 26"); s.setAttribute("class", "oeuf"); s.setAttribute("aria-hidden", "true");
+    s.innerHTML = '<path d="M10 1C5 1 1 9 1 15a9 9 0 0 0 18 0C19 9 15 1 10 1z" fill="' + couleur + '"/>';
+    return s;
+  });
+}
+const COULEURS_OEUFS = ["var(--oeuf1)", "var(--oeuf2)", "var(--oeuf3)"];
+
+// ---------- Sauvegarde : le compte si possible, sinon ce navigateur ----------
+
+const CLE = "lire-ensemble-v1";
+function lireLocal() { try { return JSON.parse(localStorage.getItem(CLE) || "null"); } catch (e) { return null; } }
+function ecrireLocal() { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) {} }
+let etat = etatPropre(lireLocal());
+let docNuage = null, sauvegarde = "navigateur", ecritEnCours = false, aRefaire = false, minuterie = null;
+
+function sauver() {
+  etat.maj = Date.now();
+  ecrireLocal();
+  clearTimeout(minuterie);
+  minuterie = setTimeout(versNuage, 1200);
+}
+async function versNuage() {
+  if (!docNuage) return;
+  if (ecritEnCours) { aRefaire = true; return; }
+  ecritEnCours = true;
+  try { await docNuage.set(JSON.parse(JSON.stringify(etat))); }
+  catch (e) { if (e && ["invalid_argument", "revoked", "not_granted", "capability_disabled"].includes(e.code)) { docNuage = null; sauvegarde = "navigateur"; } }
+  ecritEnCours = false;
+  if (aRefaire) { aRefaire = false; versNuage(); }
+}
+async function brancherNuage() {
+  try {
+    if (!window.claude || typeof window.claude.use !== "function") return;
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    const ref = db.doc("data/users/" + id + "/lecture");
+    const snap = await ref.get();
+    docNuage = ref; sauvegarde = "compte";
+    if (snap.exists) {
+      const d = snap.data();
+      if ((d.maj || 0) > (etat.maj || 0)) { etat = etatPropre(d); ecrireLocal(); appliquerAffichage(); }
+      else if ((etat.maj || 0) > (d.maj || 0)) versNuage();
+    } else if (etat.maj) versNuage();
+    if (ecran === "accueil") accueil();
+    if (ecran === "parents") parents();
+  } catch (e) { /* on reste sur la sauvegarde du navigateur */ }
+}
+
+function appliquerAffichage() {
+  const b = document.body.classList;
+  b.toggle("cursive", etat.ecriture === "cursive");
+  b.toggle("sans-arcs", !etat.arcs);
+  b.toggle("sans-muettes", !etat.muettes);
+  b.toggle("couleurs", etat.couleurs);
+}
+
+// ---------- Petits sons, étoiles, confettis ----------
+
+let audio = null;
+function bip(type) {
+  if (!etat.bruit) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = type === "ok" ? [660, 880] : type === "fin" ? [523, 659, 784, 1047] : [262, 220];
+    notes.forEach((f, i) => {
+      const o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime + i * 0.11;
+      o.type = type === "non" ? "triangle" : "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+      o.connect(g).connect(audio.destination); o.start(t); o.stop(t + 0.32);
+    });
+  } catch (e) {}
+}
+function etoile(feuille) { const e = h("span", { class: "gagne", "aria-hidden": "true" }, "⭐"); ajoute(feuille, e); }
+function pluie(emoji) {
+  const p = h("div", { class: "pluie", "aria-hidden": "true" });
+  for (let i = 0; i < 26; i++) p.append(h("i", { style: "left:" + Math.random() * 96 + "%;animation-delay:" + Math.random() * 0.9 + "s" }, i % 3 ? "⭐" : emoji));
+  document.body.append(p); setTimeout(() => p.remove(), 3800);
+}
+
+// ---------- La lecture à voix haute : des mots entiers, jamais un son seul ----------
+
+const Voix = {
+  ok: typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined",
+  toutes: 0, liste: [], choisie: null,
+  charger() {
+    if (!this.ok) return;
+    try {
+      const v = speechSynthesis.getVoices();
+      this.toutes = v.length;
+      this.liste = v.filter(x => /^fr/i.test(x.lang));
+      this.choisie = this.liste.find(x => x.voiceURI === etat.voix)
+        || this.liste.find(x => /fr[-_]FR/i.test(x.lang) && /natural|neural|online|google|denise|henri|audrey|thomas|amélie|hortense|julie/i.test(x.name))
+        || this.liste.find(x => /fr[-_]FR/i.test(x.lang)) || this.liste[0] || null;
+    } catch (e) { this.ok = false; }
+  },
+  // Sans voix française, on se tait plutôt que de lire avec un accent anglais.
+  dispo() { return this.ok && etat.voixHaute && (this.toutes === 0 || this.liste.length > 0); },
+  // Rend une promesse : vrai quand la voix a commencé, faux si le navigateur l'a refusée
+  // (une lecture lancée sans geste de l'utilisateur, sous Safari surtout).
+  dire(texte, lent) {
+    if (!this.dispo()) return Promise.resolve(false);
+    try {
+      const s = speechSynthesis;
+      const u = new SpeechSynthesisUtterance(prononcer(texte));
+      u.lang = this.choisie ? this.choisie.lang : "fr-FR";
+      if (this.choisie) u.voice = this.choisie;
+      u.rate = lent ? 0.6 : 0.72; u.pitch = 1.05;
+      // Garder l'énoncé : ramassé trop tôt, Chrome en perd les évènements, et parfois le son.
+      this.enCours = u;
+      const parti = new Promise(ok => {
+        u.onstart = () => ok(true); u.onerror = () => ok(false); setTimeout(() => ok(false), 2500);
+      });
+      const lancer = () => { try { s.resume(); s.speak(u); } catch (e) {} };
+      // Chrome laisse tomber un énoncé demandé dans le même instant qu'un cancel() :
+      // on ne coupe que ce qui parle, et on attend un peu avant de reparler.
+      if (s.speaking || s.pending) { s.cancel(); setTimeout(lancer, 150); } else lancer();
+      return parti;
+    } catch (e) { return Promise.resolve(false); }
+  },
+  taire() { try { if (this.ok && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel(); } catch (e) {} }
+};
+if (Voix.ok) { Voix.charger(); try { speechSynthesis.addEventListener("voiceschanged", () => { Voix.charger(); if (ecran === "parents") parents(); }); } catch (e) {} }
+
+// Une syllabe dictée s'écrit pour la voix comme un mot qu'elle sait dire : « ar » devient « are », « fe » devient « feu ».
+function prononcer(t) {
+  const bas = t.toLowerCase().trim();
+  if (/\s/.test(bas) || PAR_FORME.has(bas) || OUTIL_DE.has(bas)) return t;
+  if (bas === "chi") return "chis";
+  const m = bas.match(/^([aeiouéè]+)([lrmsf])$/);
+  if (m) return m[1] + ({ s: "sse", f: "ffe" }[m[2]] || m[2] + "e");
+  if (/^[^aeiouéèy]+e$/.test(bas)) return bas + "u";
+  return t;
+}
+function bEcouter(texte, libelle = "Écouter", lent = false) {
+  if (!Voix.dispo()) return null;
+  return h("button", { class: "btn ecoute", onclick: () => Voix.dire(texte, lent) }, ic("haut"), libelle);
+}
+
+// ---------- Écriture d'un mot avec ses arcs et ses lettres muettes ----------
+
+function rendreMot(m, texte) {
+  const chars = [...texte]; let i = 0;
+  if (m.forme === "l'") return h("span", { class: "mot" }, texte);
+  return h("span", { class: "mot" }, m.syl.map((s, k) => h("span", { class: "syl " + (k % 2 ? "s2" : "s1") },
+    s.map(l => { const c = chars[i++] ?? l.c; return l.m ? h("span", { class: "muette" }, c) : c; }))));
+}
+function rendreJetons(js) {
+  const out = [];
+  js.forEach((j, k) => {
+    if (k > 0 && !j.colle) out.push(j.ponct ? (/[?!:;]/.test(j.t) ? " " : "") : " ");
+    if (j.ponct) out.push(j.t);
+    else if (j.outil) out.push(h("span", { class: "mot outil" }, j.t));
+    else if (j.mot) out.push(rendreMot(j.mot, j.t));
+    else out.push(h("span", { class: "mot" }, h("span", { class: "syl s1" }, j.t)));
+  });
+  return out;
+}
+
+// ---------- La charpente d'un écran ----------
+
+const racine = document.getElementById("app");
+let ecran = "accueil", seance = null;
+
+function vider() { Voix.taire(); racine.replaceChildren(); window.scrollTo(0, 0); }
+function barre(titre, droite) {
+  return h("header", { class: "barre" },
+    h("button", { class: "rond", "aria-label": "Retour à l'accueil", title: "Accueil", onclick: () => { seance = null; accueil(); } }, ic("maison")),
+    h("h1", null, titre), droite || null);
+}
+function pastillesSeance() {
+  if (!seance) return null;
+  return h("div", { class: "etapes", "aria-label": "Étapes de la séance" },
+    seance.etapes.map(([cle], k) => h("span", { class: k < seance.i ? "fait" : k === seance.i ? "ici" : "", title: ACTS[cle].titre }, ic(ACTS[cle].icone))));
+}
+function conseil(A) {
+  return h("details", { class: "conseil" }, h("summary", null, "Comment l'aider ?"), A.conseil.map(t => h("p", null, t)));
+}
+function astuce(t) { return h("span", { class: "astuce" }, t); }
+function bandeAdulte(adulte, elements) { adulte.replaceChildren(h("span", { class: "qui" }, ic("parent"), "Pour l'adulte"), ...elements.filter(Boolean)); }
+const bOk = (fn, txt = "Bien lu !") => h("button", { class: "btn ok", onclick: fn }, ic("ok"), txt);
+const bEncore = (fn, txt = "On réessaie") => h("button", { class: "btn encore", onclick: fn }, ic("encore"), txt);
+const bSuivant = (fn, txt = "Suivant") => h("button", { class: "btn plein", onclick: fn }, txt, ic("suivant"));
+
+function lancer(cle, n, finir) {
+  const A = ACTS[cle];
+  ecran = "activite";
+  const items = A.preparer(n);
+  const apres = () => finir ? finir() : finActivite(cle);
+  if (!items.length) {
+    vider();
+    ajoute(racine, barre(A.titre, pastillesSeance()),
+      h("section", { class: "feuille" }, h("p", { class: "consigne" }, A.vide || "Pas encore d'exercice avec les sons vus en classe."),
+        h("button", { class: "btn plein", onclick: apres }, finir ? "Étape suivante" : "Retour", ic("suivant"))));
+    return;
+  }
+  let i = 0;
+  const suivant = () => { i++; if (i < items.length) montrer(); else apres(); };
+  function montrer() {
+    vider();
+    const feuille = h("section", { class: "feuille" });
+    const adulte = h("div", { class: "adulte" });
+    ajoute(racine, barre(A.titre, h("div", { class: "ligne" }, pastillesSeance(), h("span", { class: "compte" }, (i + 1) + " / " + items.length))),
+      feuille, adulte, conseil(A));
+    A.rendre(items[i], { feuille, adulte, suivant, enSeance: !!finir });
+  }
+  montrer();
+}
+
+function finActivite(cle) {
+  ecran = "fin"; vider(); bip("fin");
+  ajoute(racine, barre(ACTS[cle].titre),
+    h("section", { class: "feuille" }, h("p", { class: "bravo" }, "Bravo !"), h("div", { class: "image" }, "⭐⭐⭐"),
+      h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: () => lancer(cle, 6) }, ic("encore"), "Encore une partie"),
+        h("button", { class: "btn", onclick: accueil }, ic("maison"), "Accueil"))));
+}
+
+// ---------- La séance du jour ----------
+
+function lancerSeance() {
+  ACTS.ecris.mode = null;
+  seance = { i: 0, etapes: SEANCE.filter(([cle]) => ACTS[cle].preparer(1).length > 0) };
+  etape();
+}
+function etape() {
+  if (!seance) return;
+  if (seance.i >= seance.etapes.length) { recompense(); return; }
+  const [cle, n] = seance.etapes[seance.i];
+  lancer(cle, n, () => { seance.i++; etape(); });
+}
+function recompense() {
+  seance = null; ecran = "fin";
+  const pas = AUTOCOLLANTS.filter(a => !etat.album.includes(a));
+  const gagne = (pas.length ? pas : AUTOCOLLANTS)[Math.floor(Math.random() * (pas.length || AUTOCOLLANTS.length))];
+  etat.album.push(gagne); etat.seances++; etat.derniere = new Date().toISOString().slice(0, 10); sauver();
+  vider(); bip("fin"); pluie(gagne);
+  ajoute(racine, barre("Séance terminée"),
+    h("section", { class: "feuille" }, h("p", { class: "bravo" }, "Bravo, séance finie !"), h("div", { class: "autocollant" }, gagne),
+      h("p", { class: "consigne", style: "align-self:center" }, "Un nouvel autocollant pour ton album."),
+      h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: album }, ic("etoile"), "Voir mon album"),
+        h("button", { class: "btn", onclick: accueil }, ic("maison"), "Accueil"))));
+}
+function album() {
+  ecran = "album"; vider();
+  const n = Math.max(AUTOCOLLANTS.length, etat.album.length);
+  ajoute(racine, barre("Mon album", h("span", { class: "compte" }, etat.album.length + " autocollant" + (etat.album.length > 1 ? "s" : ""))),
+    h("section", { class: "feuille", style: "justify-content:flex-start" },
+      h("p", { class: "consigne" }, "Un autocollant à chaque séance du jour terminée."),
+      h("div", { class: "album" }, Array.from({ length: n }, (_, k) => etat.album[k] ? h("span", null, etat.album[k]) : h("span", { class: "vide" })))));
+}
+
+// ---------- Les six activités ----------
+
+const TENUS = new Set(SONS.filter(s => s.cont).flatMap(s => s.g));
+
+function rendreSyllabe(it, { feuille, adulte, suivant }) {
+  const [a, b] = it.inverse ? [it.v, it.c] : [it.c, it.v];
+  const chev = h("div", { class: "chevrons" },
+    h("div", { class: "chev" + (it.inverse ? "" : " cons") }, h("span", { class: "lecture" }, a)),
+    h("div", { class: "chev v2" + (it.inverse ? " cons" : "") }, h("span", { class: "lecture" }, b)));
+  const res = h("div", { class: "resultat vide lecture" }, "?");
+  const coller = h("button", { class: "btn plein", onclick: faire }, ic("fusion"), "On colle !");
+  ajoute(feuille, h("p", { class: "consigne" }, "Combine les lettres pour former la syllabe."),
+    h("div", { class: "fusion" }, chev, h("span", { class: "fleche" }, ic("suivant")), res), coller);
+  const aide = it.inverse ? "On part de la voyelle « " + a + " », puis on ferme avec « " + b + " »."
+    : TENUS.has(a) ? "Faites tenir le premier son, « " + a + a + a + "… », puis glisser vers « " + b + " »."
+    : "Le son « " + a + " » est bref : on le colle tout de suite à « " + b + " ».";
+  const depart = () => bandeAdulte(adulte, [astuce(aide)]);
+  function faire() {
+    chev.classList.add("colle"); coller.hidden = true;
+    setTimeout(() => { res.textContent = it.texte; res.classList.remove("vide"); res.classList.add("apparait"); }, 480);
+    bandeAdulte(adulte, [astuce("Elle lit la syllabe à voix haute."),
+      bEncore(() => { chev.classList.remove("colle"); res.textContent = "?"; res.classList.add("vide"); res.classList.remove("apparait"); coller.hidden = false; depart(); }, "On recommence"),
+      bOk(() => { bip("ok"); etoile(feuille); setTimeout(suivant, 600); })]);
+  }
+  depart();
+}
+
+function rendreTrain(train, { feuille, adulte, suivant }) {
+  ajoute(feuille, h("p", { class: "consigne" }, "Lis les syllabes."),
+    h("div", { class: "train lecture" }, train.map(s => h("button", { onclick: e => e.currentTarget.classList.toggle("dur") }, s.texte))));
+  bandeAdulte(adulte, [astuce("De gauche à droite, le doigt sous chaque syllabe. Touchez celles qui ont coincé : elles passent en orange, à relire."),
+    bOk(() => { bip("ok"); suivant(); }, "Tout est lu")]);
+}
+
+const ACTS = {
+  sons: {
+    titre: "Les sons", icone: "sons", court: "Je dis le son de la lettre",
+    conseil: ["Montrez la lettre et demandez : « Quel son fait cette lettre ? » On attend le son, pas le nom de la lettre.",
+      "Les quatre écritures sont celles de l'en-tête du fichier : attachée, script, capitale, capitale attachée.",
+      "Si elle hésite, montrez le mot-repère : on l'entend dans le mot."],
+    preparer(n) {
+      const f = SON[etat.focus];
+      return melanger([f, ...tirer(etat.sons.map(id => SON[id]).filter(s => s !== f), n - 1)]);
+    },
+    rendre(s, { feuille, adulte, suivant }) {
+      const g = s.g[0];
+      const rep = h("div", { class: "repere", hidden: true }, h("span", { class: "emo" }, s.e), h("span", null, s.rep), bEcouter(s.rep));
+      ajoute(feuille, h("p", { class: "consigne" }, "Quel son fait cette lettre ?"),
+        h("div", { class: "quatre" }, h("span", { class: "f-cur" }, g), h("span", { class: "f-scr principal" }, g),
+          h("span", { class: "f-scr" }, majuscule(g)), h("span", { class: "f-cur" }, majuscule(g))),
+        s.g.length > 1 ? h("div", { class: "aussi" }, "Ce son s'écrit aussi : " + s.g.slice(1).join(", ")) : null,
+        rep, h("button", { class: "btn discret", onclick: e => { rep.hidden = false; e.currentTarget.hidden = true; } }, ic("image"), "Voir le mot-repère"));
+      bandeAdulte(adulte, [astuce("On dit " + s.dire),
+        bEncore(() => { rep.hidden = false; }, "On l'écoute ensemble"),
+        bOk(() => { bip("ok"); etoile(feuille); setTimeout(suivant, 650); }, "Bon son !")]);
+    }
+  },
+
+  fusion: {
+    titre: "Je fusionne", icone: "fusion", court: "Je colle deux sons",
+    conseil: ["Faites dire le premier son en le tenant longtemps, puis glisser vers le second : « mmmm… a » donne « ma ». Le doigt suit la flèche.",
+      "Pour p, t, d, b, c, g, le son est trop bref pour être tenu : on le dit déjà collé à la voyelle.",
+      "Les syllabes à l'envers, comme al, ir ou or, sont dans les dictées de la classe : on part de la voyelle.",
+      "La dernière carte est un train de syllabes, comme l'exercice « Lis les syllabes » du fichier."],
+    vide: "Il faut au moins une consonne parmi les sons vus pour fusionner.",
+    preparer(n) {
+      const s = syllabes(etat, n);
+      return s.length ? [...s, { train: syllabes(etat, [6, 8, 10][etat.niveau - 1], 0.3) }] : [];
+    },
+    rendre(it, ctx) { return it.train ? rendreTrain(it.train, ctx) : rendreSyllabe(it, ctx); }
+  },
+
+  mots: {
+    titre: "Je lis des mots", icone: "mots", court: "Je lis, puis je vois l'image",
+    conseil: ["Elle lit seule, le doigt sous chaque arc : un arc, une syllabe. Les lettres grises ne se prononcent pas.",
+      "L'image n'apparaît qu'après la lecture : elle vérifie le sens, elle ne sert pas à deviner.",
+      "Si elle bloque, touchez « On réessaie » : le mot se sépare en syllabes, et il reviendra plus souvent."],
+    preparer: n => choisirMots(etat, n, false),
+    rendre(m, { feuille, adulte, suivant }) {
+      const lec = h("div", { class: "lecture grand" }, rendreMot(m, m.forme));
+      const img = h("div", { class: "image", hidden: true }, m.e || "⭐");
+      ajoute(feuille, h("p", { class: "consigne" }, "Lis le mot."), lec, img);
+      bandeAdulte(adulte, [astuce("Elle lit seule. Vous validez quand le mot est lu en entier."),
+        bEncore(() => { lec.classList.add("decoupe"); etat.difficiles[m.forme] = (etat.difficiles[m.forme] || 0) + 1; sauver(); }),
+        bOk(() => {
+          etat.lus[m.forme] = (etat.lus[m.forme] || 0) + 1; sauver(); bip("ok");
+          img.hidden = false; img.classList.add("apparait"); Voix.dire(m.forme);
+          ajoute(feuille, bEcouter(m.forme));
+          bandeAdulte(adulte, [astuce(m.e ? "Demandez-lui ce que montre l'image : est-ce bien le mot lu ?" : "Bravo !"), bSuivant(suivant)]);
+        })]);
+    }
+  },
+
+  trouve: {
+    titre: "Lis et trouve", icone: "trouve", court: "Je lis et je touche l'image",
+    conseil: ["Elle lit le mot seule, puis touche la bonne image.",
+      "Une erreur ? Relisez le mot ensemble, syllabe par syllabe, avant un nouvel essai.",
+      "Les trois images ne donnent pas la réponse : il faut lire le mot pour choisir."],
+    preparer: n => choisirMots(etat, n, true),
+    rendre(m, { feuille, adulte, suivant }) {
+      const opts = melanger([m.e, ...tirer(IMAGES.filter(e => e !== m.e), 2)]);
+      let rate = false;
+      ajoute(feuille, h("p", { class: "consigne" }, "Lis le mot et touche la bonne image."),
+        h("div", { class: "lecture grand" }, rendreMot(m, m.forme)),
+        h("div", { class: "choix" }, opts.map(e => h("button", { "aria-label": "Image", onclick: ev => {
+          const b = ev.currentTarget;
+          if (e === m.e) { b.classList.add("juste"); bip("ok"); if (!rate) { etat.lus[m.forme] = (etat.lus[m.forme] || 0) + 1; sauver(); } Voix.dire(m.forme); setTimeout(suivant, 1400); }
+          else { rate = true; b.classList.add("non", "secoue"); bip("non"); etat.difficiles[m.forme] = (etat.difficiles[m.forme] || 0) + 1; sauver(); }
+        } }, e))));
+      bandeAdulte(adulte, [astuce("Laissez-la choisir seule. Une erreur ? On relit, puis elle choisit à nouveau."), bSuivant(suivant, "Passer")]);
+    }
+  },
+
+  ecris: {
+    titre: "J'écris", icone: "ecris", court: "J'écris avec les étiquettes", mode: null,
+    conseil: ["Dictez lentement en articulant. Elle cherche les étiquettes dans l'ordre des sons qu'elle entend.",
+      "Une case « chut » attend une lettre muette : elle ne s'entend pas, c'est la mémoire du mot.",
+      "La dictée de la semaine reprend la feuille de la classe, avec les colonnes de son groupe. Vous pouvez la modifier dans le coin des parents."],
+    vide: "Pas encore de mot à écrire avec les sons vus en classe.",
+    modeAuto() { return listeDictee(etat, etat.focus).length ? "dictee" : "melange"; },
+    preparer(n) {
+      const mode = this.mode || this.modeAuto();
+      const images = k => tirer(motsLisibles(etat).filter(m => m.e && m.forme === m.forme.toLowerCase()), k, poidsMot(etat)).map(m => ({ texte: m.forme, mot: m, image: m.e }));
+      const syl = k => syllabes(etat, k).map(s => ({ texte: s.texte, dicte: true }));
+      let items;
+      if (mode === "dictee") {
+        const l = listeDictee(etat, etat.focus).map(t => ({ texte: t, dicte: true }));
+        items = n < l.length ? tirer(l, n) : l;
+      } else if (mode === "syllabes") items = syl(n);
+      else if (mode === "images") items = images(n);
+      else { const k = Math.ceil(n / 2); items = [...syl(n - k), ...images(k)]; }
+      return items;
+    },
+    rendre(it, { feuille, adulte, suivant, enSeance }) {
+      const A = ACTS.ecris;
+      if (!enSeance) {
+        const modes = [["dictee", "La dictée de la semaine"], ["syllabes", "Des syllabes"], ["images", "Des mots-images"]]
+          .filter(([m]) => m !== "dictee" || listeDictee(etat, etat.focus).length);
+        const actif = A.mode || A.modeAuto();
+        ajoute(feuille, h("div", { class: "modes" }, modes.map(([m, t]) =>
+          h("button", { "aria-pressed": String(actif === m || (actif === "melange" && m === "images")), onclick: () => { A.mode = m; lancer("ecris", 6); } }, t))));
+      }
+      const tags = it.mot ? it.mot.tags : etat.sons;
+      const mots = decouper(it.texte, tags);
+      const lexique = it.texte.replace(/[.,!?]/g, "").split(/\s+/).map(w => PAR_FORME.get(w.toLowerCase()) || null);
+      const slots = [];
+      const zone = h("div", { class: "cases lecture" }, mots.map((cases, k) => {
+        const chut = casesMuettes(lexique[k], cases);
+        return h("div", { class: "m" }, cases.map((c, j) => {
+          const s = { attendu: c, tuile: null };
+          s.el = h("button", { class: "case" + (chut[j] ? " chut" : ""), "aria-label": "Case " + (slots.length + 1), onclick: () => retirer(s) });
+          slots.push(s); return s.el;
+        }));
+      }));
+      const attendus = slots.map(s => s.attendu);
+      const pool = [...new Set(etat.sons.map(id => SON[id].g[0]))].filter(g => !attendus.includes(g) && g !== "h");
+      const tuiles = melanger([...attendus, ...tirer(pool, 3)]).map(t => {
+        const tu = { t }; tu.b = h("button", { class: "tuile lecture", onclick: () => poser(tu) }, t); return tu;
+      });
+      const verifier = h("button", { class: "btn plein", disabled: true, onclick: controle }, ic("ok"), "Vérifier");
+      const tuilesZone = h("div", { class: "tuiles" }, tuiles.map(t => t.b));
+      const souffle = h("span", { class: "souffle lecture", hidden: true }, it.texte);
+      let essais = 0;
+      function poser(tu) {
+        const libre = slots.find(s => !s.tuile); if (!libre) return;
+        libre.tuile = tu; libre.el.textContent = tu.t; libre.el.classList.add("pleine"); libre.el.classList.remove("faux");
+        tu.b.disabled = true; verifier.disabled = slots.some(s => !s.tuile);
+      }
+      function retirer(s) {
+        if (!s.tuile) return;
+        s.tuile.b.disabled = false; s.tuile = null; s.el.textContent = ""; s.el.classList.remove("pleine", "faux");
+        verifier.disabled = true;
+      }
+      function reussi() {
+        slots.forEach(s => { s.el.classList.add("juste"); s.el.disabled = true; });
+        tuilesZone.hidden = true; verifier.hidden = true; bip("ok"); etoile(feuille); Voix.dire(it.texte);
+        ajoute(feuille, h("div", { class: "lecture moyen apparait" }, rendreJetons(jetons(it.texte))));
+        bandeAdulte(adulte, [astuce("Elle relit ce qu'elle a écrit, le doigt sous les arcs."), bSuivant(suivant)]);
+      }
+      function controle() {
+        let bon = true;
+        slots.forEach(s => { const ok = s.tuile && s.tuile.t === s.attendu; s.el.classList.toggle("faux", !ok); if (!ok) bon = false; });
+        if (bon) return reussi();
+        essais++; bip("non"); zone.classList.add("secoue"); setTimeout(() => zone.classList.remove("secoue"), 420);
+        if (essais >= 2) bandeAdulte(adulte, [astuce("Les cases orange sont à revoir : touchez-les pour rendre l'étiquette."), voir,
+          h("button", { class: "btn encore", onclick: () => { slots.forEach(s => { if (s.tuile) retirer(s); }); slots.forEach(s => { const tu = tuiles.find(t => t.t === s.attendu && !t.b.disabled); if (tu) poser(tu); }); reussi(); } }, ic("oeil"), "Montrer la réponse")]);
+      }
+      const voir = h("button", { class: "btn", onclick: () => { souffle.hidden = !souffle.hidden; } }, ic("oeil"), "Ce qu'il faut dicter");
+      const ecoute = it.image ? null : bEcouter(it.texte, "Écoute", true);
+      if (ecoute) { ecoute.classList.add("dictee"); ecoute.addEventListener("click", () => ecoute.classList.remove("appel")); }
+      ajoute(feuille, 
+        it.image ? h("div", { class: "image" }, it.image)
+          : Voix.dispo() ? ecoute
+          : h("div", { class: "oreille" }, ic("oreille"), "Écoute bien, puis écris."),
+        it.image ? bEcouter(it.texte, "Écouter le mot") : null,
+        h("p", { class: "consigne", style: "align-self:center" }, it.image ? "Écris le mot de l'image." : "Écris ce que tu entends."),
+        zone, tuilesZone, verifier);
+      bandeAdulte(adulte, [astuce(it.image ? "Elle dit le mot, puis l'écrit son par son." : Voix.dispo() ? "La voix dicte lentement ; « Écoute » la fait répéter. Vous pouvez aussi dicter vous-même :" : "Dictez lentement, deux fois. Votre aide-mémoire :"), souffle, voir]);
+      // La dictée part toute seule ; si le navigateur la refuse, le bouton appelle le doigt.
+      if (!it.image && ecoute) setTimeout(() => Voix.dire(it.texte, true).then(ok => { if (!ok) ecoute.classList.add("appel"); }), 450);
+    }
+  },
+
+  phrase: {
+    titre: "Je lis une phrase", icone: "phrase", court: "Je lis et je réponds",
+    conseil: ["Elle lit la phrase en entier, le doigt sous les mots. Les mots sans arc sont des mots-outils : ils se reconnaissent sans se déchiffrer.",
+      "Posez ensuite la question à voix haute : elle répond en touchant une image. Comprendre, c'est l'autre moitié de la lecture.",
+      "Si la lecture a été hachée, faites relire la phrase une seconde fois, d'une traite."],
+    vide: "Pas encore de phrase avec les sons vus en classe. Elles arrivent avec les prochains sons.",
+    preparer: n => choisirPhrases(etat, n),
+    rendre(p, { feuille, adulte, suivant }) {
+      const lec = h("div", { class: "lecture moyen phrase" }, rendreJetons(p.jetons));
+      ajoute(feuille, h("p", { class: "consigne" }, "Lis la phrase."), lec);
+      bandeAdulte(adulte, [astuce("Le doigt glisse sous la phrase. Une seconde lecture plus fluide si la première a été hachée."),
+        bEncore(() => lec.classList.add("decoupe")), bOk(question, "Phrase lue !")]);
+      function question() {
+        bip("ok"); Voix.dire(p.texte);
+        ajoute(feuille, bEcouter(p.texte, "Écouter la phrase"), h("div", { class: "question" }, "Demandez-lui : « " + p.q + " »"),
+          h("div", { class: "choix" }, melanger([p.bonne, ...p.faux]).map(e => h("button", { "aria-label": "Image", onclick: ev => {
+            const b = ev.currentTarget;
+            if (e === p.bonne) { b.classList.add("juste"); bip("ok"); bandeAdulte(adulte, [astuce("Bonne réponse !"), bSuivant(suivant)]); }
+            else { b.classList.add("non", "secoue"); bip("non"); }
+          } }, e))));
+        bandeAdulte(adulte, [astuce("Posez la question à voix haute. Elle répond en touchant une image."), bSuivant(suivant, "Passer")]);
+      }
+    }
+  }
+};
+const ORDRE_JEUX = ["sons", "fusion", "mots", "trouve", "ecris", "phrase"];
+
+// ---------- L'accueil ----------
+
+function accueil() {
+  ecran = "accueil"; seance = null; vider();
+  ajoute(racine, 
+    h("header", { class: "barre" }, h("div", { style: "flex:1;min-width:0" },
+      h("h1", { class: "titre-app" }, "Lire ensemble"),
+      h("p", { class: "sous-titre" }, "Dix minutes de lecture à deux, avec les sons de la classe."))),
+    etat.regle ? null : h("div", { class: "bandeau" },
+      h("span", null, "Premier réglage : vérifiez où en est la classe et le groupe de dictée."),
+      h("button", { class: "btn", onclick: parents }, ic("parent"), "Régler")),
+    h("div", { class: "classe" }, h("span", { class: "lbl" }, "Les sons de la classe :"),
+      etat.sons.map(id => h("span", { class: "puce" + (id === etat.focus ? " focus" : ""), title: id === etat.focus ? "Le son de la semaine" : null }, SON[id].g[0]))),
+    h("button", { class: "seance", onclick: lancerSeance },
+      h("span", { class: "jouer" }, ic("jouer")),
+      h("span", null, h("span", { class: "gros" }, "La séance du jour"), h("br"),
+        h("span", { class: "petit" }, "Six petites étapes, une dizaine de minutes, un autocollant à la fin.")),
+      h("span", { class: "pas" }, SEANCE.map(([c]) => h("span", null, ic(ACTS[c].icone), ACTS[c].titre)))),
+    h("div", { class: "jeux" }, ORDRE_JEUX.map(c => h("button", { class: "jeu", onclick: () => { seance = null; lancer(c, 6); } },
+      h("span", { class: "pic" }, ic(ACTS[c].icone)), h("b", null, ACTS[c].titre), h("small", null, ACTS[c].court)))),
+    h("div", { class: "pied" },
+      h("button", { class: "btn", onclick: album }, ic("etoile"), "Mon album · " + etat.album.length),
+      boutonParents(),
+      SUR_SITE ? h("a", { class: "btn discret", href: "/mentions-legales.html" }, "Mentions légales") : null));
+}
+
+function boutonParents() {
+  const b = h("button", { class: "btn discret maintien", title: "Maintenir appuyé pour ouvrir" },
+    h("span", { class: "ligne" }, ic("parent"), "Coin des parents (maintenir appuyé)"));
+  let t = null;
+  const fin = () => { clearTimeout(t); b.classList.remove("appui"); };
+  b.addEventListener("pointerdown", e => { e.preventDefault(); b.classList.add("appui"); t = setTimeout(() => { fin(); parents(); }, 1100); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => b.addEventListener(ev, fin));
+  b.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); parents(); } });
+  return b;
+}
+
+// ---------- Le coin des parents ----------
+
+function bloc(titre, texte, ...contenu) {
+  return h("section", { class: "bloc" }, h("h2", null, titre), texte ? h("p", null, texte) : null, ...contenu);
+}
+function interrupteur(id, libelle, valeur, changer) {
+  return h("button", { id, class: "interrupteur", role: "switch", "aria-checked": String(valeur), onclick: () => { changer(!valeur); } },
+    h("span", null, libelle), h("span", { class: "rail" }));
+}
+
+function parents() {
+  const y = ecran === "parents" ? window.scrollY : 0;
+  ecran = "parents"; seance = null; vider();
+  const refaire = () => { etat.regle = true; sauver(); appliquerAffichage(); parents(); };
+
+  const classeEn = h("select", { id: "classe-en", onchange: e => {
+    const k = ID_SONS.indexOf(e.target.value); etat.sons = ID_SONS.slice(0, k + 1); etat.focus = e.target.value; refaire();
+  } }, SONS.map((s, k) => h("option", { value: s.id, selected: s.id === etat.focus ? true : null }, (k + 1) + ". " + s.g.join(" · ") + " (" + s.rep + ")")));
+
+  const semaine = h("select", { id: "son-semaine", onchange: e => { etat.focus = e.target.value; refaire(); } },
+    etat.sons.map(id => h("option", { value: id, selected: id === etat.focus ? true : null }, SON[id].g.join(" · "))));
+
+  const coches = h("div", { class: "coches" }, SONS.map(s => h("button", {
+    "aria-pressed": String(etat.sons.includes(s.id)), class: s.id === etat.focus ? "focus" : null, title: s.rep,
+    onclick: () => {
+      etat.sons = etat.sons.includes(s.id) ? etat.sons.filter(x => x !== s.id) : ID_SONS.filter(x => x === s.id || etat.sons.includes(x));
+      if (!etat.sons.length) etat.sons = ["a"];
+      if (!etat.sons.includes(etat.focus)) etat.focus = etat.sons[etat.sons.length - 1];
+      refaire();
+    } }, s.g[0])));
+
+  const outils = h("div", { class: "coches" }, OUTILS.map(o => h("button", {
+    "aria-pressed": String(etat.outils.includes(o.id)), style: "font-weight:700",
+    onclick: () => { etat.outils = etat.outils.includes(o.id) ? etat.outils.filter(x => x !== o.id) : [...etat.outils, o.id]; refaire(); } }, o.id)));
+
+  const groupes = h("div", { class: "oeufs" }, [1, 2, 3].map(n => h("button", {
+    "aria-pressed": String(etat.niveau === n), "aria-label": "Groupe " + n + " œuf" + (n > 1 ? "s" : ""),
+    onclick: () => { etat.niveau = n; refaire(); } }, oeufs(n, COULEURS_OEUFS[n - 1]), h("span", { style: "margin-left:6px" }, ["1 œuf", "2 œufs", "3 œufs"][n - 1]))));
+
+  const son = SON[etat.focus];
+  const cols = (etat.dictees[etat.focus]) || DICTEES[etat.focus] || [[], [], []];
+  const zones = [0, 1, 2].map(k => h("label", { style: "display:grid;gap:6px" },
+    h("span", { class: "ligne" }, oeufs(k + 1, COULEURS_OEUFS[k]), k === 0 ? "Pour tous" : k === 1 ? "En plus pour 2 œufs" : "En plus pour 3 œufs"),
+    h("textarea", { id: "dictee-" + k, rows: 2, onchange: () => {
+      etat.dictees[etat.focus] = zones.map(z => z.querySelector("textarea").value.split(/[\n,]+/).map(x => x.trim()).filter(Boolean));
+      etat.regle = true; sauver();
+    } }, (cols[k] || []).join("\n"))));
+
+  const ecriture = h("div", { class: "modes" }, [["script", "Script"], ["cursive", "Attachée"]].map(([v, t]) =>
+    h("button", { "aria-pressed": String(etat.ecriture === v), class: v === "cursive" ? "f-cur" : "f-scr", onclick: () => { etat.ecriture = v; refaire(); } }, t)));
+
+  const lus = Object.values(etat.lus).reduce((a, b) => a + b, 0);
+  const resistent = Object.entries(etat.difficiles).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([m]) => m);
+
+  let confirme = false;
+  const raz = h("button", { class: "btn discret danger", onclick: () => {
+    if (!confirme) { confirme = true; raz.lastChild.textContent = "Confirmer : tout effacer"; return; }
+    etat = etatPropre(null); sauver(); appliquerAffichage(); accueil();
+  } }, ic("encore"), h("span", null, "Tout remettre à zéro"));
+
+  ajoute(racine, 
+    barre("Coin des parents"),
+    h("div", { class: "reglages" },
+      bloc("Où en est la classe ?", "Choisissez le dernier son vu en classe : les sons d'avant se cochent, et celui-ci devient le son de la semaine. Pour la période 1, l'ordre est celui des dictées de la classe : a, i, puis r, o, l, é, u, s, f, e, m, ch, ou.",
+        h("div", { class: "ligne" }, h("label", { for: "classe-en" }, "La classe en est à"), classeEn)),
+      bloc("Les sons déjà vus", "Touchez un son pour le cocher ou le décocher, si la classe ne suit pas cet ordre. Le son de la semaine revient plus souvent dans les exercices.",
+        coches, h("div", { class: "ligne" }, h("label", { for: "son-semaine" }, "Le son de la semaine"), semaine)),
+      bloc("Les mots-outils appris", "Les mots de la boîte à outils du fichier : ils se reconnaissent sans se déchiffrer et s'affichent sans arcs, comme dans le fichier. Une phrase n'est proposée que si tous ses mots-outils sont cochés.", outils),
+      bloc("Son groupe en dictée", "Comme sur la feuille des dictées : 1, 2 ou 3 œufs. Le groupe règle aussi la longueur des mots et des phrases proposés.", groupes),
+      bloc("La dictée de la semaine : son « " + son.g[0] + " »", DICTEES[etat.focus] ? "Reprise de la feuille de la classe. Vous pouvez la modifier : un mot ou une syllabe par ligne." : "Recopiez ici la dictée de la semaine, un mot ou une syllabe par ligne : elle servira dans « J'écris ».",
+        ...zones, etat.dictees[etat.focus] && DICTEES[etat.focus] ? h("button", { class: "btn discret", onclick: () => { delete etat.dictees[etat.focus]; refaire(); } }, ic("encore"), "Revenir à la liste de la classe") : null),
+      bloc("L'écriture et les aides", "Retirez les aides quand elle n'en a plus besoin. Les arcs et les lettres grises reprennent les conventions du fichier de la classe.",
+        h("div", { class: "ligne" }, h("span", null, "Écriture des mots :"), ecriture),
+        interrupteur("arcs", "Arcs sous les syllabes", etat.arcs, v => { etat.arcs = v; refaire(); }),
+        interrupteur("muettes", "Lettres muettes en gris", etat.muettes, v => { etat.muettes = v; refaire(); }),
+        interrupteur("couleurs", "Syllabes en couleur, une sur deux", etat.couleurs, v => { etat.couleurs = v; refaire(); }),
+        interrupteur("bruit", "Petits sons de réussite", etat.bruit, v => { etat.bruit = v; refaire(); })),
+      blocVoix(),
+      bloc("Où elle en est", null,
+        h("div", { class: "chiffres" },
+          h("div", null, h("b", null, etat.seances), h("span", null, "séances finies")),
+          h("div", null, h("b", null, lus), h("span", null, "mots lus")),
+          h("div", null, h("b", null, Object.keys(etat.lus).length), h("span", null, "mots différents")),
+          h("div", null, h("b", null, etat.album.length), h("span", null, "autocollants"))),
+        etat.derniere ? h("p", null, "Dernière séance : " + new Date(etat.derniere + "T12:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) + ".") : null,
+        resistent.length ? h("p", null, "Les mots qui résistent, à relire : ", h("b", { class: "lecture" }, resistent.join(", ")), ". Ils reviennent plus souvent.") : null),
+      bloc("La méthode en six gestes", null, h("ol", { class: "methode" },
+        h("li", null, "On apprend le son des lettres, pas leur nom : « mmm », et non « ème »."),
+        h("li", null, "On fusionne : un son tenu glisse vers le suivant, « mmm… a » donne « ma ». C'est le cœur du CP."),
+        h("li", null, "On ne lit que des mots faits de sons déjà vus. L'image vient après la lecture, jamais avant : on ne devine pas."),
+        h("li", null, "On écrit ce qu'on lit : dicter des syllabes et des mots fixe les sons."),
+        h("li", null, "On comprend : après la phrase, une question. Et on relit pour lire plus vite."),
+        h("li", null, "Peu et souvent : dix minutes chaque jour valent mieux qu'une heure le dimanche. On s'arrête avant la fatigue."))),
+      bloc("Sauvegarde", sauvegarde === "compte"
+        ? "Les réglages et les progrès sont enregistrés dans votre compte : vous les retrouvez depuis un autre ordinateur."
+        : "Les réglages et les progrès sont enregistrés dans ce navigateur, sur cet ordinateur.", raz)));
+  window.scrollTo(0, y);
+}
+
+function blocVoix() {
+  if (!Voix.ok) return bloc("La lecture à voix haute", "Ce navigateur ne sait pas lire à voix haute. Chrome, Edge et Safari le font.");
+  const sansFr = Voix.toutes > 0 && !Voix.liste.length;
+  const choix = Voix.liste.length > 1 ? h("div", { class: "ligne" }, h("label", { for: "voix" }, "La voix"),
+    h("select", { id: "voix", onchange: e => { etat.voix = e.target.value; Voix.charger(); sauver(); Voix.dire("Bonjour ! On lit ensemble ?"); } },
+      Voix.liste.map(v => h("option", { value: v.voiceURI, selected: Voix.choisie && v.voiceURI === Voix.choisie.voiceURI ? true : null }, v.name + " (" + v.lang + ")")))) : null;
+  return bloc("La lecture à voix haute",
+    sansFr ? "Aucune voix française n'est installée sur cet ordinateur : la lecture à voix haute reste muette. Elle s'ajoute dans les réglages de langue du système."
+      : "La voix lit le mot une fois qu'elle l'a lu, la phrase après sa lecture, et dicte dans « J'écris ». Elle ne dit jamais un son seul : une voix de synthèse dirait le nom de la lettre, « èle », au lieu de son son.",
+    interrupteur("voix-haute", "Lire les mots à voix haute", etat.voixHaute, v => { etat.voixHaute = v; etat.regle = true; sauver(); parents(); }),
+    choix,
+    etat.voixHaute && !sansFr ? h("button", { class: "btn", onclick: () => Voix.dire("Bonjour ! On lit ensemble ?") }, ic("haut"), "Essayer la voix") : null);
+}
+
+// ---------- Démarrage ----------
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.target.closest && e.target.closest("button,select,textarea,summary")) return;
+  const b = [...document.querySelectorAll(".adulte .btn.ok, .adulte .btn.plein")].filter(x => !x.hidden).pop();
+  if (b) { e.preventDefault(); b.click(); }
+});
+appliquerAffichage();
+accueil();
+brancherNuage();
+
+</script>
+</body>
+</html>
