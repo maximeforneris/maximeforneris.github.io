@@ -2506,9 +2506,11 @@ var FONCTIONS_DEUX_CHAINES=[
   el.innerHTML="";
   var t=E("div",{"class":"tete-outil"});
   t.appendChild(E("p",{"class":"k"},"Outil"));
-  t.appendChild(E("h4",{},o.titre));
+  /* data-titre et data-intro sur le bloc remplacent ceux de l'outil : le meme
+     chronometre sert une salve d'automatismes et un QCM. 8 octobre 2026. */
+  t.appendChild(E("h4",{},el.getAttribute("data-titre")||o.titre));
   if(o.chaine)t.appendChild(E("p",{"class":"chaine"},"↳ "+o.chaine));
-  t.appendChild(E("p",{},o.intro));
+  t.appendChild(E("p",{},el.getAttribute("data-intro")||o.intro));
   el.appendChild(t);
   var d=E("div",{"class":"dedans"});
   el.appendChild(d);
