@@ -1,11 +1,12 @@
 Polices hébergées avec cette page
 =================================
 
-Toutes deux sont distribuées sous la licence SIL Open Font License, version 1.1,
+Toutes sont distribuées sous la licence SIL Open Font License, version 1.1,
 reproduite ci-dessous.
 
 Andika — Copyright 2004-2022 SIL International (https://software.sil.org/andika)
 Playwrite FR Moderne — Copyright 2023 The Playwrite Project Authors (https://github.com/TypeTogether/Playwrite)
+Playwrite FR Trad — Copyright 2023 The Playwrite Project Authors (https://github.com/TypeTogether/Playwrite)
 
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
 -----------------------------------------------------------
