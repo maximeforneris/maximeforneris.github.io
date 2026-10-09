@@ -10291,7 +10291,7 @@ button.mesures-cal-d:hover{outline:3px solid var(--accent-pale)}
   const resynchroniser = () => { try { if (typeof niveauDuParcours === "function") niveauDuParcours(); } catch (e) {} };
   const niveauMaths = () => { const e = etapeEnCours(); return e <= 2 ? 1 : e <= 6 ? 2 : 3; };
   // Le socle lit ces deux fonctions ; le module n'écrit jamais etat.niveauMaths lui-même.
-  window.PARCOURS = { etape: etapeEnCours, niveauMaths, fini: () => donnees().etape > 12, titre: n => (ETAPES_P[n - 1] || {}).titre };
+  window.PARCOURS = { etape: etapeEnCours, niveauMaths, fini: () => donnees().etape > 12, titre: n => (ETAPES_P[n - 1] || {}).titre, bandeau: () => bandeau() };
 
   // ----- les douze étapes -----
   const CADRE = ["materiel/cadre-de-dix.pdf", "Le cadre de dix à imprimer"];
@@ -10865,6 +10865,32 @@ button.mesures-cal-d:hover{outline:3px solid var(--accent-pale)}
     return s;
   }
 
+  // ----- le bandeau de l'onglet Compter : le chemin en tête, puisqu'il règle tous les jeux -----
+  function bandeau() {
+    const m = donnees(), neuf = !m.debut && !m.essais.length, fini = m.etape > 12, n = etapeEnCours();
+    const gagnees = Object.keys(m.acquises).length, due = revisionDue();
+    const limite = typeof LIMITES !== "undefined" ? LIMITES[niveauMaths() - 1] : null;
+    const pierres = h("div", { class: "parcours-b-pierres", role: "img", "aria-label": gagnees + " étapes gagnées sur 12" + (fini ? "" : ", étape " + n + " en cours") },
+      ETAPES_P.map(E => h("span", { class: "parcours-b-pierre " + statut(E.n) + (due === E.n ? " revoir" : ""), title: "Étape " + E.n + " : " + E.titre },
+        statut(E.n) === "acquise" ? "✓" : String(E.n))));
+    const jouer = () => { seance = null; jouerEtape(() => accueil()); };
+    return h("section", { class: "parcours-bandeau" },
+      h("div", { class: "parcours-b-tete" },
+        h("span", { class: "parcours-b-pic", "aria-hidden": "true" }, ic("p-chemin")),
+        h("div", null,
+          h("p", { class: "parcours-b-sur" }, ty("Le chemin des nombres · " + gagnees + " / 12")),
+          h("h2", null, ty(fini ? "Le chemin est fini !" : neuf ? "Par où commencer ?" : "Étape " + n + " : " + ETAPES_P[n - 1].titre)))),
+      pierres,
+      h("p", { class: "parcours-b-texte" }, ty(fini ? "Les douze étapes sont gagnées : les jeux sont réglés au plus haut."
+        : neuf ? "Un test de cinq minutes trouve son étape. Tant qu'il n'est pas fait, on part de l'étape 1."
+        : resume(n) + (due ? " · une révision attend" : "") + ".")),
+      limite ? h("p", { class: "parcours-b-regle" }, ty("C'est lui qui règle les jeux de cet onglet : nombres jusqu'à " + limite + ". Ils montent tout seuls quand une étape est gagnée.")) : null,
+      h("div", { class: "ligne" },
+        neuf ? h("button", { class: "btn plein", onclick: introTest }, ic("trouve"), ty("Faire le test de départ"))
+          : h("button", { class: "btn plein", onclick: jouer }, ic("jouer"), fini ? "Un peu de tout" : "Continuer l'étape " + n),
+        h("button", { class: "btn", onclick: () => ecranChemin() }, ic("p-chemin"), "Voir le chemin")));
+  }
+
   // ----- l'écran du chemin : les pierres, l'étape choisie, la liste -----
   function resume(n) {
     const m = donnees(), st = statut(n), a = m.acquises[n], r = m.revisions[n];
@@ -11048,6 +11074,20 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
 .parcours-saisie.non{border-color:var(--faux);background:var(--encore-pale)}
 .parcours-touches{display:grid;grid-template-columns:repeat(5,minmax(0,64px));gap:8px;width:100%;justify-content:center}
 .parcours-actions{display:flex;gap:10px;justify-content:center}
+.parcours-bandeau{display:grid;gap:12px;padding:20px;border-radius:20px;background:var(--papier);border:3px solid var(--accent);box-shadow:var(--ombre)}
+.parcours-b-tete{display:flex;gap:14px;align-items:center}
+.parcours-b-tete h2{margin:0;font-size:1.3rem;text-wrap:balance}
+.parcours-b-sur{margin:0;font-size:.85rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-fort)}
+.parcours-b-pic{flex:none;width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--sur-accent);display:grid;place-items:center}
+.parcours-b-pic svg{width:28px;height:28px}
+.parcours-b-pierres{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+.parcours-b-pierre{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.9rem;border:2px dashed var(--trait);color:var(--encre-2)}
+.parcours-b-pierre.acquise{background:var(--ok);border:0;color:var(--papier)}
+.parcours-b-pierre.cours{background:var(--accent);border:0;color:var(--sur-accent);box-shadow:0 0 0 4px var(--accent-pale)}
+.parcours-b-pierre.revoir{outline:3px solid var(--encore);outline-offset:1px}
+.parcours-b-texte,.parcours-b-regle{margin:0}
+.parcours-b-regle{color:var(--encre-2);font-size:.95rem}
+@media (max-width:520px){.parcours-b-pierres{grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media (max-width:760px){
   .parcours-haut{grid-template-columns:minmax(0,1fr)}
   .parcours-touches{grid-template-columns:repeat(5,minmax(0,56px));gap:6px}
@@ -12158,6 +12198,8 @@ function contenuOnglet(o) {
   }
   if (o === "compter") {
     niveauDuParcours();
+    // Le chemin des nombres règle tous les jeux de l'onglet : il passe en tête, avant la séance.
+    if (window.PARCOURS && typeof PARCOURS.bandeau === "function") out.push(PARCOURS.bandeau());
     const etn = etapesDe(planNombres()).filter((e, i, t) => t.findIndex(x => x.id === e.id) === i);
     if (etn.length) out.push(h("button", { class: "seance", onclick: lancerSeanceNombres },
       h("span", { class: "jouer" }, ic("jouer")),
@@ -12167,7 +12209,7 @@ function contenuOnglet(o) {
   }
   if (o === "compter") {
     const pilote = window.PARCOURS && typeof PARCOURS.etape === "function";
-    out.push(h("details", { class: "conseil niveau-maths" }, h("summary", null, "Réglages adulte"),
+    if (!pilote) out.push(h("details", { class: "conseil niveau-maths" }, h("summary", null, "Réglages adulte"),
       pilote ? h("p", null, "Le niveau des jeux suit le chemin des nombres : étape " + PARCOURS.etape() + ", nombres jusqu'à " + LIMITES[etat.niveauMaths - 1] + ". Pour le changer, choisissez l'étape dans « Le chemin des nombres ».")
         : h("div", { class: "ligne" }, h("span", { class: "lbl" }, "Les nombres jusqu'à :"),
           h("div", { class: "modes", role: "group", "aria-label": "Niveau en nombres" }, [1, 2, 3].map(n =>
@@ -12175,7 +12217,8 @@ function contenuOnglet(o) {
   }
   const sections = SECTIONS[o].concat([...new Set(RUBRIQUES.filter(r => r.onglet === o && !SECTIONS[o].includes(r.section)).map(r => r.section))]);
   sections.forEach(sec => {
-    const rs = RUBRIQUES.filter(r => r.onglet === o && r.section === sec).sort((a, b) => a.ordre - b.ordre);
+    // le chemin des nombres a son bandeau en tête : pas de carte en double
+    const rs = RUBRIQUES.filter(r => r.onglet === o && r.section === sec && !(r.id === "parcours" && window.PARCOURS && PARCOURS.bandeau)).sort((a, b) => a.ordre - b.ordre);
     if (rs.length) out.push(h("section", { class: "rayon" }, h("h2", { class: "etiquette-j" }, sec), h("div", { class: "jeux" }, rs.map(carteRubrique))));
   });
   return out;

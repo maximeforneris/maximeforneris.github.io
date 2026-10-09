@@ -548,6 +548,39 @@ function S(t,a,txt){
   return e;
 }
 function V(c){return "var(--"+c+")";}
+/* Un vecteur dans un schema porte sa fleche, comme dans le cours : on ecrit
+   VEC(svg, attrs, ["‖", ["AS"], "‖ = 2 m"]) — les morceaux en tableau sont des
+   noms de vecteur, poses dans un tspan.vec — puis FLECHES_VEC(svg) une fois le
+   svg dans la page : il mesure chaque tspan et trace une fleche au-dessus, de la
+   couleur du texte, et la retrace quand les polices sont chargees. Pose le
+   9 octobre 2026 avec les fleches des pages de la Tle CTRM. */
+function VEC(svg,a,parts){
+  var t=S("text",a);
+  parts.forEach(function(p){
+    if(typeof p==="string"){t.appendChild(document.createTextNode(p));}
+    else{var ts=S("tspan",{"class":"vec"});ts.textContent=p[0];t.appendChild(ts);}
+  });
+  svg.appendChild(t);
+  return t;
+}
+function FLECHES_VEC(svg){
+  [].forEach.call(svg.querySelectorAll(".vec-fleche"),function(e){e.parentNode.removeChild(e);});
+  [].forEach.call(svg.querySelectorAll("tspan.vec"),function(ts){
+    var b;
+    try{b=ts.getBBox();}catch(e){return;}
+    if(!b||!b.width)return;
+    var coul=ts.parentNode.getAttribute("fill")||"currentColor";
+    var y=b.y+b.height*0.14, x1=b.x+0.5, x2=b.x+b.width-0.5, h=2.6;
+    svg.appendChild(S("path",{"class":"vec-fleche",fill:"none",stroke:coul,
+      "stroke-width":"1.3","stroke-linecap":"round","stroke-linejoin":"round",
+      d:"M "+x1+" "+y+" L "+x2+" "+y+" M "+(x2-1.7*h)+" "+(y-h)+" L "+x2+" "+y+
+        " L "+(x2-1.7*h)+" "+(y+h)}));
+  });
+  if(document.fonts&&document.fonts.ready&&!svg._vecRe){
+    svg._vecRe=1;
+    document.fonts.ready.then(function(){FLECHES_VEC(svg);});
+  }
+}
 
 /* ─────────── coupe de paroi, avec le profil de temperature ─────────── */
 
