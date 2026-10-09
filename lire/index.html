@@ -2773,6 +2773,15 @@ function pluie(emoji) {
 
 // ---------- La lecture à voix haute : des mots entiers, jamais un son seul ----------
 
+// Une voix « naturelle » (réseau de neurones) sonne humain ; les voix anciennes du système sonnent robotiques.
+// Edge : « Online (Natural) » · Safari : « améliorée », « Premium » · Chrome : « Google », entre les deux.
+function voixNaturelle(v) { return /natural|neural|premium|enhanced|amélior/i.test(v.name); }
+function noteVoix(v) {
+  let s = /fr[-_]FR/i.test(v.lang) ? 5 : 0;                   // le français de France d'abord, comme en classe
+  if (voixNaturelle(v)) s += 40; else if (/online|google/i.test(v.name)) s += 20; else if (!v.localService) s += 10;
+  if (/vivienne|denise/i.test(v.name)) s += 2;                 // les plus posées, pour apprendre à lire
+  return s;
+}
 const Voix = {
   ok: typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined",
   toutes: 0, liste: [], choisie: null, jeton: 0,
@@ -2781,10 +2790,9 @@ const Voix = {
     try {
       const v = speechSynthesis.getVoices();
       this.toutes = v.length;
-      this.liste = v.filter(x => /^fr/i.test(x.lang));
-      this.choisie = this.liste.find(x => x.voiceURI === etat.voix)
-        || this.liste.find(x => /fr[-_]FR/i.test(x.lang) && /natural|neural|online|google|denise|henri|audrey|thomas|amélie|hortense|julie/i.test(x.name))
-        || this.liste.find(x => /fr[-_]FR/i.test(x.lang)) || this.liste[0] || null;
+      // Les meilleures d'abord : sans cela, Edge donnait Hortense, la vieille voix du système, avant Denise.
+      this.liste = v.filter(x => /^fr/i.test(x.lang)).sort((a, b) => noteVoix(b) - noteVoix(a));
+      this.choisie = this.liste.find(x => x.voiceURI === etat.voix) || this.liste[0] || null;
     } catch (e) { this.ok = false; }
   },
   // Sans voix française, on se tait plutôt que de lire avec un accent anglais.
@@ -2801,7 +2809,7 @@ const Voix = {
       const u = new SpeechSynthesisUtterance(prononcer(texte));
       u.lang = this.choisie ? this.choisie.lang : "fr-FR";
       if (this.choisie) u.voice = this.choisie;
-      u.rate = lent ? 0.6 : 0.72; u.pitch = 1.05;
+      u.rate = lent ? 0.6 : 0.72; u.pitch = this.choisie && voixNaturelle(this.choisie) ? 1 : 1.05;
       // Garder l'énoncé : ramassé trop tôt, Chrome en perd les évènements, et parfois le son.
       this.enCours = u;
       const parti = new Promise(ok => {
@@ -12313,12 +12321,25 @@ function blocFiches() {
 function blocVoix() {
   if (!Voix.ok) return bloc("La lecture à voix haute", "Ce navigateur ne sait pas lire à voix haute. Chrome, Edge et Safari le font.");
   const sansFr = Voix.toutes > 0 && !Voix.liste.length;
+  const nomCourt = v => v.name.replace(/^Microsoft\s+/, "").replace(/\s*Online\s*\(Natural\)/i, "").replace(/\s*-\s*French.*$/i, "");
   const choix = Voix.liste.length > 1 ? h("div", { class: "ligne" }, h("label", { for: "voix" }, "La voix"),
     h("select", { id: "voix", onchange: e => { etat.voix = e.target.value; Voix.charger(); sauver(); Voix.dire("Bonjour ! On lit ensemble ?"); } },
-      Voix.liste.map(v => h("option", { value: v.voiceURI, selected: Voix.choisie && v.voiceURI === Voix.choisie.voiceURI ? true : null }, v.name + " (" + v.lang + ")")))) : null;
+      Voix.liste.map(v => h("option", { value: v.voiceURI, selected: Voix.choisie && v.voiceURI === Voix.choisie.voiceURI ? true : null },
+        nomCourt(v) + " (" + v.lang + ")" + (voixNaturelle(v) ? " · naturelle" : ""))))) : null;
+  const naturelles = Voix.liste.filter(voixNaturelle);
+  const conseil = !Voix.liste.length ? null : naturelles.length
+    ? h("p", null, naturelles.length + " voix naturelle" + (naturelles.length > 1 ? "s" : "") + " sur cet appareil : ce sont celles qui sonnent humain. " +
+        (naturelles.some(v => /eloise/i.test(v.name)) ? "Essayez-les : Éloïse est une voix d'enfant. " : "") +
+        (naturelles.some(v => /online/i.test(v.name)) ? "Elles passent par Internet." : ""))
+    : h("p", { class: "voix-conseil" }, "Les voix de cet appareil sont anciennes : elles sonnent robotiques. Pour une voix naturelle, gratuite :",
+        h("ul", null,
+          h("li", null, "sur ordinateur, ouvrez Lire ensemble dans ", h("b", null, "Microsoft Edge"), " : ses voix « naturelles », dont Denise et Éloïse (une voix d'enfant), sonnent humain ;"),
+          h("li", null, "sur iPad ou iPhone : Réglages › Accessibilité › Contenu énoncé › Voix › Français, téléchargez une voix « améliorée », puis rechargez la page ;"),
+          h("li", null, "sur Android : Paramètres › Synthèse vocale, installez les voix françaises de Google en haute qualité.")));
   return bloc("La lecture à voix haute",
     sansFr ? "Aucune voix française n'est installée sur cet ordinateur : la lecture à voix haute reste muette. Elle s'ajoute dans les réglages de langue du système."
       : "La voix lit le mot une fois qu'elle l'a lu, la phrase après sa lecture, et dicte dans « J'écris ». Elle ne dit jamais un son seul : une voix de synthèse dirait le nom de la lettre, « èle », au lieu de son son. Sans voix, c'est vous qui lisez et dictez : la bande « Pour l'adulte » vous donne les mots. Le haut-parleur, en haut de chaque écran, coupe ou remet la voix d'un geste.",
+    conseil,
     interrupteur("voix-haute", "Avec la voix", etat.voixHaute, v => { etat.voixHaute = v; etat.regle = true; Voix.taire(); sauver(); appliquerAffichage(); parents(); }),
     choix,
     etat.voixHaute && !sansFr ? h("button", { class: "btn", onclick: () => Voix.dire("Bonjour ! On lit ensemble ?") }, ic("haut"), "Essayer la voix") : null);
