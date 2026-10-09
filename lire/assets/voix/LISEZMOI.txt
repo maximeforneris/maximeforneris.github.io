@@ -1,0 +1,6 @@
+Les sons de « Lire ensemble », enregistrés d'avance par une voix de synthèse libre.
+
+Voix : Piper (Rhasspy, licence MIT), voix « siwis », entraînée sur The SIWIS French Speech Synthesis Database (J. Yamagishi, P.-E. Honnet, P. N. Garner, A. Lazaridis), licence CC BY 4.0.
+Source de la voix : https://huggingface.co/rhasspy/piper-voices (fr_FR, siwis, medium).
+Base de données : https://datashare.is.ed.ac.uk/handle/10283/2353
+Licence de la base : https://creativecommons.org/licenses/by/4.0/
