@@ -12168,7 +12168,8 @@ function accueil() {
       h("p", { class: "sous-titre" }, "Dix minutes par jour, à deux : lire, écrire, compter.")), typeof puceLecteur === "function" ? puceLecteur() : null, boutonVoix()),
     etat.regle ? null : h("div", { class: "bandeau" },
       h("span", null, "Premier réglage : vérifiez où en est la classe et le groupe de dictée."),
-      h("button", { class: "btn", onclick: parents }, ic("parent"), "Régler")),
+      h("div", { class: "ligne" }, h("button", { class: "btn", onclick: parents }, ic("parent"), "Régler"),
+        h("button", { class: "btn discret", onclick: () => { etat.regle = true; sauver(); accueil(); } }, ic("ok"), "C'est déjà bon"))),
     barreOnglets,
     h("div", { class: "panneau", role: "tabpanel" }, o === "carnet" ? carnet() : contenuOnglet(o)),
     h("div", { class: "pied" },
@@ -12256,6 +12257,8 @@ function interrupteur(id, libelle, valeur, changer) {
 function parents() {
   const y = ecran === "parents" ? window.scrollY : 0;
   ecran = "parents"; seance = null; vider();
+  // Ouvrir le coin des parents, c'est avoir vu les réglages de ce lecteur : le bandeau « Premier réglage » s'en va.
+  if (!etat.regle) { etat.regle = true; sauver(); }
   const refaire = () => { etat.regle = true; sauver(); appliquerAffichage(); parents(); };
 
   const classeEn = h("select", { id: "classe-en", onchange: e => {
