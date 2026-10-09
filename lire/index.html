@@ -58,8 +58,10 @@ header.barre h1{font-size:1.35rem;margin:0;font-weight:700;flex:1;min-width:0;te
 .rond{width:52px;height:52px;border-radius:50%;background:var(--papier);box-shadow:var(--ombre);display:grid;place-items:center;font-size:1.3rem}
 .rond:hover{background:var(--accent-pale)}
 .rond.voix-bascule{flex:none}
+.accueil-titre{flex:1;min-width:0}
 /* sur téléphone, les étapes de la séance passent sous le titre : sinon il n'a plus de place */
-@media (max-width:560px){header.barre{flex-wrap:wrap;row-gap:8px} header.barre>.ligne,header.barre>.etapes{order:3;flex-basis:100%}}
+@media (max-width:560px){header.barre{flex-wrap:wrap;row-gap:8px} header.barre>.ligne,header.barre>.etapes{order:3;flex-basis:100%}
+  header.barre-accueil .accueil-titre{order:2;flex-basis:100%} header.barre-accueil .voix-bascule{margin-left:auto}}
 .rond.voix-bascule[aria-pressed=false]{color:var(--encre-2);background:var(--fond)}
 body.muet .btn.ecoute,body.muet .entendre-ecoute,body.muet .maphrase-dire{display:none!important}
 body.muet button.question svg{display:none}
@@ -2615,12 +2617,30 @@ function oeufs(n, couleur) {
 const COULEURS_OEUFS = ["var(--oeuf1)", "var(--oeuf2)", "var(--oeuf3)"];
 
 // ---------- Sauvegarde : le compte si possible, sinon ce navigateur ----------
+// Plusieurs lecteurs sur un même appareil : un registre (qui sont-ils, qui lit en ce moment) et un
+// état par lecteur. Le premier garde la clé d'origine : les progrès d'avant les lecteurs restent les siens.
+// Ni mot de passe ni serveur : un prénom et un animal, rangés là où l'était déjà la sauvegarde.
 
-const CLE = "lire-ensemble-v1";
-function lireLocal() { try { return JSON.parse(localStorage.getItem(CLE) || "null"); } catch (e) { return null; } }
-function ecrireLocal() { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) {} }
+const CLE = "lire-ensemble-v1", CLE_LECTEURS = "lire-ensemble-lecteurs";
+const ANIMAUX_LECTEURS = ["🦊", "🐰", "🐻", "🐼", "🦁", "🐯", "🐸", "🐧", "🦄", "🐢", "🐙", "🦋"];
+function lireJSON(cle) { try { return JSON.parse(localStorage.getItem(cle) || "null"); } catch (e) { return null; } }
+function ecrireJSON(cle, v) { try { localStorage.setItem(cle, JSON.stringify(v)); } catch (e) {} }
+function lecteursPropres(d) {
+  const brut = d && Array.isArray(d.liste) ? d.liste.filter(x => x && /^p\d{1,4}$/.test(x.id)) : [];
+  const liste = brut.map(x => ({ id: x.id, nom: String(x.nom || "").trim().slice(0, 24), e: ANIMAUX_LECTEURS.includes(x.e) ? x.e : "🦊" }));
+  if (!liste.length) liste.push({ id: "p1", nom: "", e: "🦊" });
+  const n = Math.max((d && +d.n) || 0, ...liste.map(x => +x.id.slice(1)));
+  return { liste, actif: liste.some(x => x.id === (d && d.actif)) ? d.actif : liste[0].id, n, maj: (d && +d.maj) || 0 };
+}
+const cleEtat = id => id === "p1" ? CLE : CLE + "-" + id;
+const nomDoc = id => id === "lecteurs" ? "lecteurs" : id === "p1" ? "lecture" : "lecture-" + id;
+let lecteurs = lecteursPropres(lireJSON(CLE_LECTEURS));
+function lireLocal(id) { return lireJSON(cleEtat(id || lecteurs.actif)); }
+function ecrireLocal() { ecrireJSON(cleEtat(lecteurs.actif), etat); }
 let etat = etatPropre(lireLocal());
-let docNuage = null, sauvegarde = "navigateur", ecritEnCours = false, aRefaire = false, minuterie = null;
+let dbNuage = null, uidNuage = null, sauvegarde = "navigateur", ecritEnCours = false, minuterie = null;
+const aEcrire = new Map();      // ce qui attend de partir vers le compte, un document par lecteur
+const docNuage = id => dbNuage.doc("data/users/" + uidNuage + "/" + nomDoc(id));
 
 function sauver() {
   etat.maj = Date.now();
@@ -2628,14 +2648,75 @@ function sauver() {
   clearTimeout(minuterie);
   minuterie = setTimeout(versNuage, 1200);
 }
-async function versNuage() {
-  if (!docNuage) return;
-  if (ecritEnCours) { aRefaire = true; return; }
+function versNuage() {
+  if (!dbNuage) return;
+  aEcrire.set(lecteurs.actif, JSON.parse(JSON.stringify(etat)));
+  envoyer();
+}
+function sauverLecteurs() {
+  lecteurs.maj = Date.now();
+  ecrireJSON(CLE_LECTEURS, lecteurs);
+  if (dbNuage) { aEcrire.set("lecteurs", JSON.parse(JSON.stringify(lecteurs))); envoyer(); }
+}
+async function envoyer() {
+  if (ecritEnCours) return;
   ecritEnCours = true;
-  try { await docNuage.set(JSON.parse(JSON.stringify(etat))); }
-  catch (e) { if (e && ["invalid_argument", "revoked", "not_granted", "capability_disabled"].includes(e.code)) { docNuage = null; sauvegarde = "navigateur"; } }
+  while (dbNuage && aEcrire.size) {
+    const [id, data] = aEcrire.entries().next().value;
+    aEcrire.delete(id);
+    try { await docNuage(id).set(data); }
+    catch (e) { if (e && ["invalid_argument", "revoked", "not_granted", "capability_disabled"].includes(e.code)) { dbNuage = null; sauvegarde = "navigateur"; } }
+  }
   ecritEnCours = false;
-  if (aRefaire) { aRefaire = false; versNuage(); }
+}
+// L'état d'un lecteur, le plus récent du navigateur et du compte. Rend vrai si le compte l'emportait.
+async function synchroLecteur(id) {
+  if (!dbNuage) return false;
+  try {
+    const snap = await docNuage(id).get();
+    const local = id === lecteurs.actif ? etat : etatPropre(lireLocal(id));
+    if (snap.exists) {
+      const d = snap.data();
+      if ((d.maj || 0) > (local.maj || 0)) {
+        if (id === lecteurs.actif) { etat = etatPropre(d); ecrireLocal(); appliquerAffichage(); }
+        else ecrireJSON(cleEtat(id), etatPropre(d));
+        return true;
+      }
+      if ((local.maj || 0) > (d.maj || 0)) { aEcrire.set(id, JSON.parse(JSON.stringify(local))); envoyer(); }
+    } else if (local.maj) { aEcrire.set(id, JSON.parse(JSON.stringify(local))); envoyer(); }
+  } catch (e) {}
+  return false;
+}
+// Qui lit en ce moment : propre à l'appareil, il ne change pas la date du registre.
+function changerLecteur(id) {
+  if (id === lecteurs.actif || !lecteurs.liste.some(x => x.id === id)) return;
+  clearTimeout(minuterie); versNuage();          // ce qui attendait part pour le lecteur d'avant
+  Voix.taire();
+  lecteurs.actif = id; ecrireJSON(CLE_LECTEURS, lecteurs);
+  etat = etatPropre(lireLocal()); appliquerAffichage();
+  synchroLecteur(id).then(neuf => { if (neuf && ecran === "accueil") accueil(); });
+}
+function ajouterLecteur(nom, animal) {
+  lecteurs.n++;
+  const id = "p" + lecteurs.n;
+  try { localStorage.removeItem(cleEtat(id)); } catch (e) {}
+  lecteurs.liste.push({ id, nom: String(nom || "").trim().slice(0, 24), e: ANIMAUX_LECTEURS.includes(animal) ? animal : "🦊" });
+  sauverLecteurs();
+  return id;
+}
+function modifierLecteur(id, nom, animal) {
+  const l = lecteurs.liste.find(x => x.id === id); if (!l) return;
+  l.nom = String(nom || "").trim().slice(0, 24); if (ANIMAUX_LECTEURS.includes(animal)) l.e = animal;
+  sauverLecteurs();
+}
+function supprimerLecteur(id) {
+  if (lecteurs.liste.length < 2 || !lecteurs.liste.some(x => x.id === id)) return;
+  if (id === lecteurs.actif) changerLecteur(lecteurs.liste.find(x => x.id !== id).id);
+  lecteurs.liste = lecteurs.liste.filter(x => x.id !== id);
+  sauverLecteurs();
+  try { localStorage.removeItem(cleEtat(id)); } catch (e) {}
+  aEcrire.delete(id);
+  if (dbNuage) docNuage(id).delete().catch(() => {});
 }
 async function brancherNuage() {
   try {
@@ -2644,14 +2725,15 @@ async function brancherNuage() {
     if (!db || !user) return;
     const id = await user.id();
     if (!id) return;
-    const ref = db.doc("data/users/" + id + "/lecture");
-    const snap = await ref.get();
-    docNuage = ref; sauvegarde = "compte";
-    if (snap.exists) {
-      const d = snap.data();
-      if ((d.maj || 0) > (etat.maj || 0)) { etat = etatPropre(d); ecrireLocal(); appliquerAffichage(); }
-      else if ((etat.maj || 0) > (d.maj || 0)) versNuage();
-    } else if (etat.maj) versNuage();
+    dbNuage = db; uidNuage = id; sauvegarde = "compte";
+    const reg = await docNuage("lecteurs").get();
+    if (reg.exists && (reg.data().maj || 0) > lecteurs.maj) {
+      const ici = lecteurs.actif;
+      lecteurs = lecteursPropres(Object.assign({}, reg.data(), { actif: ici }));
+      ecrireJSON(CLE_LECTEURS, lecteurs);
+      if (lecteurs.actif !== ici) { etat = etatPropre(lireLocal()); appliquerAffichage(); }
+    } else if (lecteurs.maj) { aEcrire.set("lecteurs", JSON.parse(JSON.stringify(lecteurs))); envoyer(); }
+    await synchroLecteur(lecteurs.actif);
     if (ecran === "accueil") accueil();
     if (ecran === "parents") parents();
   } catch (e) { /* on reste sur la sauvegarde du navigateur */ }
@@ -4145,7 +4227,7 @@ function bilan() {
   const fragiles = etat.sons.filter(id => maitrise("sons", id) === 1).map(id => SON[id].g[0]);
   const resistent = Object.entries(etat.difficiles).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([m]) => m);
   const der = etat.etapes.slice(-1)[0];
-  ajoute(racine, barre("Le bilan"),
+  ajoute(racine, barre("Le bilan" + (lecteurs.liste.length > 1 ? " · " + lecteurActif().e + " " + nomLecteur(lecteurActif()) : "")),
     h("div", { class: "reglages" },
       h("section", { class: "bloc" }, h("h2", null, "En bref"),
         h("p", null, Object.keys(etat.jours).length + " jours de travail depuis le début, " + etat.seances + " séances du jour finies, " + etat.livres.length + " livres lus ensemble."),
@@ -8558,6 +8640,157 @@ function guide() {
   Cmp.langue = { series, offre, JEUX };
 })();
 
+// ---------- Les lecteurs : qui lit, et la progression de chacun ----------
+// Un lecteur, c'est un prénom et un animal, sur cet appareil : ni mot de passe, ni serveur. Chacun a ses
+// réglages de classe et ses progrès (le registre et la sauvegarde sont dans app.js). « Qui lit ? » est pour
+// l'enfant : de gros boutons. « La progression » est pour l'adulte : tous les lecteurs côte à côte.
+
+ICONES.lecteurs = '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2A5 5 0 0 1 21 19"/>';
+
+function lecteurActif() { return lecteurs.liste.find(x => x.id === lecteurs.actif) || lecteurs.liste[0]; }
+function nomLecteur(l) { return l.nom || (lecteurs.liste.length > 1 ? "Lecteur " + l.id.slice(1) : "Sans prénom"); }
+
+// Dans la barre de l'accueil : qui lit, et la porte pour changer.
+function puceLecteur() {
+  const l = lecteurActif();
+  return h("button", { class: "lecteurs-puce", onclick: quiLit, title: "Qui lit ? Changer de lecteur" },
+    h("span", { class: "lecteurs-animal", "aria-hidden": "true" }, l.e), h("span", { class: "lecteurs-nom" }, l.nom || "Qui lit ?"));
+}
+
+// Le choix des animaux, pour ajouter ou modifier un lecteur.
+function choixAnimal(depart, changer) {
+  let pris = depart;
+  const g = h("div", { class: "lecteurs-animaux", role: "group", "aria-label": "Son animal" }, ANIMAUX_LECTEURS.map(a =>
+    h("button", { "aria-pressed": String(a === pris), onclick: e => {
+      pris = a; changer(a); [...g.children].forEach(b => b.setAttribute("aria-pressed", String(b === e.currentTarget)));
+    } }, a)));
+  return g;
+}
+function formLecteur(l, valider, libelle) {
+  let animal = l ? l.e : ANIMAUX_LECTEURS.find(a => !lecteurs.liste.some(x => x.e === a)) || "🐰";
+  const nom = h("input", { type: "text", maxlength: "24", autocomplete: "off", placeholder: "Son prénom", value: l ? l.nom : "", "aria-label": "Son prénom" });
+  const ok = () => valider(nom.value, animal);
+  nom.addEventListener("keydown", e => { if (e.key === "Enter") ok(); });
+  return h("div", { class: "lecteurs-form" }, nom, choixAnimal(animal, a => { animal = a; }),
+    h("button", { class: "btn plein", onclick: ok }, ic("ok"), libelle));
+}
+
+// ----- « Qui lit ? », pour l'enfant -----
+function quiLit() {
+  ecran = "qui-lit"; seance = null; vider();
+  ajoute(racine, barre("Qui lit ?"),
+    h("section", { class: "feuille" },
+      h("div", { class: "lecteurs-choix" }, lecteurs.liste.map(l =>
+        h("button", { class: "lecteurs-carte" + (l.id === lecteurs.actif ? " actif" : ""), "aria-pressed": String(l.id === lecteurs.actif),
+          onclick: () => { changerLecteur(l.id); bip("ok"); accueil(); } },
+          h("span", { class: "lecteurs-gros", "aria-hidden": "true" }, l.e), h("b", null, nomLecteur(l)))))),
+    h("div", { class: "reglages" },
+      h("section", { class: "bloc" }, h("h2", null, "Un nouveau lecteur"),
+        h("p", null, "Un frère, une sœur, un camarade : chacun a ses propres réglages de classe et ses propres progrès, sur cet appareil."),
+        formLecteur(null, (nom, animal) => { const id = ajouterLecteur(nom, animal); changerLecteur(id); bip("ok"); accueil(); }, "Ajouter")),
+      h("div", { class: "ligne" }, h("button", { class: "btn", onclick: progression }, ic("lecteurs"), "La progression de chacun (adulte)"))));
+}
+
+// ----- La progression, pour l'adulte -----
+const jourIl = k => new Date(Date.now() - k * 864e5).toISOString().slice(0, 10);
+function resumeLecteur(e) {
+  // Les fonctions du suivi lisent l'état global : on le prête le temps du calcul, sans rien écrire.
+  const garde = etat; etat = e;
+  try {
+    const sus = e.sons.filter(id => maitrise("sons", id) === 3).length;
+    const semaine = [0, 1, 2, 3, 4, 5, 6].filter(k => (e.jours[jourIl(k)] || 0) > 0).length;
+    const revoir = [], solides = [];
+    Object.keys(DOMAINES).forEach(d => {
+      const b = bilanDomaine(d);
+      if (b.reponses < 4) return;
+      if (b.taux >= 0.85) solides.push(d); else if (b.taux < 0.6) revoir.push(d);
+    });
+    const flu = e.fluence.slice(-1)[0];
+    return { sus, vus: e.sons.length, semaine, revoir, solides, flu,
+      lus: Object.values(e.lus).reduce((a, b) => a + b, 0), travailles: Object.keys(e.jours).length };
+  } finally { etat = garde; }
+}
+const dateLongue = d => new Date(d + "T12:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+
+function progression() {
+  const y = ecran === "progression" ? window.scrollY : 0;
+  ecran = "progression"; seance = null; vider();
+  const cartes = lecteurs.liste.map(l => carteProgression(l, l.id === lecteurs.actif ? etat : etatPropre(lireLocal(l.id))));
+  ajoute(racine, barre("La progression"),
+    h("div", { class: "reglages" },
+      h("section", { class: "bloc" }, h("p", null,
+        (lecteurs.liste.length > 1 ? lecteurs.liste.length + " lecteurs. " : "") + "Chacun a ses réglages de classe et ses progrès. " +
+        (sauvegarde === "compte" ? "Tout est enregistré dans votre compte." : "Tout reste sur cet appareil : rien n'est envoyé nulle part.") +
+        " Un lecteur n'a pas de mot de passe : c'est un prénom et un animal.")),
+      ...cartes,
+      h("section", { class: "bloc" }, h("h2", null, "Ajouter un lecteur"),
+        formLecteur(null, (nom, animal) => { ajouterLecteur(nom, animal); bip("ok"); progression(); }, "Ajouter"))));
+  window.scrollTo(0, y);
+  // Sur claude.ai, un autre ordinateur a pu faire avancer un lecteur : on relit le compte, une fois.
+  if (dbNuage && !progression.relu) {
+    progression.relu = true;
+    Promise.all(lecteurs.liste.map(l => synchroLecteur(l.id))).then(r => { if (r.some(Boolean) && ecran === "progression") progression(); })
+      .finally(() => { setTimeout(() => { progression.relu = false; }, 30000); });
+  }
+}
+
+function carteProgression(l, e) {
+  const r = resumeLecteur(e);
+  const actif = l.id === lecteurs.actif;
+  const edition = h("div", { class: "lecteurs-edition", hidden: true });
+  let confirme = false;
+  const suppr = lecteurs.liste.length > 1 ? h("button", { class: "btn discret danger", onclick: () => {
+    if (!confirme) { confirme = true; suppr.lastChild.textContent = "Confirmer : effacer " + nomLecteur(l) + " et ses progrès"; return; }
+    supprimerLecteur(l.id); progression();
+  } }, ic("encore"), h("span", null, "Supprimer ce lecteur")) : null;
+  ajoute(edition, formLecteur(l, (nom, animal) => { modifierLecteur(l.id, nom, animal); progression(); }, "Enregistrer"), suppr);
+  const nomsD = ds => ds.map(d => DOMAINES[d]);
+  return h("section", { class: "bloc lecteurs-bloc" + (actif ? " actif" : "") },
+    h("div", { class: "lecteurs-tete" },
+      h("span", { class: "lecteurs-gros", "aria-hidden": "true" }, l.e),
+      h("h2", null, nomLecteur(l)),
+      actif ? h("span", { class: "lecteurs-ici" }, "lit en ce moment") : null),
+    h("div", { class: "chiffres" },
+      h("div", null, h("b", null, e.seances), h("span", null, "séances du jour")),
+      h("div", null, h("b", null, r.semaine + " / 7"), h("span", null, "jours, cette semaine")),
+      h("div", null, h("b", null, r.sus + " / " + r.vus), h("span", null, "sons bien sus")),
+      h("div", null, h("b", null, r.lus), h("span", null, "mots lus"))),
+    h("p", null, e.derniere ? "Dernière séance du jour : " + dateLongue(e.derniere) + "." : r.travailles ? "Pas encore de séance du jour finie." : "Pas encore commencé."),
+    r.flu ? h("p", null, "Lecture à voix haute : " + r.flu.mclm + " mots par minute" + (r.flu.d ? ", le " + new Date(r.flu.d + "T12:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "") + ".") : null,
+    r.revoir.length ? h("p", null, "À revoir : ", h("b", null, nomsD(r.revoir).join(" · ")), ".") : null,
+    r.solides.length ? h("p", { class: "lecteurs-solide" }, "Solide : " + nomsD(r.solides).join(" · ") + ".") : null,
+    !r.revoir.length && !r.solides.length && r.travailles ? h("p", null, "Encore trop peu de réponses pour dire ce qui est solide.") : null,
+    h("div", { class: "ligne" },
+      h("button", { class: "btn plein", onclick: () => { changerLecteur(l.id); bilan(); } }, ic("parent"), "Son bilan détaillé"),
+      actif ? null : h("button", { class: "btn", onclick: () => { changerLecteur(l.id); bip("ok"); accueil(); } }, ic("jouer"), "C'est " + nomLecteur(l) + " qui lit"),
+      h("button", { class: "btn discret", onclick: ev => { edition.hidden = !edition.hidden; ev.currentTarget.setAttribute("aria-expanded", String(!edition.hidden)); }, "aria-expanded": "false" }, "Modifier")),
+    edition);
+}
+
+document.head.append(h("style", null, `
+.lecteurs-puce{display:inline-flex;align-items:center;gap:8px;max-width:min(42vw,220px);min-height:52px;padding:6px 14px 6px 8px;border-radius:999px;background:var(--papier);box-shadow:var(--ombre);color:var(--encre);font-weight:700;flex:none}
+.lecteurs-puce:hover{background:var(--accent-pale)}
+.lecteurs-animal{font-size:1.7rem;line-height:1}
+.lecteurs-nom{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.lecteurs-choix{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;width:100%}
+.lecteurs-carte{display:grid;justify-items:center;gap:8px;padding:20px 12px;border-radius:18px;background:var(--papier);border:3px solid var(--trait);font-size:1.25rem;color:var(--encre)}
+.lecteurs-carte.actif{border-color:var(--accent);background:var(--accent-pale)}
+.lecteurs-carte b{overflow-wrap:anywhere}
+.lecteurs-gros{font-size:3.2rem;line-height:1}
+.lecteurs-form{display:grid;gap:12px;justify-items:start}
+.lecteurs-form input{font:inherit;font-size:1.1rem;padding:10px 14px;border-radius:12px;border:2px solid var(--trait);background:var(--papier);color:var(--encre);width:min(100%,320px)}
+.lecteurs-animaux{display:flex;flex-wrap:wrap;gap:6px}
+.lecteurs-animaux button{width:48px;height:48px;border-radius:12px;font-size:1.6rem;border:2px solid var(--trait);background:var(--papier)}
+.lecteurs-animaux button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-pale)}
+.lecteurs-tete{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lecteurs-tete h2{margin:0}
+.lecteurs-tete .lecteurs-gros{font-size:2.4rem}
+.lecteurs-ici{font-size:.85rem;font-weight:700;color:var(--accent-fort);background:var(--accent-pale);border-radius:999px;padding:3px 10px}
+.lecteurs-bloc.actif{border:2px solid var(--accent-pale)}
+.lecteurs-solide{color:var(--encre-2)}
+.lecteurs-edition{display:grid;gap:12px;border-top:1px solid var(--trait);padding-top:14px}
+`));
+
 // ---------- Les lettres : leur nom, leur son, leurs quatre écritures ----------
 // Ici, et seulement ici, la voix dit le NOM des lettres : c'est l'objet de l'exercice.
 // Le son d'une lettre, lui, n'est jamais dit par la voix : on montre l'image du son de la classe.
@@ -11882,9 +12115,9 @@ function accueil() {
     h("button", { role: "tab", class: "onglet", "aria-selected": String(x.id === o), onclick: () => { etat.onglet = x.id; sauver(); accueil(); } },
       ic(x.icone), h("span", null, x.titre))));
   ajoute(racine,
-    h("header", { class: "barre" }, h("div", { style: "flex:1;min-width:0" },
+    h("header", { class: "barre barre-accueil" }, h("div", { class: "accueil-titre" },
       h("h1", { class: "titre-app" }, "Lire ensemble"),
-      h("p", { class: "sous-titre" }, "Dix minutes par jour, à deux : lire, écrire, compter.")), boutonVoix()),
+      h("p", { class: "sous-titre" }, "Dix minutes par jour, à deux : lire, écrire, compter.")), typeof puceLecteur === "function" ? puceLecteur() : null, boutonVoix()),
     etat.regle ? null : h("div", { class: "bandeau" },
       h("span", null, "Premier réglage : vérifiez où en est la classe et le groupe de dictée."),
       h("button", { class: "btn", onclick: parents }, ic("parent"), "Régler")),
@@ -12020,7 +12253,7 @@ function parents() {
   } }, ic("encore"), h("span", null, "Tout remettre à zéro"));
 
   ajoute(racine, 
-    barre("Coin des parents"),
+    barre("Coin des parents" + (typeof lecteurActif === "function" && lecteurs.liste.length > 1 ? " · " + lecteurActif().e + " " + nomLecteur(lecteurActif()) : "")),
     h("div", { class: "reglages" },
       typeof guide === "function" ? bloc("Le guide du CP", "La méthode de la classe, l'année en un coup d'œil, ce qui est évalué en janvier, la routine à la maison et les bons gestes.",
         h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: guide }, ic("guide"), "Ouvrir le guide"),
@@ -12039,6 +12272,11 @@ function parents() {
         interrupteur("muettes", "Lettres muettes en gris", etat.muettes, v => { etat.muettes = v; refaire(); }),
         interrupteur("couleurs", "Syllabes en couleur, une sur deux", etat.couleurs, v => { etat.couleurs = v; refaire(); }),
         interrupteur("bruit", "Petits sons de réussite", etat.bruit, v => { etat.bruit = v; refaire(); })),
+      typeof progression === "function" ? bloc("Les lecteurs", lecteurs.liste.length > 1
+        ? "Les réglages de cette page sont ceux de " + nomLecteur(lecteurActif()) + ". Chaque lecteur a les siens, et ses propres progrès."
+        : "Un frère, une sœur, un camarade ? Ajoutez un lecteur : chacun a ses réglages de classe et ses progrès, sur cet appareil, sans mot de passe.",
+        h("div", { class: "ligne" }, h("button", { class: "btn plein", onclick: progression }, ic("lecteurs"), "La progression de chacun"),
+          h("button", { class: "btn", onclick: quiLit }, "Qui lit ?"))) : null,
       blocFiches(),
       blocVoix(),
       bloc("Où elle en est", null,
