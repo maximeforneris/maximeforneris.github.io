@@ -3,9 +3,15 @@
  "short_name": "Lire ensemble",
  "lang": "fr",
  "description": "Dix minutes par jour, à deux : lire, écrire, compter. Pour le CP.",
+ "id": "./",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
+ "orientation": "any",
+ "categories": [
+  "education",
+  "kids"
+ ],
  "background_color": "#eef1e8",
  "theme_color": "#4e8a1e",
  "icons": [
@@ -24,6 +30,22 @@
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "maskable"
+  }
+ ],
+ "screenshots": [
+  {
+   "src": "assets/icones/ecran-etroit.jpg",
+   "sizes": "750x1624",
+   "type": "image/jpeg",
+   "form_factor": "narrow",
+   "label": "L'accueil de Lire ensemble"
+  },
+  {
+   "src": "assets/icones/ecran-large.jpg",
+   "sizes": "800x506",
+   "type": "image/jpeg",
+   "form_factor": "wide",
+   "label": "L'accueil de Lire ensemble"
   }
  ]
 }
