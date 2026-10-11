@@ -62,6 +62,22 @@ header.barre h1{font-size:1.35rem;margin:0;font-weight:700;flex:1;min-width:0;te
 .voix-credit{color:var(--encre-2);font-size:.92rem}
 .onglet{position:relative}
 .onglet-essai{position:absolute;top:3px;right:6px;font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75;line-height:1}
+.voix-reglages{display:grid;gap:14px}
+.voix-q{margin:4px 0 0;font-weight:700}
+.voix-choix-liste{display:grid;gap:10px}
+.voix-choix{display:grid;gap:10px;padding:12px 14px;border-radius:14px;border:2px solid var(--trait);background:var(--papier)}
+.voix-choix.actif{border-color:var(--accent);background:var(--accent-pale)}
+.voix-choix>button{display:flex;gap:12px;align-items:flex-start;text-align:left;color:var(--encre);background:none;padding:0}
+.voix-choix>button b{display:block}
+.voix-choix>button small{display:block;color:var(--encre-2);margin-top:2px}
+.voix-rond{flex:none;width:22px;height:22px;margin-top:2px;border-radius:50%;border:2px solid var(--encre-2);display:grid;place-items:center}
+.voix-choix.actif .voix-rond{border-color:var(--accent-fort)}
+.voix-choix.actif .voix-rond::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--accent-fort)}
+.voix-choix select{justify-self:start;max-width:100%}
+.voix-conseil p{margin:0 0 4px}
+.voix-conseil ul{margin:0;padding-left:20px}
+.voix-plus summary{cursor:pointer;font-weight:700;color:var(--encre-2)}
+.voix-plus{display:grid;gap:8px}
 .voix-vitesse{display:grid;gap:6px}
 .voix-vitesse label{font-weight:700}
 .voix-vitesse .ligne{flex-wrap:nowrap;gap:10px}
@@ -12873,47 +12889,52 @@ function blocFiches() {
 }
 
 function blocVoix() {
-  if (!Voix.ok && !CLES_VOIX.size) return bloc("La lecture à voix haute", "Ce navigateur ne sait pas lire à voix haute. Chrome, Edge et Safari le font.");
-  // La voix enregistrée d'abord : elle est la même partout, et plus naturelle que la plupart des voix du système.
-  const enregistree = CLES_VOIX.size ? [
-    interrupteur("voix-enregistree", "La voix enregistrée, plus naturelle", etat.voixEnregistree !== false, v => { etat.voixEnregistree = v; Voix.taire(); sauver(); parents(); if (v) Voix.dire("Bonjour ! On lit ensemble ?"); }),
-    h("p", { class: "voix-credit" }, CLES_VOIX.size.toLocaleString("fr-FR") + " mots et phrases enregistrés d'avance, avec une voix libre. Ce qui n'y est pas, par exemple un problème inventé au hasard, passe par la voix de l'appareil, réglée ci-dessous. Voix : " + (VOIX_REC.credit || "Piper, voix siwis") + ".")] : [];
+  if (!Voix.ok && !CLES_VOIX.size) return bloc("La voix", "Ce navigateur ne sait pas lire à voix haute. Chrome, Edge et Safari le font.");
   const sansFr = Voix.toutes > 0 && !Voix.liste.length;
-  // La vitesse : un curseur, entendu dès qu'on le lâche.
-  const pct = v => Math.round(v * 100) + " %";
-  const curseur = h("input", { type: "range", id: "vitesse-voix", min: "0.7", max: "1.3", step: "0.05", value: String(facteurVitesse()) });
-  const valeur = h("output", { for: "vitesse-voix", class: "voix-pct" }, pct(facteurVitesse()));
-  curseur.addEventListener("input", () => { valeur.textContent = pct(+curseur.value); });
-  curseur.addEventListener("change", () => { etat.vitesseVoix = +curseur.value; sauver(); Voix.dire("Bonjour ! On lit ensemble ?"); });
-  const vitesse = h("div", { class: "voix-vitesse" },
-    h("label", { for: "vitesse-voix" }, "Vitesse de la voix"),
-    h("div", { class: "ligne" }, h("small", null, "plus lente"), curseur, h("small", null, "plus rapide"), valeur),
-    Math.abs(facteurVitesse() - 1) > 0.001 ? h("button", { class: "btn discret", onclick: () => { etat.vitesseVoix = 1; sauver(); parents(); } }, "Revenir à la vitesse normale") : null);
+  const siwis = CLES_VOIX.size > 0, prendSiwis = siwis && etat.voixEnregistree !== false;
+  const essai = "Bonjour ! On lit ensemble ?";
+  // La voix de l'appareil : la liste, les meilleures d'abord, et comment en avoir une meilleure.
   const nomCourt = v => v.name.replace(/^Microsoft\s+/, "").replace(/\s*Online\s*\(Natural\)/i, "").replace(/\s*-\s*French.*$/i, "");
-  const choix = Voix.liste.length > 1 ? h("div", { class: "ligne" }, h("label", { for: "voix" }, "La voix"),
-    h("select", { id: "voix", onchange: e => { etat.voix = e.target.value; Voix.charger(); sauver(); Voix.dire("Bonjour ! On lit ensemble ?"); } },
-      Voix.liste.map(v => h("option", { value: v.voiceURI, selected: Voix.choisie && v.voiceURI === Voix.choisie.voiceURI ? true : null },
-        nomCourt(v) + " (" + v.lang + ")" + (voixNaturelle(v) ? " · naturelle" : ""))))) : null;
+  const liste = Voix.liste.length > 1 ? h("select", { id: "voix", "aria-label": "La voix de l'appareil", onchange: e => { etat.voix = e.target.value; Voix.charger(); sauver(); Voix.dire(essai); } },
+    Voix.liste.map(v => h("option", { value: v.voiceURI, selected: Voix.choisie && v.voiceURI === Voix.choisie.voiceURI ? true : null },
+      nomCourt(v) + (voixNaturelle(v) ? " · naturelle" : "")))) : null;
   const naturelles = Voix.liste.filter(voixNaturelle);
-  const conseil = !Voix.liste.length ? null : naturelles.length
-    ? h("p", null, naturelles.length + " voix naturelle" + (naturelles.length > 1 ? "s" : "") + " sur cet appareil : ce sont celles qui sonnent humain. " +
-        (naturelles.some(v => /eloise/i.test(v.name)) ? "Essayez-les : Éloïse est une voix d'enfant. " : "") +
-        (naturelles.some(v => /online/i.test(v.name)) ? "Elles passent par Internet." : ""))
-    : h("p", { class: "voix-conseil" }, "Les voix de cet appareil sont anciennes : elles sonnent robotiques. Pour une voix naturelle, gratuite :",
+  const conseil = !Voix.liste.length || naturelles.length ? null
+    : h("div", { class: "voix-conseil" }, h("p", null, "Les voix de cet appareil sont anciennes et sonnent robotiques. Pour une voix d'appareil plus naturelle, gratuite :"),
         h("ul", null,
-          h("li", null, "sur ordinateur, ouvrez Lire ensemble dans ", h("b", null, "Microsoft Edge"), " : ses voix « naturelles », dont Denise et Éloïse (une voix d'enfant), sonnent humain ;"),
-          h("li", null, "sur iPad ou iPhone : Réglages › Accessibilité › Contenu énoncé › Voix › Français, téléchargez une voix « améliorée », puis rechargez la page ;"),
-          h("li", null, "sur Android : Paramètres › Synthèse vocale, installez les voix françaises de Google en haute qualité.")));
-  return bloc("La lecture à voix haute",
-    sansFr ? "Aucune voix française n'est installée sur cet ordinateur : la lecture à voix haute reste muette. Elle s'ajoute dans les réglages de langue du système."
-      : "La voix lit le mot une fois qu'elle l'a lu, la phrase après sa lecture, et dicte dans « J'écris ». Elle ne dit jamais un son seul : une voix de synthèse dirait le nom de la lettre, « èle », au lieu de son son. Sans voix, c'est vous qui lisez et dictez : la bande « Pour l'adulte » vous donne les mots. Le haut-parleur, en haut de chaque écran, coupe ou remet la voix d'un geste.",
+          h("li", null, "sur ordinateur, ouvrez Lire ensemble dans ", h("b", null, "Microsoft Edge"), " (voix Denise, ou Éloïse, une voix d'enfant) ;"),
+          h("li", null, "sur iPad : Réglages › Accessibilité › Contenu énoncé › Voix › Français, une voix « améliorée » ;"),
+          h("li", null, "sur Android : Paramètres › Synthèse vocale, les voix Google en haute qualité.")));
+  const choisir = v => { etat.voixEnregistree = v; Voix.taire(); sauver(); parents(); Voix.dire(essai); };
+  const option = (actif, titre, texte, fn, ...plus) => h("div", { class: "voix-choix" + (actif ? " actif" : "") },
+    h("button", { role: "radio", "aria-checked": String(actif), onclick: fn }, h("span", { class: "voix-rond", "aria-hidden": "true" }), h("span", null, h("b", null, titre), h("small", null, texte))),
+    actif ? plus : null);
+  const vitesse = (() => {
+    const pct = v => Math.round(v * 100) + " %";
+    const c = h("input", { type: "range", id: "vitesse-voix", min: "0.7", max: "1.3", step: "0.05", value: String(facteurVitesse()) });
+    const val = h("output", { for: "vitesse-voix", class: "voix-pct" }, pct(facteurVitesse()));
+    c.addEventListener("input", () => { val.textContent = pct(+c.value); });
+    c.addEventListener("change", () => { etat.vitesseVoix = +c.value; sauver(); Voix.dire(essai); });
+    return h("div", { class: "voix-vitesse" }, h("label", { for: "vitesse-voix" }, "Vitesse"),
+      h("div", { class: "ligne" }, h("small", null, "plus lente"), c, h("small", null, "plus rapide"), val),
+      Math.abs(facteurVitesse() - 1) > 0.001 ? h("button", { class: "btn discret", onclick: () => { etat.vitesseVoix = 1; sauver(); parents(); } }, "Revenir à 100 %") : null);
+  })();
+  return bloc("La voix",
+    "Elle lit le mot après elle, pose les questions, dicte dans « J'écris ». Elle ne dit jamais un son seul : une voix de synthèse dirait le nom de la lettre, « èle », au lieu de son son.",
     interrupteur("voix-haute", "Avec la voix", etat.voixHaute, v => { etat.voixHaute = v; etat.regle = true; Voix.taire(); sauver(); appliquerAffichage(); parents(); }),
-    ...enregistree,
-    etat.voixHaute ? vitesse : null,
-    CLES_VOIX.size && etat.voixEnregistree !== false && Voix.ok ? h("p", { class: "voix-credit" }, "Pour le reste, la voix de l'appareil :") : null,
-    Voix.ok ? conseil : null,
-    choix,
-    etat.voixHaute && (!sansFr || CLES_VOIX.size) ? h("button", { class: "btn", onclick: () => Voix.dire("Bonjour ! On lit ensemble ?") }, ic("haut"), "Essayer la voix") : null);
+    etat.voixHaute ? h("div", { class: "voix-reglages" },
+      h("p", { class: "voix-q" }, "Quelle voix ?"),
+      h("div", { role: "radiogroup", "aria-label": "Quelle voix", class: "voix-choix-liste" },
+        siwis ? option(prendSiwis, "Siwis, la voix enregistrée", "Conseillée. Une voix naturelle, la même sur tous les appareils, enregistrée d'avance pour tous les mots, phrases et histoires de l'appli.", () => choisir(true)) : null,
+        Voix.ok && !sansFr ? option(!prendSiwis, "La voix de cet appareil", Voix.choisie ? "En ce moment : " + nomCourt(Voix.choisie) + (voixNaturelle(Voix.choisie) ? ", une voix naturelle." : ", une voix ancienne, plus robotique.") : "La voix de synthèse du navigateur.", () => choisir(false), liste, conseil) : null),
+      vitesse,
+      h("button", { class: "btn", onclick: () => Voix.dire(essai) }, ic("haut"), "Essayer la voix")) : h("p", null, "Sans voix, c'est vous qui lisez et dictez : la bande « Pour l'adulte » vous donne les mots."),
+    h("details", { class: "voix-plus" }, h("summary", null, "Comment ça marche"),
+      h("p", null, "Le haut-parleur, en haut de chaque écran, coupe ou remet la voix d'un geste ; c'est le même réglage que « Avec la voix »."),
+      siwis ? h("p", null, "Siwis a enregistré d'avance " + CLES_VOIX.size.toLocaleString("fr-FR") + " mots et phrases. Une question de jeu inventée au hasard est reconstituée de morceaux enregistrés, avec de petites pauses autour des nombres. Si un morceau manque, cette phrase-là passe par la voix de l'appareil" + (prendSiwis && liste ? " :" : ".")) : null,
+      siwis && prendSiwis && liste ? h("div", { class: "ligne" }, h("span", null, "Voix de l'appareil, en secours"), liste) : null,
+      siwis && prendSiwis ? conseil : null,
+      siwis ? h("p", { class: "voix-credit" }, "Voix : " + (VOIX_REC.credit || "Piper, voix siwis") + ".") : null));
 }
 
 // ---------- Démarrage ----------
