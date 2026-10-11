@@ -12743,6 +12743,13 @@ function carteRubrique(r) {
     rec && rec.meilleur ? h("small", { class: "record" }, "★ " + rec.meilleur + " au mieux") : null);
 }
 
+// Ce que la séance de nombres va faire aujourd'hui : les objets ne reviennent qu'au début d'une étape du chemin.
+function phraseSeanceNombres() {
+  const p = etat.modules.parcours || {}, n = window.PARCOURS ? PARCOURS.etape() : 1;
+  if (window.PARCOURS && PARCOURS.fini()) return "Un peu de tout pour garder la main, un calcul, un problème.";
+  if (!p.phase || p.phase === "concret") return "Deux minutes avec des objets pour l'étape " + n + " du chemin, puis l'écran : un calcul, un problème.";
+  return "L'étape " + n + " du chemin " + (p.phase === "image" ? "en images" : "en calculs") + ", un calcul, un problème.";
+}
 function contenuOnglet(o) {
   const out = [];
   if (o === "lire") {
@@ -12764,7 +12771,7 @@ function contenuOnglet(o) {
     if (etn.length) out.push(h("button", { class: "seance", onclick: lancerSeanceNombres },
       h("span", { class: "jouer" }, ic("jouer")),
       h("span", null, h("span", { class: "gros" }, "La séance de nombres"), h("br"),
-        h("span", { class: "petit" }, RUBRIQUES.some(r => r.id === "parcours") ? "2 minutes avec des objets, puis l'écran : l'étape du chemin, un calcul, un problème." : etn.length + " étapes, cinq minutes : calculer vite, compter, résoudre un problème.")),
+        h("span", { class: "petit" }, RUBRIQUES.some(r => r.id === "parcours") ? phraseSeanceNombres() : etn.length + " étapes, cinq minutes : calculer vite, compter, résoudre un problème.")),
       h("span", { class: "pas" }, etn.map(e => h("span", null, ic(ICONES[e.icone] ? e.icone : "etoile"), e.titre)))));
   }
   if (o === "compter") {
