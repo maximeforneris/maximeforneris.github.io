@@ -3285,16 +3285,27 @@ const SERIES = {};
 const PHRASES_DOUCES = ["On cherche encore.", "Regarde bien.", "Prends ton temps.", "Essaie une autre façon.", "Tu vas trouver.", "Se tromper, c'est chercher."];
 function serie(def) { SERIES[def.id] = def; return def; }
 
+// Ce qui distingue une question d'une autre, pour ne pas la reposer aussitôt : q.sig si la série le donne.
+const signatureQ = q => q.sig || [q.dire || "", q.cle || "", JSON.stringify(q.reponse === undefined ? null : q.reponse)].join("|");
 function jouerSerie(def, opts) {
   opts = opts || {};
   const N = opts.n || def.n || 8;
   let k = 0, etoiles = 0, justes = 0;
+  const recentes = [];
   ecran = "serie";
   function suivante() {
     if (k >= N) return fin();
     vider();
+    // Jamais la même question que l'une des trois d'avant : un petit jeu (le cadre de cinq, les doubles)
+    // n'a que quelques questions, et le hasard seul les faisait revenir d'affilée.
     let q = null;
-    for (let essai = 0; essai < 25 && !q; essai++) q = def.question(k);
+    for (let essai = 0; essai < 25; essai++) {
+      const c = def.question(k);
+      if (!c) continue;
+      q = c;
+      if (!recentes.includes(signatureQ(c)) || essai >= 12) break;
+    }
+    if (q) { recentes.push(signatureQ(q)); if (recentes.length > 3) recentes.shift(); }
     if (!q) { k = N; return fin(); }
     const feuille = h("section", { class: "feuille" }), adulte = h("div", { class: "adulte" });
     ajoute(racine, barre(def.titre, h("div", { class: "ligne" }, pastillesSeance(), h("span", { class: "compte" }, (k + 1) + " / " + N))),
@@ -3861,7 +3872,8 @@ const JEUX_MATHS = {
       "Avec de vrais objets d'abord : sept haricots, on en cache trois sous la main, combien en reste-t-il ?",
       "Ces décompositions sont la base du calcul : 8 + 5, c'est 8 + 2 + 3."],
     question(niv) {
-      const tout = entier(niv === 1 ? 2 : 4, LIMITES[niv - 1]), a = entier(0, tout), b = tout - a;
+      // une partie vide (« 8, c'est 0 et… ») une fois sur douze seulement : elle se comprend, mais ne s'entraîne pas
+      const tout = entier(niv === 1 ? 2 : 4, LIMITES[niv - 1]), a = Math.random() < 1 / 12 ? hasard([0, tout]) : entier(1, tout - 1), b = tout - a;
       return {
         reponse: b, dire: tout + ", c'est " + a + " et combien ?",
         rendre(feuille, repondre) {
@@ -4037,7 +4049,7 @@ function nombres() { etat.onglet = "compter"; accueil(); }
         return { a, op: MOINS, b, r: a - b };
       } },
     { id: "plus10", sym: "+10", titre: "+10", court: "Une dizaine de plus", maxRep: 100, niveau: 3, clavier: true,
-      tirer() { const a = entier(0, plafond100() - 10); return { a, op: "+", b: 10, r: a + 10 }; } }
+      tirer() { const a = entier(1, plafond100() - 10); return { a, op: "+", b: 10, r: a + 10 }; } }
   ];
   // La porte d'essai : les familles, pour les tirer des centaines de fois sans écran.
   (window.ESSAIS_COMPTER = window.ESSAIS_COMPTER || {}).calcul = { FAMILLES };
