@@ -3016,8 +3016,8 @@ function boutonVoix() {
   b.onclick = () => {
     etat.voixHaute = !etat.voixHaute;
     Voix.taire(); sauver(); appliquerAffichage(); peindre();
-    if (etat.voixHaute) Voix.dire("La voix est là.");
     if (ecran === "accueil") accueil(); else if (ecran === "parents") parents();
+    if (etat.voixHaute) Voix.dire("La voix est là.");      // après l'écran : le redessiner coupe la voix
   };
   peindre();
   return b;
@@ -9395,7 +9395,7 @@ document.head.append(h("style", null, `
     const valider = () => { const t = secret.value.trim(); if (t) composer({ texte: t, e: "🗣️", moi: true }); else secret.focus(); };
     secret.addEventListener("keydown", e => { if (e.key === "Enter") valider(); });
     ajoute(feuille, h("p", { class: "consigne" }, "Quel mot veux-tu écrire ?"),
-      h("div", { class: "libre-images" }, avecImage.map(m => h("button", { class: "libre-image", "aria-label": "Une image", onclick: () => { Voix.dire(m.forme); composer({ texte: m.forme, e: m.e, mot: m }); } }, m.e))));
+      h("div", { class: "libre-images" }, avecImage.map(m => h("button", { class: "libre-image", "aria-label": "Une image", onclick: () => composer({ texte: m.forme, e: m.e, mot: m }) }, m.e))));
     bandeAdulte(adulte, [astuce(ty("Elle choisit une image, ou dit le mot qu'elle veut écrire : tapez-le ici, il ne s'affiche pas. Elle écrit avec toutes les étiquettes des sons vus.")),
       secret, h("button", { class: "btn plein", onclick: valider }, ic("ok"), "Mon mot à moi")]);
   }
@@ -9421,6 +9421,8 @@ document.head.append(h("style", null, `
       h("div", { class: "ligne" },
         h("button", { class: "btn", onclick: () => { ecrit.pop(); peindre(); } }, "⌫ Effacer une étiquette"),
         h("button", { class: "btn plein", onclick: () => { if (ecrit.length) ecouter(cible, ecrit.join("")); } }, ic("ok"), "J'ai fini")));
+    // la voix dit le mot une fois l'écran posé : ouvrir un écran coupe la voix en cours
+    if (cible.mot) setTimeout(() => { if (ecran === "libre-composer") Voix.dire(cible.texte); }, 250);
     const motCache = h("b", { class: "lecture", hidden: true }, cible.texte);
     bandeAdulte(adulte, [astuce(ty("Elle écrit comme elle entend : « bato » pour bateau, c'est une réussite. Toutes les étiquettes ont la même couleur, pour ne rien souffler.")),
       cible.mot ? h("button", { class: "btn discret", onclick: () => { motCache.hidden = !motCache.hidden; } }, ic("oeil"), "Le mot (adulte)") : null, motCache,
