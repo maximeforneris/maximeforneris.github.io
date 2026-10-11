@@ -9372,23 +9372,42 @@ document.head.append(h("style", null, `
   }
 
   // ----- 2. J'écris ce que je veux : l'alphabet mobile libre -----
+  // Une image qui dit un verbe ou une idée (😂 rire, 💨 fumée) se lit mal à l'envers, de l'image au mot.
+  const FLOUES = new Set(["😂", "👋", "📖", "💨", "🌊", "🛣️", "🎬", "💰", "🏴‍☠️", "👕", "✨"]);
+  // Six mots à écrire : ceux qu'elle peut écrire avec les sons vus ; en début d'année, s'il en manque,
+  // ceux auxquels il manque le moins de sons (leurs étiquettes s'ajoutent alors pour ce mot-là).
+  function imagesPossibles() {
+    const pluriel = m => /s$/.test(m.forme) && PAR_FORME.has(m.forme.slice(0, -1));
+    const ok = m => m.e && !FLOUES.has(m.e) && !pluriel(m) && m.forme.length >= 3 && m.forme === m.forme.toLowerCase() && !/[\s']/.test(m.forme);
+    const vus = new Set();
+    const lis = melanger(motsLisibles(etat).filter(m => ok(m) && !vus.has(m.e) && vus.add(m.e)));
+    if (lis.length >= 6) return lis.slice(0, 6);
+    const manque = m => m.tags.filter(t => !etat.sons.includes(t)).length;
+    const autres = melanger(MOTS.filter(m => ok(m) && !lis.includes(m) && !vus.has(m.e))).sort((a, b) => manque(a) - manque(b))
+      .filter(m => !vus.has(m.e) && vus.add(m.e));
+    return [...lis, ...autres].slice(0, 6);
+  }
   function ecrireLibre() {
     const { feuille, adulte } = ecranModule("J'écris ce que je veux");
     ecran = "libre-ecrire";
-    const avecImage = melanger(MOTS.filter(m => m.e && m.forme.length >= 3 && m.forme === m.forme.toLowerCase())).slice(0, 6);
+    const avecImage = imagesPossibles();
     const secret = h("input", { type: "password", autocomplete: "off", class: "libre-secret", placeholder: "Le mot qu'elle a dit", "aria-label": "Le mot qu'elle veut écrire (caché)" });
     const valider = () => { const t = secret.value.trim(); if (t) composer({ texte: t, e: "🗣️", moi: true }); else secret.focus(); };
     secret.addEventListener("keydown", e => { if (e.key === "Enter") valider(); });
     ajoute(feuille, h("p", { class: "consigne" }, "Quel mot veux-tu écrire ?"),
-      h("div", { class: "libre-images" }, avecImage.map(m => h("button", { class: "libre-image", "aria-label": "Une image", onclick: () => composer({ texte: m.forme, e: m.e, mot: m }) }, m.e))));
+      h("div", { class: "libre-images" }, avecImage.map(m => h("button", { class: "libre-image", "aria-label": "Une image", onclick: () => { Voix.dire(m.forme); composer({ texte: m.forme, e: m.e, mot: m }); } }, m.e))));
     bandeAdulte(adulte, [astuce(ty("Elle choisit une image, ou dit le mot qu'elle veut écrire : tapez-le ici, il ne s'affiche pas. Elle écrit avec toutes les étiquettes des sons vus.")),
       secret, h("button", { class: "btn plein", onclick: valider }, ic("ok"), "Mon mot à moi")]);
   }
   function composer(cible) {
     const { feuille, adulte } = ecranModule("J'écris ce que je veux");
     ecran = "libre-composer";
-    // une étiquette par son vu, son écriture principale : elle écrit ce qu'elle entend, l'orthographe vient après
-    const graphies = [...new Set(etat.sons.map(id => SON[id].g[0]))].filter(g => g && g !== "h");
+    // Une étiquette par son vu, son écriture principale : elle écrit ce qu'elle entend, l'orthographe vient après.
+    // Les sons du mot choisi s'y ajoutent toujours, même pas encore vus : sans eux, le mot ne s'écrirait pas.
+    const sons = new Set(etat.sons);
+    if (cible.mot) cible.mot.tags.forEach(t => { if (SON[t]) sons.add(t); });
+    else decouper(cible.texte.toLowerCase(), ID_SONS).flat().forEach(g => { const id = ID_SONS.find(i => GRAPHEMES[i].includes(g)); if (id) sons.add(id); });
+    const graphies = [...new Set(ID_SONS.filter(id => sons.has(id)).map(id => SON[id].g[0]))].filter(g => g && g !== "h");
     const ecrit = [];
     const ligne = h("div", { class: "libre-ligne lecture", "aria-live": "polite" });
     const peindre = () => ligne.replaceChildren(...(ecrit.length ? ecrit.map((g, i) =>
@@ -9402,7 +9421,9 @@ document.head.append(h("style", null, `
       h("div", { class: "ligne" },
         h("button", { class: "btn", onclick: () => { ecrit.pop(); peindre(); } }, "⌫ Effacer une étiquette"),
         h("button", { class: "btn plein", onclick: () => { if (ecrit.length) ecouter(cible, ecrit.join("")); } }, ic("ok"), "J'ai fini")));
+    const motCache = h("b", { class: "lecture", hidden: true }, cible.texte);
     bandeAdulte(adulte, [astuce(ty("Elle écrit comme elle entend : « bato » pour bateau, c'est une réussite. Toutes les étiquettes ont la même couleur, pour ne rien souffler.")),
+      cible.mot ? h("button", { class: "btn discret", onclick: () => { motCache.hidden = !motCache.hidden; } }, ic("oeil"), "Le mot (adulte)") : null, motCache,
       h("button", { class: "btn discret", onclick: ecrireLibre }, "Un autre mot")]);
   }
   // Étape 1 : ça s'entend bien ? L'adulte juge à l'oreille, pas à l'orthographe.
