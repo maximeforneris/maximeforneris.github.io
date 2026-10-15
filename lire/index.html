@@ -9786,6 +9786,63 @@ function guide() {
   document.head.append(st);
 })();
 
+// ---------- L'imagier du tout-petit (demandé le 11 octobre 2026) ----------
+// Pour le petit frère de 2 ans : de grandes images du quotidien, le mot dit par la voix quand on touche.
+// Avant 3 ans, pas d'écran seul (commission « Enfants et écrans », 2024) : la version papier est conseillée,
+// l'écran se regarde à deux, l'adulte nomme, montre, pose les questions de la page. La grande sœur peut aussi
+// le lire à son petit frère : les mots sont écrits avec les arcs de sa classe.
+(() => {
+  const ID = "imagier";
+  const ty = s => String(s).replace(/ ([?!:;»])/g, " $1").replace(/« /g, "« ");
+  ICONES[ID] = '<rect x="3" y="4" width="8" height="8" rx="1.5"/><rect x="13" y="4" width="8" height="8" rx="1.5"/><rect x="3" y="14" width="8" height="6" rx="1.5"/><rect x="13" y="14" width="8" height="6" rx="1.5"/>';
+
+  function page(n) {
+    const P = IMAGIER[n];
+    const { feuille, adulte } = ecranModule("L'imagier · " + P.titre, h("span", { class: "compte" }, (n + 1) + " / " + IMAGIER.length));
+    ecran = "imagier";
+    ajoute(feuille, h("div", { class: "imagier-grille" }, P.images.map(([e, mot]) => {
+      const carte = h("button", { class: "imagier-carte", "aria-label": mot, onclick: () => {
+        feuille.querySelectorAll(".imagier-carte.vu").forEach(x => x.classList.remove("vu"));
+        carte.classList.add("vu"); Voix.dire(mot);
+      } }, h("span", { class: "imagier-image", "aria-hidden": "true" }, e), h("span", { class: "lecture imagier-mot" }, rendreJetons(jetons(mot))));
+      return carte;
+    })));
+    bandeAdulte(adulte, [
+      astuce(ty("À deux : montrez, nommez, attendez qu'il réponde, même d'un geste, et reprenez son mot en ajoutant un autre (« Chien ! » → « Oui, un gros chien »). Puis : " + P.questions.join(" "))),
+      n > 0 ? h("button", { class: "btn", onclick: () => page(n - 1) }, "‹ Page d'avant") : null,
+      n + 1 < IMAGIER.length ? bSuivant(() => page(n + 1), "Page suivante") : h("button", { class: "btn plein", onclick: sommaire }, ic("maison"), "Le sommaire")]);
+  }
+
+  function sommaire() {
+    const { feuille, adulte } = ecranModule("L'imagier du tout-petit");
+    ecran = "imagier";
+    ajoute(feuille,
+      h("div", { class: "imagier-themes" }, IMAGIER.map((P, n) => h("button", { class: "imagier-theme", onclick: () => page(n) },
+        h("span", { class: "imagier-image", "aria-hidden": "true" }, P.e), h("b", null, P.titre)))));
+    bandeAdulte(adulte, [
+      astuce(ty("Pour un enfant de moins de 3 ans, le papier vaut mieux que l'écran : imprimez l'imagier, et gardez l'écran pour un moment à deux. La grande sœur peut aussi le lire à son petit frère.")),
+      lienImprimer("imagier/imagier.pdf", "L'imagier à imprimer"),
+      h("button", { class: "btn plein", onclick: () => page(0) }, ic("jouer"), "Ouvrir l'imagier")]);
+  }
+
+  rubrique({ id: ID, onglet: "lire", section: "Pour le tout-petit", ordre: 10, titre: "L'imagier", icone: ID,
+    court: "Pour le petit frère : des images à nommer à deux", ouvrir: sommaire });
+
+  window.ESSAIS_IMAGIER = { page, sommaire };
+
+  const st = document.createElement("style");
+  st.textContent = `
+.imagier-grille{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:100%}
+.imagier-carte{display:grid;justify-items:center;gap:6px;padding:18px 8px 14px;border-radius:22px;background:var(--papier);border:3px solid var(--trait);color:var(--encre)}
+.imagier-carte.vu{border-color:var(--accent);background:var(--accent-pale)}
+.imagier-image{font-size:clamp(3.4rem,11vw,5.6rem);line-height:1.1}
+.imagier-mot{font-size:clamp(1.3rem,3.6vw,1.9rem)}
+.imagier-themes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;width:100%}
+.imagier-theme{display:grid;justify-items:center;gap:6px;padding:18px 10px;border-radius:20px;background:var(--papier);border:3px solid var(--trait);color:var(--encre);font-size:1.15rem}
+@media (max-width:520px){.imagier-grille{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}`;
+  document.head.append(st);
+})();
+
 // ---------- Mon cahier de maths : le papier du lot « plusieurs chemins » ----------
 // Le journal de maths des classes japonaises : une page par jour où l'on dessine, où l'on écrit
 // le calcul et où l'on dit comment on a fait. Les PDF sont faits par imprimer/journal/src/generer.js.
