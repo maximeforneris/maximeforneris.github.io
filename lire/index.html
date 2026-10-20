@@ -3454,21 +3454,22 @@ mar-mi-t[e]|m a r i t
 // d'avance (une au jour 5, les au jour 9, des au jour 13) : node verifier-vacances.js (brouillon).
 
 // lire : les rubriques de la séance prises ce jour-là (la première disponible de chaque liste).
-// avance : "son" ou "outil" ce jour-là. defi : la famille du défi. Le carnet : VAC_CARNET[n - 1].
+// avance : "son" ou "outil" ce jour-là ; quoi : lequel, celui de la page du carnet (les escales se
+// font dans l'ordre qu'on veut). defi : la famille du défi. Le carnet : VAC_CARNET[n - 1].
 const VAC_JOURS = [
   { n: 1,  date: "samedi 17 octobre",    lieu: "La plage",        e: "🏖️", lire: [["sons"], ["fusion", "tour"], ["lisvite", "mots"]], defi: "lisvite" },
   { n: 2,  date: "dimanche 18 octobre",  lieu: "La forêt",        e: "🌲", lire: [["entendre"], ["mots"], ["comprendre", "phrase"]], defi: "calcul" },
-  { n: 3,  date: "lundi 19 octobre",     lieu: "La montagne",     e: "⛰️", lire: [["sons"], ["fusion", "tour"], ["mots"]], avance: "son", defi: "desordre" },
+  { n: 3,  date: "lundi 19 octobre",     lieu: "La montagne",     e: "⛰️", lire: [["sons"], ["fusion", "tour"], ["mots"]], avance: "son", quoi: "n", defi: "desordre" },
   { n: 4,  date: "mardi 20 octobre",     lieu: "Le château",      e: "🏰", lire: [["tour", "fusion"], ["lisvite", "mots"], ["comprendre", "phrase"]], defi: "enigme" },
-  { n: 5,  date: "mercredi 21 octobre",  lieu: "Le volcan",       e: "🌋", lire: [["entendre"], ["mots"], ["comprendre", "phrase"]], avance: "outil", defi: "motcache" },
+  { n: 5,  date: "mercredi 21 octobre",  lieu: "Le volcan",       e: "🌋", lire: [["entendre"], ["mots"], ["comprendre", "phrase"]], avance: "outil", quoi: "une", defi: "motcache" },
   { n: 6,  date: "jeudi 22 octobre",     lieu: "La crique",       e: "🐚", lire: [["sons"], ["fusion", "tour"], ["lisvite", "mots"]], defi: "lisvite" },
-  { n: 7,  date: "vendredi 23 octobre",  lieu: "La jungle",       e: "🦜", lire: [["sons"], ["fusion", "tour"], ["mots"]], avance: "son", defi: "calcul" },
+  { n: 7,  date: "vendredi 23 octobre",  lieu: "La jungle",       e: "🦜", lire: [["sons"], ["fusion", "tour"], ["mots"]], avance: "son", quoi: "p", defi: "calcul" },
   { n: 8,  date: "samedi 24 octobre",    lieu: "Le cirque",       e: "🎪", lire: [["entendre"], ["lisvite", "mots"], ["comprendre", "phrase"]], defi: "desordre" },
-  { n: 9,  date: "dimanche 25 octobre",  lieu: "Le pont",         e: "🌉", lire: [["tour", "fusion"], ["mots"], ["comprendre", "phrase"]], avance: "outil", defi: "enigme" },
+  { n: 9,  date: "dimanche 25 octobre",  lieu: "Le pont",         e: "🌉", lire: [["tour", "fusion"], ["mots"], ["comprendre", "phrase"]], avance: "outil", quoi: "les", defi: "enigme" },
   { n: 10, date: "lundi 26 octobre",     lieu: "La gare",         e: "🚂", lire: [["sons"], ["lisvite", "mots"], ["comprendre", "phrase"]], defi: "motcache" },
-  { n: 11, date: "mardi 27 octobre",     lieu: "Le phare",        e: "🗼", lire: [["sons"], ["fusion", "tour"], ["mots"]], avance: "son", defi: "lisvite" },
+  { n: 11, date: "mardi 27 octobre",     lieu: "Le phare",        e: "🗼", lire: [["sons"], ["fusion", "tour"], ["mots"]], avance: "son", quoi: "t", defi: "lisvite" },
   { n: 12, date: "mercredi 28 octobre",  lieu: "Le port",         e: "⛵", lire: [["entendre"], ["lisvite", "mots"], ["comprendre", "phrase"]], defi: "calcul" },
-  { n: 13, date: "jeudi 29 octobre",     lieu: "La ferme",        e: "🌾", lire: [["tour", "fusion"], ["mots"], ["comprendre", "phrase"]], avance: "outil", defi: "desordre" },
+  { n: 13, date: "jeudi 29 octobre",     lieu: "La ferme",        e: "🌾", lire: [["tour", "fusion"], ["mots"], ["comprendre", "phrase"]], avance: "outil", quoi: "des", defi: "desordre" },
   { n: 14, date: "vendredi 30 octobre",  lieu: "La fête foraine", e: "🎡", lire: [["sons"], ["lisvite", "mots"], ["comprendre", "phrase"]], defi: "enigme" },
   { n: 15, date: "samedi 31 octobre",    lieu: "Le grand bal",    e: "🎃", lire: [["entendre"], ["fusion", "tour"], ["comprendre", "phrase"]], defi: "motcache" },
   { n: 16, date: "dimanche 1er novembre", lieu: "Le théâtre",     e: "🎭", lire: [["lisvite", "mots"], ["comprendre", "phrase"]], defi: "lisvite" }
@@ -14104,7 +14105,12 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
   const fait = n => !!(V().jours[n] && V().jours[n].fait);
   const nbFaits = () => VAC_JOURS.filter(j => fait(j.n)).length;
   const jourCourant = () => (VAC_JOURS.find(j => !fait(j.n)) || VAC_JOURS[VAC_JOURS.length - 1]).n;
-  const ouvert = n => n === 1 || fait(n) || fait(n - 1) || n <= jourCourant();
+  // toutes les escales s'ouvrent, dans l'ordre qu'on veut (demandé le 20 octobre 2026) ; la carte
+  // s'ouvre sur celle du jour d'après le calendrier, sinon sur la première pas faite
+  const escaleDuJour = () => {
+    const n = Math.round((new Date().setHours(12, 0, 0, 0) - new Date(2026, 9, 17, 12)) / 864e5) + 1;
+    return n >= 1 && n <= 16 && !fait(n) ? n : jourCourant();
+  };
   function noterPart(n, part) { jourEtat(n).parts[part] = aujourdhui(); sauver(); }
   const etoilesJour = n => (V().defis[n] || 0) + ((V().oral[n] && V().oral[n].etoiles) || 0);
   const totalEtoiles = () => VAC_JOURS.reduce((s, j) => s + etoilesJour(j.n), 0);
@@ -14112,6 +14118,9 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
   // ----- l'avance : le son et le mot-outil qui viennent ensuite -----
   const prochainSon = () => ID_SONS.find(s => !etat.sons.includes(s)) || null;
   const prochainOutil = () => OUTILS.map(o => o.id).find(id => !etat.outils.includes(id)) || null;
+  // celui de l'escale : le son ou le mot-outil de sa page du carnet (j.quoi) ; déjà vu, le suivant de la liste
+  const sonDe = j => j.quoi && !etat.sons.includes(j.quoi) ? j.quoi : prochainSon();
+  const outilDe = j => j.quoi && !etat.outils.includes(j.quoi) ? j.quoi : prochainOutil();
   function lienFiche(id) {
     const k = ID_SONS.indexOf(id);
     const base = SUR_SITE ? "assets/fiches/" : "https://forneris.fr/lire/assets/fiches/";
@@ -14128,12 +14137,12 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
     const el = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; svg.appendChild(e); return e; };
     el("path", { d: "M" + pos.map(p => p.join(" ")).join(" L"), class: "vacances-route" });
     pos.forEach(([x, y], k) => {
-      const n = k + 1, f = fait(n), ici = n === sel, o = ouvert(n);
+      const n = k + 1, f = fait(n), ici = n === sel;
       const g = document.createElementNS(NS, "g");
-      g.setAttribute("class", "vacances-escale" + (f ? " fait" : "") + (ici ? " ici" : "") + (o ? "" : " ferme"));
-      g.setAttribute("tabindex", o ? "0" : "-1"); g.setAttribute("role", "button");
-      g.setAttribute("aria-label", "Escale " + n + ", " + J(n).lieu + (f ? ", faite" : o ? "" : ", pas encore"));
-      if (o) { g.addEventListener("click", () => choisir(n)); g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choisir(n); } }); }
+      g.setAttribute("class", "vacances-escale" + (f ? " fait" : "") + (ici ? " ici" : ""));
+      g.setAttribute("tabindex", "0"); g.setAttribute("role", "button");
+      g.setAttribute("aria-label", "Escale " + n + ", " + J(n).lieu + (f ? ", faite" : ""));
+      g.addEventListener("click", () => choisir(n)); g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choisir(n); } });
       svg.appendChild(g);
       const c = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const kk in a) e.setAttribute(kk, a[kk]); if (txt != null) e.textContent = txt; g.appendChild(e); return e; };
       if (ici) c("circle", { cx: x, cy: y, r: 31, class: "vacances-halo" });
@@ -14148,8 +14157,8 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
   function partsDuJour(j) {
     const st = jourEtat(j.n).parts, oral = VAC_ORAL[j.n - 1], D = VAC_DEFIS[j.defi];
     const l = [];
-    if (j.avance === "son" && V().avancer) l.push(["decouverte", "✨", "Un son en avance" + (prochainSon() && !st.decouverte ? " : « " + SON[prochainSon()].g[0] + " »" : "")]);
-    if (j.avance === "outil" && V().avancer) l.push(["decouverte", "✨", "Un mot-outil en avance" + (prochainOutil() && !st.decouverte ? " : « " + prochainOutil() + " »" : "")]);
+    if (j.avance === "son" && V().avancer) l.push(["decouverte", "✨", "Un son en avance" + (sonDe(j) && !st.decouverte ? " : « " + SON[sonDe(j)].g[0] + " »" : "")]);
+    if (j.avance === "outil" && V().avancer) l.push(["decouverte", "✨", "Un mot-outil en avance" + (outilDe(j) && !st.decouverte ? " : « " + outilDe(j) + " »" : "")]);
     l.push(["lire", "📖", "Lire : " + j.lire.length + " jeux"], ["carnet", "✏️", "Mon carnet, page " + j.n],
       ["compter", "🔢", "Compter"], ["defi", D.e, "Défi : " + D.titre], ["scene", oral.e, "Sur scène : " + oral.titre]);
     return l.map(([p, e, t]) => ({ p, e, t, ok: p === "defi" ? V().defis[j.n] !== undefined : p === "scene" ? !!V().oral[j.n] : !!st[p] }));
@@ -14157,7 +14166,7 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
 
   function ecranCarte(sel) {
     ecran = "vacances"; seance = null;
-    sel = sel || jourCourant();
+    sel = sel || escaleDuJour();
     const j = J(sel);
     const { feuille, adulte } = ecranModule("Les vacances", h("span", { class: "compte" }, nbFaits() + " / 16"));
     feuille.classList.add("vacances-feuille");
@@ -14178,7 +14187,8 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
   }
 
   function blocsAdulte() {
-    const m = V(), s = prochainSon(), o = prochainOutil();
+    const m = V();
+    const quoi = av => VAC_JOURS.filter(j => j.avance === av).map(j => "« " + (av === "son" ? SON[j.quoi].g[0] : j.quoi) + " » à l'escale " + j.n).join(", ");
     const bascule = h("input", { type: "checkbox", checked: m.avancer ? "checked" : null,
       onchange: e => { m.avancer = e.currentTarget.checked; sauver(); ecranCarte(); } });
     const tracs = VAC_JOURS.filter(j => m.oral[j.n]).map(j => m.oral[j.n]);
@@ -14186,10 +14196,10 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
     return [
       h("section", { class: "bloc" }, h("h2", null, "Le principe"),
         h("p", null, ty("Seize escales, du samedi 17 octobre au dimanche 1er novembre. Chaque jour : trois jeux de lecture, une page du carnet à faire sur papier, les nombres, un défi dont elle choisit le niveau (🌱, 🌿 ou 🌳), et une scène pour parler devant un public : des peluches au début, toute la famille au grand spectacle du dernier jour.")),
-        h("p", null, ty("Une escale ne s'ouvre qu'après la précédente ; un jour sans, on reprend où on en était. Aucune note : des étoiles, et un diplôme à la fin."))),
+        h("p", null, ty("Toutes les escales sont ouvertes : la carte propose celle du jour, et l'on touche celle qu'on veut. Un jour sans, on rattrape quand on veut. Aucune note : des étoiles, et un diplôme quand les seize sont faites."))),
       h("section", { class: "bloc" }, h("h2", null, "Avancer pendant les vacances"),
         h("label", { class: "vacances-bascule" }, bascule, " Proposer un son et un mot-outil en avance"),
-        h("p", null, ty("Aux escales 3, 7 et 11, un son nouveau : le suivant de la liste, " + (s ? "aujourd'hui « " + SON[s].g[0] + " »" : "tous sont déjà vus") + ". Aux escales 5, 9 et 13, un mot-outil : " + (o ? "« " + o + " »" : "aucun") + " pour commencer. Chaque fois, vous confirmez ; « Pas cette fois » ne change rien.")),
+        h("p", null, ty("Un son nouveau, celui de la page du carnet : " + quoi("son") + ". Un mot-outil : " + quoi("outil") + ". S'il est déjà vu, c'est le suivant de la liste. Chaque fois, vous confirmez ; « Pas cette fois » ne change rien.")),
         h("p", null, ty("La classe ne les aura peut-être pas encore vus à la rentrée : ce n'est pas grave, c'est de l'avance. Pour revenir en arrière, le coin des parents, « Les sons vus »." + (m.ajouts.sons.length || m.ajouts.outils.length ? " Déjà ajoutés pendant les vacances : " + [...m.ajouts.sons.map(x => "« " + SON[x].g[0] + " »"), ...m.ajouts.outils.map(x => "« " + x + " »")].join(", ") + "." : "")))),
       h("section", { class: "bloc" }, h("h2", null, "Le carnet de vacances"),
         h("p", null, ty("Une page par jour : un mot ou une phrase à recopier en attaché, une dictée par groupe d'œufs, un problème, un dessin pour préparer la scène. Imprimez en taille réelle (100 %) ; le noir et blanc suffit. Sans imprimante, un cahier fait l'affaire : l'écran du jour montre tout.")),
@@ -14204,8 +14214,8 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
   function enveloppe(n, part, lancer) { return suite => lancer(() => { noterPart(n, part); suite(); }); }
   function etapesJour(j) {
     const E = [];
-    if (V().avancer && j.avance === "son" && prochainSon()) E.push({ id: "vac-son", titre: "Un son en avance", icone: "sons", lancer: enveloppe(j.n, "decouverte", s => decouverteSon(s)) });
-    if (V().avancer && j.avance === "outil" && prochainOutil()) E.push({ id: "vac-outil", titre: "Un mot-outil en avance", icone: "mots", lancer: enveloppe(j.n, "decouverte", s => decouverteOutil(s)) });
+    if (V().avancer && j.avance === "son" && sonDe(j)) E.push({ id: "vac-son", titre: "Un son en avance", icone: "sons", lancer: enveloppe(j.n, "decouverte", s => decouverteSon(s, sonDe(j))) });
+    if (V().avancer && j.avance === "outil" && outilDe(j)) E.push({ id: "vac-outil", titre: "Un mot-outil en avance", icone: "mots", lancer: enveloppe(j.n, "decouverte", s => decouverteOutil(s, outilDe(j))) });
     etapesDe(j.lire).forEach(e => E.push({ id: e.id, titre: e.titre, icone: e.icone, lancer: enveloppe(j.n, "lire", e.lancer) }));
     E.push({ id: "vac-carnet", titre: "Mon carnet", icone: "ecris", lancer: enveloppe(j.n, "carnet", s => pageCarnet(j, s)) });
     if (typeof niveauDuParcours === "function") niveauDuParcours();
@@ -14237,21 +14247,21 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
     jourEtat(j.n).fait = jourEtat(j.n).fait || aujourdhui();
     etat.jours[aujourdhui()] = (etat.jours[aujourdhui()] || 0) + 1; sauver();
     vider(); bip("fin"); pluie(j.e);
-    const suivant = j.n < 16 ? J(j.n + 1) : null;
+    const suivant = VAC_JOURS.find(x => x.n > j.n && !fait(x.n)) || VAC_JOURS.find(x => !fait(x.n)) || null;   // la prochaine pas faite
     ajoute(racine, barre("Escale " + j.n + " réussie"),
       h("section", { class: "feuille vacances-feuille" },
         h("p", { class: "bravo" }, deja ? "Encore bravo !" : "Bravo, escale réussie !"),
         h("div", { class: "vacances-tampon" }, h("span", null, j.e), h("b", null, j.lieu), h("small", null, j.date)),
         h("p", { class: "consigne", style: "align-self:center" }, "⭐ " + etoilesJour(j.n) + " étoile" + (etoilesJour(j.n) > 1 ? "s" : "") + " aujourd'hui"),
-        suivant ? h("p", { class: "consigne", style: "align-self:center" }, ty("Demain : " + suivant.lieu + " " + suivant.e)) : null,
+        suivant ? h("p", { class: "consigne", style: "align-self:center" }, ty("Prochaine escale : " + suivant.lieu + " " + suivant.e)) : null,
         h("div", { class: "ligne" },
-          j.n === 16 ? h("button", { class: "btn plein", onclick: diplome }, "🎓 Mon diplôme") : h("button", { class: "btn plein", onclick: () => ecranCarte(suivant.n) }, ic("carte"), "Voir la carte"),
+          !suivant ? h("button", { class: "btn plein", onclick: diplome }, "🎓 Mon diplôme") : h("button", { class: "btn plein", onclick: () => ecranCarte(suivant.n) }, ic("carte"), "Voir la carte"),
           h("button", { class: "btn", onclick: accueil }, ic("maison"), "Accueil"))));
   }
 
   // ===================== l'avance : un son, un mot-outil =====================
-  function decouverteSon(suite) {
-    const id = prochainSon(); if (!id) return suite();
+  function decouverteSon(suite, id = prochainSon()) {
+    if (!id) return suite();
     const S = SON[id];
     const avec = Object.assign({}, etat, { sons: etat.sons.concat(id) });
     const mots = tirer(motsLisibles(avec).filter(m => m.tags.includes(id) && m.niveau <= 2), 4);
@@ -14272,8 +14282,8 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
       h("button", { class: "btn ok", onclick: ajouter }, ic("ok"), "On l'apprend"), h("button", { class: "btn", onclick: suite }, "Pas cette fois")]);
   }
 
-  function decouverteOutil(suite) {
-    const id = prochainOutil(); if (!id) return suite();
+  function decouverteOutil(suite, id = prochainOutil()) {
+    if (!id) return suite();
     const avec = Object.assign({}, etat, { outils: etat.outils.concat(id) });
     const phrases = tirer(PHRASES_L.filter(p => p.jetons.some(x => x.outil === id) && phraseLisible(p, avec)), 2);
     const { feuille, adulte } = ecranModule("Un mot-outil en avance", pastillesSeance());
@@ -14611,7 +14621,6 @@ svg.parcours-chemin{width:100%;height:auto;display:block;max-width:520px;margin:
 .vacances-carte{width:100%;max-width:420px;align-self:center;height:auto;overflow:visible}
 .vacances-route{fill:none;stroke:var(--trait);stroke-width:5;stroke-dasharray:2 10;stroke-linecap:round}
 .vacances-escale{cursor:pointer}
-.vacances-escale.ferme{cursor:default;opacity:.45}
 .vacances-pierre{fill:var(--papier);stroke:var(--trait);stroke-width:3}
 .vacances-escale.fait .vacances-pierre{fill:var(--ok-pale);stroke:var(--ok)}
 .vacances-escale.ici .vacances-pierre{stroke:var(--accent);stroke-width:4}

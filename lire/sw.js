@@ -3,7 +3,7 @@
 // Polices, icônes et PDF sont gardés au premier usage. Rien n'est envoyé nulle part.
 // Les sons de la voix enregistrée ont leur cache à eux, qui survit aux publications : leur adresse porte la
 // version de la voix (?v=…), et ils sont demandés entiers (sans « Range ») pour pouvoir être gardés.
-const VERSION = "lire-77436ceef8";
+const VERSION = "lire-ad2a5691f3";
 const SOCLE = ["./", "assets/polices/andika-400-latin.woff2", "assets/polices/andika-700-latin.woff2",
   "assets/polices/playwrite-fr-trad.woff2", "assets/icones/icone-192.png"];
 self.addEventListener("install", e => {
