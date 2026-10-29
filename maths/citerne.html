@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>La citerne de récupération</title>
-<meta name="description" content="Le jardin partagé veut garder toute l&#x27;eau de pluie qui tombe sur le toit de son abri. Enrouler un mètre ruban autour d&#x27;une cuve ronde, relever la pluie du mois, déplier le patron de la housse, calculer des contenances en litres, graduer une jauge, puis vérifier à la pompe ce que contient vraiment une cuve deux fois plus large. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.">
+<meta name="description" content="Le jardin partagé veut garder toute l&#x27;eau de pluie qui tombe sur le toit de son abri. Enrouler un mètre ruban autour d&#x27;une cuve ronde, relever la pluie du mois, déplier le patron de la housse, calculer des contenances en litres, graduer une jauge, puis vérifier à la pompe ce que contient vraiment une cuve deux fois plus large. En TD, la page guide ; en évaluation notée, dans l&#x27;espace d&#x27;évaluation, elle finit par un fichier.">
 <meta name="etiquette" content="Simulation · Parcours PARM-06">
 <style>
 /* Simulations des TP · feuille commune, inlinee dans chaque page par assembler-simulations.py.
@@ -2762,7 +2762,7 @@ var Sim = (function () {
 <header class="tete">
 <div class="surtitre">Mathématiques · parcours CAP et seconde · une heure sur tablette</div>
 <h1>La citerne de récupération</h1>
-<p class="chapeau">Le jardin partagé veut garder toute l'eau de pluie qui tombe sur le toit de son abri. Enrouler un mètre ruban autour d'une cuve ronde, relever la pluie du mois, déplier le patron de la housse, calculer des contenances en litres, graduer une jauge, puis vérifier à la pompe ce que contient vraiment une cuve deux fois plus large. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.</p>
+<p class="chapeau">Le jardin partagé veut garder toute l'eau de pluie qui tombe sur le toit de son abri. Enrouler un mètre ruban autour d'une cuve ronde, relever la pluie du mois, déplier le patron de la housse, calculer des contenances en litres, graduer une jauge, puis vérifier à la pompe ce que contient vraiment une cuve deux fois plus large. En TD, la page guide ; en évaluation notée, dans l'espace d'évaluation, elle finit par un fichier.</p>
 </header>
 <style>
 :root{--herbe:#e3e9d8;--herbe2:#cdd8bf;--table:#efe9df;--cuve:#eef1ef;--cuve-trait:#4f5a62;--cuve-ombre:#c6ccc8;--bouchon:#9aa3a9;
@@ -2946,18 +2946,38 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
   var KM = SUJET.kMot, KMAJ = KM.charAt(0).toUpperCase() + KM.slice(1);
   var HAUT = m2(SUJET.H);                                                 // « 1,20 m » ou « 1,00 m »
 
-  /* ── Ce que l'eleve a repondu, garde par les crochets « fini » (a chaque enregistrement en mode note) : les
-     questions suivantes se verifient sur SES nombres. Une valeur absurde (une faute de frappe, une unite oubliee)
-     ne sert pas de base : on reprend la vraie. ── */
+  /* ── Ce que l'eleve a repondu, garde par les crochets « fini » (a chaque enregistrement en mode note).
+     ALLEGEMENT DU 21 OCTOBRE 2026 (« trop dur pour les eleves ») : trois calculs en CAP, quatre en seconde, une
+     operation chacun. Chaque calcul ECRIT dans sa question les nombres a prendre, tires des reponses de l'eleve (son
+     tour, sa lecture de la photo, son diametre) : il se juge sur ce qui est ecrit, et une erreur en amont ne fait rien
+     tomber. Une reponse manque : la page ecrit « … » et la question attend. En TD, une reponse fausse laisse sa
+     question ouverte (« fini » n'est pas appele) : on prend alors le dernier nombre que l'eleve a fait verifier
+     (f.valeur de sa fiche). [phase, question] : les rangs ne changent pas d'un niveau a l'autre. ── */
   var DON = {};
-  function eleve(cle, vrai, marge) {
-    var v = DON[cle];
-    return typeof v === "number" && isFinite(v) && Math.abs(v - vrai) <= Math.abs(vrai) * marge ? v : vrai;
+  var OU = { tour: [0, 0], photo: [0, 1], diam: [2, 2], ronde: [2, 3], eau: [2, 4] };
+  function valeur(cle) {
+    var x = DON[cle];
+    if (typeof x === "number" && isFinite(x)) return x;
+    var o = OU[cle], fs = o && p && p.fiches ? p.fiches()[o[0]] : null, f = fs && fs[o[1]];
+    return f && typeof f.valeur === "number" && isFinite(f.valeur) ? f.valeur : NaN;
   }
-  function tourE() { return eleve("tour", TOUR, 0.03); }
-  function pluieE() { return eleve("pluie", PLUIE, 0.05); }
-  function diamE() { return eleve("diam", tourE() / PI, 0.03); }
+  function aSaisi(cle) { return isFinite(valeur(cle)); }
+  function pluieM() { return aSaisi("photo") ? SUJET.releves.reduce(function (a, b) { return a + b; }, 0) + valeur("photo") : NaN; }
+  function rayonDm() { return Math.round(valeur("diam") * 5) / 100; }     // le rayon tire du diametre de l'eleve, en dm, au centieme
+  function fondDm2() { return Math.round(PI * rayonDm() * rayonDm() * 100) / 100; }   // l'aire du fond, ecrite au centieme
   function garder(cle) { return function (ctx, ok, rep, val) { if (typeof val === "number" && isFinite(val)) DON[cle] = val; majTout(); }; }
+  /* un nombre ecrit dans une question, que la page tient a jour quand l'eleve change une reponse en amont */
+  var VALS = {};
+  function v(cle) { return "<span class=\"c6-v\" data-v=\"" + cle + "\">" + T(VALS[cle] ? VALS[cle]() : "…") + "</span>"; }
+  function majVals() {
+    [].forEach.call(document.querySelectorAll(".c6-v"), function (s) { var f = VALS[s.getAttribute("data-v")]; if (f) s.innerHTML = T(f()); });
+  }
+  function nbx(x, d) { return isFinite(x) ? fr(x, d) : "…"; }
+  VALS.tour = function () { return aSaisi("tour") ? vu(valeur("tour")) + NB + "cm" : "… (phase 1)"; };
+  VALS.fond = function () { var r = rayonDm(); return isFinite(r) ? "π × " + nbx(r, 2) + "² = " + nbx(fondDm2(), 2) + NB + "dm² (r = votre diamètre ÷ 2 = " + nbx(r, 2) + NB + "dm)" : "… (calculez d'abord le diamètre)"; };
+  VALS.fondN = function () { return nbx(fondDm2(), 2); };
+  VALS.pluie = function () { return SUJET.releves.join(" + ") + " + " + (aSaisi("photo") ? vu(valeur("photo")) : "…") + " = " + nbx(pluieM(), 0) + NB + "mm"; };
+  VALS.pluieN = function () { return nbx(pluieM(), 0); };
 
   /* ── L'etat partage entre les phases, et la porte des essais ── */
   var labo = {
@@ -2967,16 +2987,17 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
     patron: { t: 0, disque: null, bouge: false, cousu: false },
     jauge: { cm: 22, bouge: false },
     pompe: { n: 0, petite: 1, grande: 0, deborde: false },
-    panneau: {}, DON: DON
+    panneau: {}, DON: DON,
+    valeur: valeur, pluieM: pluieM, fondDm2: fondDm2
   };
-  var majs = [];
+  var majs = [majVals];
   function majTout() { majs.forEach(function (f) { f(); }); }
   /* les nombres de l'eleve, rappeles dans les dossiers des scenes */
   function majDons() {
     var txt = {
-      tour: isFinite(DON.tour) ? vu(DON.tour) + NB + "cm (votre mesure)" : "… (mesurez-le en phase 1)",
-      pluie: isFinite(DON.pluie) ? vu(DON.pluie) + NB + "mm (votre relevé)" : "… (relevez-la en phase 1)",
-      ronde: isFinite(DON.ronde) ? vu(DON.ronde) + NB + "L (votre calcul)" : "… (phase 3)"
+      tour: aSaisi("tour") ? vu(valeur("tour")) + NB + "cm (votre mesure)" : "… (mesurez-le en phase 1)",
+      pluie: aSaisi("photo") ? nbx(pluieM(), 0) + NB + "mm (le carnet, et votre lecture de la photo)" : "… (lisez la photo en phase 1)",
+      ronde: aSaisi("ronde") ? vu(valeur("ronde")) + NB + "L (votre calcul)" : "… (phase 3)"
     };
     [].forEach.call(document.querySelectorAll("[data-c6]"), function (n) { var k = n.getAttribute("data-c6"); if (txt[k]) n.textContent = txt[k]; });
   }
@@ -3289,7 +3310,7 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
     cote(s2, bx, by + 14, bx + L, by + 14, fr(SUJET.rect[0], 0) + NB + "mm", 0, 17);
     cote(s2, bx - 14, by, bx - 14, by - Hh, fr(SUJET.rect[2], 0) + NB + "mm", -8, 0, true);
     cote(s2, bx + L + 10, by + 4, bx + L + 10 + P2x, by + 4 - P2y, fr(SUJET.rect[1], 0) + NB + "mm", 30, 12);
-    d2.appendChild(el("p", { html: T("Longueur, profondeur et hauteur intérieures. Une bande graduée en cm pour la jauge.") }));
+    d2.appendChild(el("p", { html: T("Longueur, profondeur et hauteur intérieures. <b>Contenance : " + fr(V_RECT, 0) + " L.</b> Une bande graduée en cm pour la jauge.") }));
     // la cuve ronde du voisin
     var d3 = el("div", { classe: "c6-doc" }); dos.appendChild(d3);
     d3.appendChild(el("h3", { texte: "Cuve ronde du voisin" }));
@@ -3333,8 +3354,12 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
     var msg = el("p", { classe: "c6-message", "aria-live": "polite", texte: "Glissez le repère « 100 L » à la hauteur où la cuve contient 100 litres d'eau." });
     var bHaut = el("button", { type: "button", classe: "bouton", texte: "▲ 1 mm" }), bBas = el("button", { type: "button", classe: "bouton", texte: "▼ 1 mm" });
     zone.appendChild(el("div", { classe: "rangee c6-rangee" }, [bHaut, bBas]));
+    /* l'afficheur de la jauge (21 octobre 2026, allegement) : le volume d'eau sous le repere, aire du fond × hauteur ;
+       l'eleve ne calcule plus la hauteur des 100 L, il la cherche en lisant */
+    var aff = el("div", { classe: "afficheurs", style: "margin-top:8px" }); zone.appendChild(aff);
+    var aV = S.afficheur(aff, { nom: "Eau sous le repère", unite: "L", dec: 1, note: "aire du fond, " + fr(FOND, 0) + " dm², × hauteur d'eau" });
     zone.appendChild(msg);
-    function poser() { gM.setAttribute("transform", "translate(0," + (Y0 - J.cm * PXc).toFixed(1) + ")"); gM.setAttribute("aria-valuenow", J.cm.toFixed(1)); }
+    function poser() { gM.setAttribute("transform", "translate(0," + (Y0 - J.cm * PXc).toFixed(1) + ")"); gM.setAttribute("aria-valuenow", J.cm.toFixed(1)); aV.set(FOND * J.cm / 10, 1); }
     function regler(cm) { J.cm = Math.round(borne(cm, 0, BMAX) * 10) / 10; J.bouge = true; poser(); }
     var dep = null;
     glisser(gM, s, function (q) { dep = { y: q.y, cm: J.cm }; },
@@ -3483,18 +3508,18 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
     f.appendChild(el("h3", { texte: "Jardin des Tilleuls · notre cuve de pluie" }));
     f.appendChild(ligne(["En " + SUJET.mois + ", il est tombé ", nb("pluie"), " de pluie. Un millimètre de pluie sur un mètre carré de toit, c'est ", trou(TROUS[0]), " d'eau : le toit de l'abri en a recueilli ", nb("eau"), "."]));
     f.appendChild(ligne(["La cuve rectangulaire (", nb("rect"), ") et la cuve ronde du voisin (", nb("ronde"), ") sont ", trou(TROUS[1]), "."]));
-    f.appendChild(ligne(["Nous prenons la grande cuve ronde, ", trou(TROUS[2]), " de ", nb("grande"), ". Son diamètre est " + KM + " fois plus grand que celui de la cuve du voisin : elle contient ", trou(TROUS[3]), "."]));
+    f.appendChild(ligne(["Nous prenons la grande cuve ronde, ", trou(TROUS[2]), ". Son diamètre est " + KM + " fois plus grand que celui de la cuve du voisin : elle contient ", trou(TROUS[3]), "."]));
     f.appendChild(ligne(["Sa housse se coud dans ", trou(TROUS[4]), " : à l'ombre, pas d'algues."]));
     zone.appendChild(f);
-    zone.appendChild(el("p", { classe: "consigne", style: "margin:10px 0 0", html: T("Les nombres en gras sont <b>vos réponses</b> : le panneau les reprend tels quels.") }));
+    zone.appendChild(el("p", { classe: "consigne", style: "margin:10px 0 0", html: T("Les nombres en gras viennent de <b>vos réponses</b> et du dossier : le panneau les reprend tels quels.") }));
     majs.push(majPanneau); majPanneau();
     labo.p5 = { choisir: function (cle, k) { var i = TROUS.map(function (t) { return t.cle; }).indexOf(cle); f.querySelectorAll(".trou")[i].children[k].click(); } };
   }
   function majPanneau() {
     if (!nbP.pluie) return;
     function u(v, unite) { return (isFinite(v) ? vu(v) : "…") + NB + unite; }
-    nbP.pluie.textContent = u(DON.pluie, "mm"); nbP.eau.textContent = u(DON.eau, "L"); nbP.rect.textContent = u(DON.rect, "L");
-    nbP.ronde.textContent = u(DON.ronde, "L"); nbP.grande.textContent = u(DON.grande, "L");
+    nbP.pluie.textContent = u(pluieM(), "mm"); nbP.eau.textContent = u(valeur("eau"), "L"); nbP.rect.textContent = u(V_RECT, "L");
+    nbP.ronde.textContent = u(valeur("ronde"), "L");
   }
 
   /* ── Le script Python du vendeur (seconde) : non commente, comme le veut la ressource d'accompagnement ── */
@@ -3531,23 +3556,23 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
     surPhase: function () { majTout(); },
     phases: [
       { competence: "APP", titre: "Mesurer la cuve, relever la pluie",
-        recit: T("Nadia : « Le voisin n'a plus la fiche de sa cuve. J'ai mesuré sa hauteur, " + HAUT + ", mais impossible de mesurer le diamètre à travers la cuve ! »"),
-        consigne: T("Enroulez le mètre ruban autour de la cuve : glissez son boîtier tout autour, jusqu'à repasser sur le zéro, et lisez le tour à la loupe. Puis lisez la photo du pluviomètre."),
+        recit: T("Nadia : « Le voisin n'a plus la fiche de sa cuve. J'ai mesuré sa hauteur, " + HAUT + ", mais impossible de mesurer le diamètre à travers la cuve ! »"),
+        consigne: T("Enroulez le mètre ruban autour de la cuve : glissez son boîtier tout autour, jusqu'à repasser sur le zéro, et lisez le tour à la loupe. Puis lisez la photo du pluviomètre : le carnet n'a pas recopié la fin du mois."),
         scene: sceneMesure,
         questions: [
-          { type: "nombre", lib: T("Lisez le <b>tour</b> de la cuve du voisin sur le mètre ruban, à la loupe. Combien mesure-t-il, en cm ? (au millimètre près)"), unite: "cm",
+          { type: "nombre", lib: T("Lisez le <b>tour</b> de la cuve du voisin sur le mètre ruban, à la loupe. Combien mesure-t-il, en cm ? (au millimètre près)"), unite: "cm",
             attendu: TOUR, tolerance: 0, toleranceAbsolue: 0.25,
-            methode: T("Le ruban doit faire tout le tour et repasser sur son zéro. À la loupe, lisez la graduation qui tombe au bord du crochet : un grand trait par centimètre, un petit par millimètre."),
+            methode: T("Le ruban doit faire tout le tour et repasser sur son zéro. À la loupe, lisez la graduation qui tombe au bord du crochet : un grand trait par centimètre, un petit par millimètre."),
             fini: garder("tour") },
-          { type: "nombre", lib: T("Combien de <b>millimètres de pluie</b> sont tombés en " + SUJET.mois + " ? (le carnet, et la photo du pluviomètre pour la fin du mois)"), unite: "mm",
-            attendu: PLUIE, tolerance: 0, toleranceAbsolue: 0.5,
-            methode: T("Lisez la photo au bas de la surface de l'eau, sur la graduation en millimètres. Puis ajoutez les cinq relevés du mois : les quatre du carnet et celui de la photo."),
-            fini: garder("pluie") }
+          { type: "nombre", lib: T("Lisez sur la <b>photo du pluviomètre</b> la pluie de la fin du mois (du " + SUJET.jours[4].replace(" → ", " au ") + "), que le carnet n'a pas recopiée : combien de millimètres ?"), unite: "mm",
+            attendu: SUJET.photo, tolerance: 0, toleranceAbsolue: 0.5,
+            methode: T("Lisez au bas de la surface de l'eau, l'œil à sa hauteur, sur la graduation en millimètres : un trait par millimètre, un nombre tous les 5 mm."),
+            fini: garder("photo") }
         ],
-        bravo: T("Nadia : « Un ruban autour, et on connaît le tour sans ouvrir la cuve. »") },
+        bravo: T("Nadia : « Un ruban autour, et on connaît le tour sans ouvrir la cuve. »") },
       { competence: "ANA", titre: "Le patron de la housse",
-        recit: T("Nadia : « Au soleil, des algues poussent dans l'eau. Je vais coudre une housse opaque : le tour et le dessus, pas le fond, puisque la cuve est posée par terre. »"),
-        consigne: T("Glissez la poignée pour déplier la housse à plat : c'est son patron. Puis glissez le couvercle là où il faut le coudre."),
+        recit: T("Nadia : « Au soleil, des algues poussent dans l'eau. Je vais coudre une housse opaque : le tour et le dessus, pas le fond, puisque la cuve est posée par terre. »"),
+        consigne: T("Glissez la poignée pour déplier la housse à plat : c'est son patron. Puis glissez le couvercle là où il faut le coudre."),
         scene: scenePatron,
         questions: [
           { type: "action", lib: T("Dépliez la housse à plat, puis posez le <b>couvercle</b> là où il faut le coudre sur le patron."),
@@ -3556,79 +3581,83 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
               var P = labo.patron;
               if (P.t < 0.02 && !P.bouge) return null;
               var plat = P.t > 0.999, pl = labo.p2 ? labo.p2.place() : "loin";
-              return { reponse: (plat ? "housse à plat" : "housse pas entièrement dépliée") + " ; " + (P.bouge ? MOTS_PLACE[pl] : "couvercle pas encore posé"),
-                controles: [[plat, "la housse n'est pas entièrement dépliée : glissez la poignée jusqu'au bout du rail"],
-                  [P.bouge, "le couvercle n'est pas encore posé sur le patron : glissez-le contre le rectangle"],
-                  [!P.bouge || pl !== "loin", "le couvercle ne touche pas le rectangle : il s'y coud bord contre bord"],
-                  [pl !== "chevauche", "le couvercle recouvre une partie du rectangle : il se coud par son bord, sans le recouvrir"],
-                  [pl !== "bas", "le couvercle est contre le bord du bas : replié, il fermerait le fond, que la housse laisse ouvert"],
-                  [pl !== "gauche" && pl !== "droite", "le couvercle est contre un petit côté : replié, il pendrait sur le flanc de la cuve, pas sur le dessus"],
-                  [pl !== "coin", "le couvercle ne touche le rectangle que par un coin : il doit toucher le bord du haut"]] };
+              return { reponse: (plat ? "housse à plat" : "housse pas entièrement dépliée") + " ; " + (P.bouge ? MOTS_PLACE[pl] : "couvercle pas encore posé"),
+                controles: [[plat, "la housse n'est pas entièrement dépliée : glissez la poignée jusqu'au bout du rail"],
+                  [P.bouge, "le couvercle n'est pas encore posé sur le patron : glissez-le contre le rectangle"],
+                  [!P.bouge || pl !== "loin", "le couvercle ne touche pas le rectangle : il s'y coud bord contre bord"],
+                  [pl !== "chevauche", "le couvercle recouvre une partie du rectangle : il se coud par son bord, sans le recouvrir"],
+                  [pl !== "bas", "le couvercle est contre le bord du bas : replié, il fermerait le fond, que la housse laisse ouvert"],
+                  [pl !== "gauche" && pl !== "droite", "le couvercle est contre un petit côté : replié, il pendrait sur le flanc de la cuve, pas sur le dessus"],
+                  [pl !== "coin", "le couvercle ne touche le rectangle que par un coin : il doit toucher le bord du haut"]] };
             },
-            methode: T("Le rectangle fait le tour de la cuve ; le disque ferme le dessus. On le coud contre le bord du haut du rectangle, qu'il touche en un point : replié, il vient se poser sur la cuve."),
+            methode: T("Le rectangle fait le tour de la cuve ; le disque ferme le dessus. On le coud contre le bord du haut du rectangle, qu'il touche en un point : replié, il vient se poser sur la cuve."),
             apres: function (ctx, ok) { if (ok && !ctx.note) { labo.patron.cousu = true; if (labo.p2) labo.p2.redessiner(); } } },
-          { type: "nombre", lib: T("Le rectangle du patron a pour longueur le <b>tour</b> de la cuve (votre mesure, sous la scène) et pour largeur sa hauteur, " + HAUT + ". Quelle <b>surface de tissu</b> faut-il pour ce rectangle, en m² ?"), unite: "m²",
-            attendu: function () { return tourE() / 100 * SUJET.H; }, tolerance: 0.01,
-            methode: T("Aire d'un rectangle = longueur × largeur, toutes deux en mètres : le tour en cm ÷ 100, multiplié par la hauteur."),
-            fini: garder("housse") },
-          { type: "classer", lib: T("Ces calculs servent pour la housse ou pour les cuves (D : diamètre, r : rayon, h : hauteur, L et l : longueur et largeur, c : côté, en mètres). Chacun donne-t-il une <b>longueur</b>, une <b>aire</b> ou un <b>volume</b> ?"),
+          { type: "choix", lib: T("Le patron de la housse est un rectangle et un disque. Quelles sont les dimensions du <b>rectangle</b> ?"),
+            options: [T("Longueur : le tour de la cuve ; largeur : sa hauteur"), T("Longueur : le diamètre de la cuve ; largeur : sa hauteur"),
+              T("Longueur : le tour de la cuve ; largeur : son diamètre"), T("Longueur : le rayon de la cuve ; largeur : sa hauteur")], bonne: 0,
+            methode: T("Déplié, le rectangle est la paroi de la cuve mise à plat : un de ses côtés faisait le tour de la cuve, l'autre montait du sol jusqu'au bord.") },
+          { type: "classer", lib: T("Ces calculs servent pour la housse ou pour les cuves (D : diamètre, r : rayon, h : hauteur, L et l : longueur et largeur, c : côté, en mètres). Chacun donne-t-il une <b>longueur</b>, une <b>aire</b> ou un <b>volume</b> ?"),
             items: S.note ? ["π × r² × h", "2 × (L + l)", "c × c", "π × D × h", "c × c × c", "π × D"] : ["π × D", "L × l × h", "π × r²", "2 × π × r", "π × D × h", "π × r² × h"],
             categories: ["longueur", "aire", "volume"], bonnes: S.note ? [2, 0, 1, 1, 2, 0] : [0, 2, 1, 0, 1, 2],
-            methode: T("Comptez les longueurs multipliées entre elles : une seule donne une longueur, deux une aire, trois un volume. π est un nombre, pas une longueur, et r² = r × r compte pour deux.") },
-          { type: "choix", niveau: "Seconde", lib: T("Le vendeur choisit ses cuves rondes avec ce programme Python : les volumes en m³, les longueurs en m. Que calcule <code>" + APPEL + "</code> ?") + "<code class=\"c6-python\">" + PYTHON + "</code>",
+            methode: T("Comptez les longueurs multipliées entre elles : une seule donne une longueur, deux une aire, trois un volume. π est un nombre, pas une longueur, et r² = r × r compte pour deux.") },
+          { type: "choix", niveau: "Seconde", lib: T("Le vendeur choisit ses cuves rondes avec ce programme Python : les volumes en m³, les longueurs en m. Que calcule <code>" + APPEL + "</code> ?") + "<code class=\"c6-python\">" + PYTHON + "</code>",
             options: [T("Le diamètre, en m, d'une cuve ronde de " + SUJET.pyV + " et de " + SUJET.pyH + " de haut"),
               T("Le volume, en m³, d'une cuve ronde de " + fr(SUJET.py[0], 1) + " m de diamètre et de " + SUJET.pyH + " de haut"),
               T("Le rayon, en m, d'une cuve ronde de " + SUJET.pyV + " et de " + SUJET.pyH + " de haut"),
               T("Le diamètre, en cm, d'une cuve ronde de " + fr(SUJET.py[0], 1) + " L et de " + SUJET.pyH + " de haut")], bonne: 0,
-            methode: T("Le programme part de V = π × r² × h : il calcule le rayon, racine de V ÷ (π × h), puis renvoie le double du rayon. Il donne le résultat dans l'unité des données : des m³ et des m donnent des m.") }
+            methode: T("Le programme part de V = π × r² × h : il calcule le rayon, racine de V ÷ (π × h), puis renvoie le double du rayon. Il donne le résultat dans l'unité des données : des m³ et des m donnent des m.") }
         ],
-        bravo: T("Nadia : « Un rectangle aussi long que le tour, et un disque : je sais coudre ça. »") },
-      { competence: "REA", titre: "Combien de litres ?", large: true,
-        recit: T("Nadia : « Combien de litres tient chaque cuve, et combien en tombe-t-il sur le toit en " + SUJET.mois + " ? Et je voudrais une jauge sur la cuve rectangulaire. »"),
-        consigne: T("Le dossier donne les dimensions. Calculez, et glissez sur la bande de la jauge le repère des 100 litres."),
+        bravo: T("Nadia : « Un rectangle aussi long que le tour, et un disque : je sais coudre ça. »") },
+      { competence: "REA", titre: "Combien de litres ?", large: true,
+        recit: T("Nadia : « Combien de litres tient chaque cuve, et combien en tombe-t-il sur le toit en " + SUJET.mois + " ? Et je voudrais une jauge sur la cuve rectangulaire. »"),
+        consigne: T("Le dossier donne les dimensions. Glissez sur la bande de la jauge le repère des 100 litres, puis calculez : chaque question écrit les nombres à prendre."),
         scene: sceneCalculs,
         questions: [
-          { type: "nombre", lib: T("Quelle est la <b>contenance</b> de la cuve rectangulaire (fiche du dossier, en mm), en litres ?"), unite: "L",
-            attendu: V_RECT, tolerance: 0, toleranceAbsolue: 1,
-            methode: T("Volume d'un pavé droit = longueur × largeur × hauteur. Convertissez d'abord en décimètres (100 mm = 1 dm) : des dm³, ce sont des litres. Ou calculez en m³, puis 1 m³ = 1 000 L."),
-            fini: garder("rect") },
-          { type: "action", lib: T("Placez le repère <b>« 100 L »</b> sur la bande de la jauge : à la hauteur d'eau où la cuve rectangulaire contient 100 litres."),
+          { type: "choix", lib: T("La fiche du magasin donne les dimensions de la cuve rectangulaire en millimètres, et sa contenance en litres. Pour calculer une contenance <b>en litres</b>, en quelle unité écrit-on les longueurs ?"),
+            options: [T("En décimètres : 1 dm³ = 1 L"), T("En centimètres : 1 cm³ = 1 L"), T("En mètres : 1 m³ = 1 L"), T("En millimètres, sans rien convertir")], bonne: 0,
+            methode: T("Un litre, c'est le volume d'un cube de 10 cm de côté. Cherchez l'unité de longueur qui fait 10 cm.") },
+          { type: "action", lib: T("Placez le repère <b>« 100 L »</b> sur la bande de la jauge : à la hauteur d'eau où la cuve rectangulaire contient 100 litres. L'afficheur donne l'eau sous le repère."),
             aide: "Le repère glissé et ajusté, puis vérifiez.",
             verifier: function () {
               var J = labo.jauge;
               if (!J.bouge) return null;
-              return { reponse: "repère « 100 L » à " + fr(J.cm, 1) + NB + "cm du fond",
-                controles: [[Math.abs(J.cm - 10) > 0.3 || Math.abs(H100 - 10) <= 0.5, "le repère est placé comme si le fond de la cuve mesurait 1 m² : calculez avec l'aire de son fond"],
-                  [Math.abs(J.cm - H100) <= 0.5 || Math.abs(J.cm - 10) <= 0.3, "le repère n'est pas à la hauteur où la cuve contient 100 L : hauteur d'eau = volume ÷ aire du fond"]] };
+              return { reponse: "repère « 100 L » à " + fr(J.cm, 1) + NB + "cm du fond",
+                controles: [[Math.abs(J.cm - 10) > 0.3 || Math.abs(H100 - 10) <= 0.5, "le repère est placé comme si le fond de la cuve mesurait 1 m² : lisez l'afficheur, qui compte avec l'aire du fond"],
+                  [Math.abs(J.cm - H100) <= 0.5 || Math.abs(J.cm - 10) <= 0.3, "le repère n'est pas à la hauteur où la cuve contient 100 L : glissez-le en lisant l'afficheur"]] };
             },
-            methode: T("100 L = 100 dm³. L'eau forme un pavé dont le fond est celui de la cuve : hauteur = volume ÷ aire du fond. Avec le fond en dm², la hauteur sort en dm ; × 10 pour des cm.") },
-          { type: "nombre", lib: T("Avec le tour que vous avez mesuré (dossier), quel est le <b>diamètre</b> de la cuve du voisin, en cm ?"), unite: "cm",
-            attendu: function () { return tourE() / PI; }, tolerance: 0, toleranceAbsolue: 0.15,
-            methode: T("Le tour d'un cercle (son périmètre) = π × D. Pour retrouver D : D = tour ÷ π."),
+            methode: T("Glissez le repère en lisant l'afficheur : volume = aire du fond × hauteur. Les boutons ▲ ▼ l'ajustent au millimètre.") },
+          { type: "nombre", get lib() { return T("Le tour d'un cercle = π × D. Avec votre tour, " + v("tour") + ", calculez le <b>diamètre</b> de la cuve du voisin, en cm : D = tour ÷ π."); }, unite: "cm",
+            attendu: function () { var t = valeur("tour"); return isFinite(t) ? t / PI : NaN; },
+            tolerance: function (ctx) { return ctx.niveau() === "CAP" ? 0.005 : 0; }, toleranceAbsolue: 0.15,
+            methode: T("Divisez le tour par π (la touche π de la calculatrice, ou 3,14). Le résultat est dans l'unité du tour : des centimètres."),
             fini: garder("diam") },
-          { type: "nombre", lib: T("Quelle est la <b>contenance</b> de la cuve du voisin, en litres ? (votre diamètre, et sa hauteur : " + HAUT + ")"), unite: "L",
-            attendu: function () { return volRond(diamE()); }, tolerance: 0.01,
-            methode: T("Volume d'un cylindre = π × r² × h, avec r = D ÷ 2. Tout en décimètres, le résultat est en dm³, c'est-à-dire en litres."),
+          { type: "nombre", get lib() { return T("Contenance d'un cylindre = aire du fond × hauteur. Avec votre diamètre, le fond fait " + v("fond") + " ; la hauteur, " + HAUT + ", fait " + fr(HDM, 0) + NB + "dm. Calculez la <b>contenance</b> de la cuve du voisin, en litres : V = " + v("fondN") + " × " + fr(HDM, 0) + " (1 dm³ = 1 L)."); }, unite: "L",
+            attendu: function () { var f = fondDm2(); return isFinite(f) ? f * HDM : NaN; },
+            tolerance: function (ctx) { return ctx.niveau() === "CAP" ? 0.01 : 0.005; },
+            methode: T("Multipliez l'aire du fond par la hauteur, les deux en décimètres : des dm² × des dm donnent des dm³, c'est-à-dire des litres."),
             fini: garder("ronde") },
-          { type: "nombre", lib: T("Le toit de l'abri mesure " + m2(SUJET.toitL) + " × " + m2(SUJET.toitl) + ", vu de dessus. Combien de <b>litres</b> de pluie a-t-il reçus en " + SUJET.mois + " ? (votre relevé de pluie)"), unite: "L",
-            attendu: function () { return TOIT * pluieE(); }, tolerance: 0.005, toleranceAbsolue: 1,
-            methode: T("L'eau tombée sur le toit forme un pavé : surface du toit vu de dessus × hauteur de pluie. La pluie en mètres (mm ÷ 1 000) donne des m³ ; 1 m³ = 1 000 L. Donc 1 mm de pluie sur 1 m², c'est 1 L."),
+          { type: "nombre", get lib() { return T("1 mm de pluie sur 1 m² de toit donne 1 L d'eau. Le toit, vu de dessus, fait " + m2(SUJET.toitL) + " × " + m2(SUJET.toitl) + " = " + fr(TOIT, 1) + " m² ; en " + SUJET.mois + ", il est tombé " + v("pluie") + " (le carnet, et votre lecture de la photo). Combien de <b>litres</b> le toit a-t-il reçus ? Eau = surface du toit × pluie : " + fr(TOIT, 1) + " × " + v("pluieN") + "."); }, unite: "L",
+            attendu: function () { var pl = pluieM(); return isFinite(pl) ? TOIT * pl : NaN; }, tolerance: 0.005, toleranceAbsolue: 1,
+            methode: T("Chaque mètre carré de toit donne 1 litre par millimètre de pluie : multipliez la surface du toit, en m², par la pluie, en mm."),
             fini: garder("eau") }
         ],
-        bravo: T("Nadia : « Avec des litres partout, on peut enfin comparer. »") },
+        bravo: T("Nadia : « Avec des litres partout, on peut enfin comparer. »") },
       { competence: "VAL", titre: "La cuve " + KM + " fois plus large",
-        recit: T("Le vendeur : « Même hauteur, diamètre " + KM + " fois plus grand : " + KM + " fois plus d'eau. " + KMAJ + " cuves comme celle du voisin la remplissent. » Nadia : « Alors elle serait trop petite pour la pluie du mois… »"),
-        consigne: T("Touchez la pompe : elle verse toute la cuve du voisin dans la grande, puis le robinet la remplit de nouveau. Combien de transvasements remplissent la grande ? Puis calculez."),
+        recit: T("Le vendeur : « Même hauteur, diamètre " + KM + " fois plus grand : " + KM + " fois plus d'eau. " + KMAJ + " cuves comme celle du voisin la remplissent. » Nadia : « Alors elle serait trop petite pour la pluie du mois… »"),
+        consigne: T("Touchez la pompe : elle verse toute la cuve du voisin dans la grande, puis le robinet la remplit de nouveau. Combien de transvasements remplissent la grande ? Puis comparez avec l'eau du toit."),
         scene: scenePompe,
         questions: [
-          { type: "nombre", lib: T("La grande cuve a la même hauteur que celle du voisin, " + HAUT + ", et un diamètre de " + D_GRANDE + NB + "cm. Quelle est sa <b>contenance</b>, en litres ?"), unite: "L",
-            attendu: V_GRANDE, tolerance: 0.01,
-            methode: T("Volume d'un cylindre = π × r² × h, avec r = " + D_GRANDE + " ÷ 2 cm. Tout en décimètres, le résultat est en litres."),
-            fini: garder("grande") },
-          { type: "nombre", lib: T("Diamètre " + KM + " fois plus grand : la contenance est multipliée par <b>combien</b>, de la cuve du voisin à la grande ? (vos deux calculs, ou la pompe)"),
-            attendu: K2, tolerance: 0, toleranceAbsolue: 0.1,
-            methode: T("Divisez la contenance de la grande cuve par celle de la petite. Le diamètre est multiplié par " + SUJET.k + ", le rayon aussi, et r² = r × r l'est par " + SUJET.k + " × " + SUJET.k + ".") },
-          { type: "nombre", niveau: "Seconde", lib: T("Le vendeur a aussi une cuve <b>agrandie</b> : diamètre et hauteur " + KM + " fois plus grands que ceux de la cuve du voisin. Sa contenance est multipliée par combien ?"),
+          { type: "nombre", lib: T("Lisez le compteur sous la grande cuve quand elle est <b>pleine à ras bord</b>, sans déborder : combien de <b>transvasements</b> de la cuve du voisin la remplissent ?"), unite: "transvasements",
+            attendu: K2, tolerance: 0, toleranceAbsolue: 0,
+            methode: T("Touchez la pompe une fois par transvasement, et regardez la grande cuve : arrêtez quand elle est pleine à ras bord. Si ça déborde, videz-la et recommencez.") },
+          { type: "choix", lib: T("Le vendeur disait : « diamètre " + KM + " fois plus grand, " + KM + " fois plus d'eau ». D'après la pompe, la grande cuve contient :"),
+            options: [T("Plus de " + KM + " fois la cuve du voisin : le rayon compte deux fois dans π × r² × h"), T("Exactement " + KM + " fois la cuve du voisin, comme le diamètre"),
+              T("Moins de " + KM + " fois la cuve du voisin : seul le fond grandit, pas la hauteur"), T("Autant que la cuve du voisin : même hauteur, même contenance")], bonne: 0,
+            methode: T("Comparez le nombre de transvasements au nombre que promet le vendeur. Dans V = π × r² × h, le rayon est multiplié par lui-même.") },
+          { type: "choix", lib: T("Quelle cuve garde <b>toute la pluie</b> de " + SUJET.mois + " ? Comparez l'eau du toit (votre calcul) aux contenances : la cuve rectangulaire (fiche du magasin), celle du voisin (votre calcul), la grande (la pompe)."),
+            options: [T("La grande cuve ronde, et elle seule"), T("La cuve rectangulaire"), T("La cuve du voisin"), T("Aucune : même la grande est trop petite")], bonne: 0,
+            methode: T("La grande cuve contient autant que tous les transvasements de la pompe réunis. Une cuve garde toute la pluie si sa contenance dépasse l'eau du toit.") },
+          { type: "nombre", niveau: "Seconde", lib: T("Le vendeur a aussi une cuve <b>agrandie</b> : diamètre et hauteur " + KM + " fois plus grands que ceux de la cuve du voisin. Son fond est multiplié par " + SUJET.k + " × " + SUJET.k + " (le rayon au carré), sa hauteur par " + SUJET.k + " : sa contenance est multipliée par combien ?"),
             attendu: K3, tolerance: 0, toleranceAbsolue: 0,
             methode: T("Un agrandissement de rapport " + SUJET.k + " multiplie les longueurs par " + SUJET.k + ", les aires par " + SUJET.k + " × " + SUJET.k + " et les volumes par " + SUJET.k + " × " + SUJET.k + " × " + SUJET.k + ".") }
         ],
@@ -3673,6 +3702,11 @@ code.c6-python{display:block;white-space:pre;overflow-x:auto;background:var(--ca
   labo.DON = DON;
   p.labo = labo;
   window.citerne = p;
+  /* une verification fausse ne previent pas la scene : les nombres ecrits dans les questions se tiennent a jour
+     apres chaque « Verifier » ou « Enregistrer » */
+  var racineP = document.getElementById("parcours");
+  racineP.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".pc-q")) setTimeout(majTout, 0); });
+  racineP.addEventListener("keydown", function (e) { if (e.key === "Enter") setTimeout(majTout, 0); });
 })();
 </script>
 <footer class="pied">Simulation hors ligne, sans compte et sans enregistrement. Modèle simplifié : ce qu'il néglige est écrit sous la simulation.</footer>

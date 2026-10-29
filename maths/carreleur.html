@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Le devis du carreleur</title>
-<meta name="description" content="Mme Moreau fait carreler son séjour, une pièce en L, et veut vérifier le devis avant de signer. Mesurer à la règle une cote effacée du plan à l&#x27;échelle, découper la pièce en rectangles, poser les carreaux au doigt, calculer l&#x27;aire, les chutes et le nombre de cartons, compléter le devis avec la TVA, puis voir ce que valent vraiment deux remises successives. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.">
+<meta name="description" content="Mme Moreau fait carreler son séjour, une pièce en L, et veut vérifier le devis avant de signer. Mesurer à la règle une cote effacée du plan à l&#x27;échelle, découper la pièce en rectangles, poser les carreaux au doigt, calculer une aire et le nombre de cartons, lire le devis et sa TVA, puis voir ce que valent vraiment deux remises successives. En TD, la page guide ; en évaluation notée, dans l&#x27;espace d&#x27;évaluation, elle finit par un fichier.">
 <meta name="etiquette" content="Simulation · Parcours PARM-02">
 <style>
 /* Simulations des TP · feuille commune, inlinee dans chaque page par assembler-simulations.py.
@@ -2762,7 +2762,7 @@ var Sim = (function () {
 <header class="tete">
 <div class="surtitre">Mathématiques · parcours CAP et seconde · une heure sur tablette</div>
 <h1>Le devis du carreleur</h1>
-<p class="chapeau">Mme Moreau fait carreler son séjour, une pièce en L, et veut vérifier le devis avant de signer. Mesurer à la règle une cote effacée du plan à l'échelle, découper la pièce en rectangles, poser les carreaux au doigt, calculer l'aire, les chutes et le nombre de cartons, compléter le devis avec la TVA, puis voir ce que valent vraiment deux remises successives. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.</p>
+<p class="chapeau">Mme Moreau fait carreler son séjour, une pièce en L, et veut vérifier le devis avant de signer. Mesurer à la règle une cote effacée du plan à l'échelle, découper la pièce en rectangles, poser les carreaux au doigt, calculer une aire et le nombre de cartons, lire le devis et sa TVA, puis voir ce que valent vraiment deux remises successives. En TD, la page guide ; en évaluation notée, dans l'espace d'évaluation, elle finit par un fichier.</p>
 </header>
 <style>
 :root{--sol:#f3efe6;--mur:#6b6862;--carreau:#ddd2bf;--carreau-coupe:#cbbb9f;--joint:#9b8f7c;--chute:#ab432a;--tache:#8f6236;
@@ -2925,20 +2925,51 @@ var Sim = (function () {
     n.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); f(); } });
   }
 
-  /* ── Ce que l'eleve a repondu, garde par les crochets « fini » (a chaque enregistrement en mode note) : les
-     questions suivantes se verifient sur SES nombres. Une valeur absurde (une faute de frappe, une unite oubliee)
-     ne sert pas de base : on reprend la vraie. ── */
+  /* ── Ce que l'eleve a repondu, garde par les crochets « fini » (a chaque enregistrement en mode note).
+     ALLEGEMENT DU 21 OCTOBRE 2026 (« trop dur pour les eleves ») : trois calculs en CAP, quatre en seconde, une
+     operation chacun. Chaque calcul ECRIT dans sa question les nombres a prendre, tires des reponses de l'eleve (sa
+     mesure, son aire, son devis) : il se juge sur ce qui est ecrit, et une erreur en amont ne fait rien tomber. Une
+     reponse manque : la page ecrit « … » et la question attend, dans les deux modes (ecrire la vraie valeur
+     donnerait la reponse d'une question qu'on n'a pas encore faite). ── */
   var DON = {};
-  function eleve(cle, vrai, marge) {
-    var v = DON[cle];
-    return typeof v === "number" && isFinite(v) && Math.abs(v - vrai) <= Math.abs(vrai) * marge ? v : vrai;
+  /* en TD, une reponse fausse laisse sa question ouverte (« fini » n'est pas appele) : on prend alors le dernier
+     nombre que l'eleve a fait verifier, pour que la suite ne reste pas bloquee. [phase, question] : les rangs ne
+     changent pas d'un niveau a l'autre (la question de seconde de la phase 2 est la derniere). */
+  var OU = { coteCm: [0, 0], a2: [2, 1], cartons: [2, 2], net: [3, 0] };
+  function valeur(cle) {
+    var x = DON[cle];
+    if (typeof x === "number" && isFinite(x)) return x;
+    var o = OU[cle], fs = p && p.fiches ? p.fiches()[o[0]] : null, f = fs && fs[o[1]];
+    return f && typeof f.valeur === "number" && isFinite(f.valeur) ? f.valeur : NaN;
   }
-  function aE() { return eleve("cote", SUJET.a, 0.15); }
-  function aireDe(a) { return SUJET.W * SUJET.b + a * (SUJET.H - SUJET.b); }
-  function aireE() { return eleve("aire", aireDe(aE()), 0.12); }
-  function besoinE() { return eleve("besoin", aireE() * 1.1, 0.12); }
-  function cartonE() { return eleve("carton", S_CARTON, 0.15); }
+  function aSaisi(cle) { return isFinite(valeur(cle)); }
+  function coteM() { return aSaisi("coteCm") ? valeur("coteCm") * SUJET.E / 100 : NaN; }   // la mesure de l'eleve, en m
+  /* les deux rectangles du trait de coupe de l'eleve (horizontal si aucun n'est juste) : le 1 est donne, le 2 se calcule */
+  function decomp() {
+    var c = coupe() || "h", a = coteM();
+    if (c === "v") return { c: c, r1: r2(a * SUJET.H), r1Mot: "le côté gauche : " + vuM(a) + " × " + metres(SUJET.H),
+      L: SUJET.W - a, l: SUJET.b, Lmot: vuM(SUJET.W - a) + " (" + fr(SUJET.W, 2) + " − " + fm(a) + ")", lmot: metres(SUJET.b) };
+    return { c: "h", r1: r2(SUJET.W * SUJET.b), r1Mot: "la bande du bas : " + metres(SUJET.W) + " × " + metres(SUJET.b),
+      L: a, l: r2(SUJET.H - SUJET.b), Lmot: vuM(a) + " (votre mesure)", lmot: metres(SUJET.H - SUJET.b) + " (" + fr(SUJET.H, 2) + " − " + fr(SUJET.b, 2) + ")" };
+  }
+  /* une longueur en metres, au centimetre, ou au millimetre si la mesure le demande (7,75 cm a 1/50 font 3,875 m) */
+  function fm(x) { if (!isFinite(x)) return "…"; var m = Math.round(x * 1000); return fr(m / 1000, m % 10 ? 3 : 2); }
+  function vuM(x) { return fm(x) + NB + "m"; }
+  function aireSol() { var d = decomp(); return aSaisi("a2") ? r2(d.r1 + valeur("a2")) : NaN; }
+  function besoin() { return r2(aireSol() * 1.1); }
+  function nCartons() { return aSaisi("cartons") ? valeur("cartons") : NaN; }
+  /* le devis, rempli par le carreleur avec les quantites de l'eleve */
+  function devisCalc() {
+    var n = nCartons(), a = aireSol(), f = r2(n * SUJET.prixCarton), po = r2(a * SUJET.pose), ht = r2(f + po + SUJET.forfait), tva = r2(ht * SUJET.tva / 100);
+    return { n: n, aire: a, fourniture: f, pose: po, ht: ht, tva: tva, ttc: r2(ht + tva) };
+  }
   function garder(cle) { return function (ctx, ok, rep, val) { if (typeof val === "number" && isFinite(val)) DON[cle] = val; majTout(); }; }
+  /* un nombre ecrit dans une question, que la page tient a jour quand l'eleve change une reponse en amont */
+  var VALS = {};
+  function v(cle) { return "<span class=\"parm02-v\" data-v=\"" + cle + "\">" + T(VALS[cle] ? VALS[cle]() : "…") + "</span>"; }
+  function majVals() {
+    [].forEach.call(document.querySelectorAll(".parm02-v"), function (s) { var f = VALS[s.getAttribute("data-v")]; if (f) s.innerHTML = T(f()); });
+  }
 
   /* ── L'etat partage entre les phases, et la porte des essais ── */
   var labo = {
@@ -2948,9 +2979,10 @@ var Sim = (function () {
     coupe: { h: null, v: null },                         // les traits de coupe, en metres (null : dans le plateau)
     poses: {},                                           // les carreaux poses, "i,j"
     remises: [],                                         // les etiquettes posees sur la barre, dans l'ordre
-    lettre: {}, DON: DON
+    lettre: {}, DON: DON,
+    coteM: coteM, decomp: decomp, aireSol: aireSol, besoin: besoin, devisCalc: devisCalc
   };
-  var majs = [];
+  var majs = [majVals];
   function majTout() { majs.forEach(function (f) { f(); }); }
 
   /* ── Le dessin du plan : murs, sol, porte, fenetre, cotes, cartouche ── */
@@ -3007,8 +3039,7 @@ var Sim = (function () {
   /* la cote du haut, sur les plans des phases 2 et 3 : la mesure de l'eleve, ou des points de suspension */
   function majCoteHaut(t) {
     if (!t) return;
-    var v = DON.cote;
-    t.textContent = typeof v === "number" && isFinite(v) ? fr(v, 2) + NB + "m (votre mesure)" : "… (votre mesure, phase 1)";
+    t.textContent = aSaisi("coteCm") ? vuM(valeur("coteCm") * SUJET.E / 100) + " (votre mesure)" : "… (votre mesure, phase 1)";
     t.setAttribute("class", "cote-t cote-eleve");
   }
 
@@ -3093,9 +3124,11 @@ var Sim = (function () {
         svg("path", { d: "M18 92L4 60L104 60L118 92Z", "class": "carton-face" }, gF);
         svg("path", { d: "M118 92L146 76L156 44L128 60Z", "class": "carton-face" }, gF);
       } else svg("path", { d: "M18 92L46 76L146 76L118 92Z", "class": "carton-face" }, gF);
-      svg("rect", { x: 22, y: 112, width: 92, height: 50, "class": "etiquette" }, gF);
-      svg("text", { x: 68, y: 132, "class": "etiquette-t", texte: "GRÈS CÉRAME" }, gF);
-      svg("text", { x: 68, y: 152, "class": "etiquette-p", texte: TCM + " × " + TCM + " cm" }, gF);
+      svg("rect", { x: 22, y: 100, width: 92, height: 82, "class": "etiquette" }, gF);
+      svg("text", { x: 68, y: 117, "class": "etiquette-t", texte: "GRÈS CÉRAME" }, gF);
+      svg("text", { x: 68, y: 135, "class": "etiquette-p", texte: TCM + " × " + TCM + " cm" }, gF);
+      svg("text", { x: 68, y: 153, "class": "etiquette-p", texte: SUJET.par + " carreaux" }, gF);
+      svg("text", { x: 68, y: 172, "class": "etiquette-p", style: "font-weight:800", texte: fr(S_CARTON, 2) + " m²" }, gF);
       // l'etiquette de prix, au magasin
       svg("rect", { x: 172, y: 8, width: 140, height: 30, rx: 4, fill: "var(--carte)", stroke: "var(--encre)" }, gF);
       svg("text", { x: 242, y: 28, "class": "etiq-forte", "text-anchor": "middle", texte: fr(SUJET.prixCarton, 2) + " € HT le carton" }, gF);
@@ -3107,7 +3140,7 @@ var Sim = (function () {
           svg("path", { d: "M" + (xx + 4) + " " + (yy + c - 6) + "L" + (xx + c - 6) + " " + (yy + 4), stroke: "#ffffff", "stroke-opacity": 0.5, "stroke-width": 2 }, gF);
         }
       } else svg("text", { x: 232, y: 140, "class": "etiq", "text-anchor": "middle", texte: "touchez le carton" }, gF);
-      cap.textContent = ouvert ? "Le carton est vidé sur la table : comptez ses carreaux. Touchez-le pour les ranger." : "Le carton choisi au magasin. Touchez-le pour le vider sur la table.";
+      cap.textContent = ouvert ? "Le carton est vidé sur la table. Touchez-le pour ranger les carreaux." : "Le carton choisi au magasin : son étiquette dit la surface que couvrent ses carreaux. Touchez-le pour le vider sur la table.";
     }
     surTouche(g, function () { labo.cartonVide = !labo.cartonVide; dessiner(); });
     fig.appendChild(cap);
@@ -3317,39 +3350,37 @@ var Sim = (function () {
       reprendre: toutReprendre, compter: compter, message: function () { return msg.textContent; }, svg: s, zone: gZone };
   }
 
-  /* ── Le devis, a completer : les quantites sont les reponses de l'eleve, il calcule les montants ── */
-  var CHAMPS = ["fourniture", "pose", "ht", "tva", "ttc"], champs = {}, qteC = null, qteA = null;
+  /* ── Le devis, rempli par le carreleur avec les quantites de l'eleve (son nombre de cartons, l'aire faite de son
+     rectangle) : depuis le 21 octobre 2026, l'eleve ne calcule plus les cinq montants, il lit comment la TVA se calcule ── */
+  var MONTANTS = ["fourniture", "pose", "ht", "tva", "ttc"], montants = {}, qteC = null, qteA = null;
   function devis(zone) {
-    zone.appendChild(el("p", { classe: "pm-titre", texte: "Le devis du carreleur, à compléter" }));
-    var d = el("div", { classe: "pm-devis", role: "group", "aria-label": "Le devis à compléter" });
+    zone.appendChild(el("p", { classe: "pm-titre", texte: "Le devis du carreleur, avec vos nombres" }));
+    var d = el("div", { classe: "pm-devis", role: "group", "aria-label": "Le devis du carreleur" });
     d.appendChild(el("h3", { texte: "Devis · carrelage du séjour" }));
-    d.appendChild(el("p", { classe: "pm-de", texte: "Pour Mme Moreau : " + SUJET.logement + ". Prix hors taxe (HT)." }));
+    d.appendChild(el("p", { classe: "pm-de", texte: "Pour Mme Moreau : " + SUJET.logement + ". Prix hors taxe (HT). Les quantités sont vos réponses : votre nombre de cartons, l'aire du sol faite de votre rectangle." }));
     function ligne(design, qte, montant, total) {
       var l = el("div", { classe: "pm-ligne" + (total ? " pm-total" : "") }, [el("span", { classe: "pm-design", html: T(design) }), qte || el("span"), montant]);
       d.appendChild(l); return l;
     }
-    function champ(cle, nom) {
-      var inp = el("input", { type: "text", inputmode: "decimal", autocomplete: "off", "aria-label": nom + ", en euros", placeholder: "… €" });
-      champs[cle] = inp; return inp;
-    }
+    function montant(cle) { var s = el("span", { classe: "pm-fixe", texte: "…" }); montants[cle] = s; return s; }
     qteC = el("span", { classe: "pm-qte" }); qteA = el("span", { classe: "pm-qte" });
-    ligne("Carrelage grès cérame " + TCM + " × " + TCM + " cm, carton de " + SUJET.par + " carreaux", qteC, champ("fourniture", "Montant du carrelage"));
-    ligne("Pose, colle et joints compris", qteA, champ("pose", "Montant de la pose"));
+    ligne("Carrelage grès cérame " + TCM + " × " + TCM + " cm, carton de " + SUJET.par + " carreaux", qteC, montant("fourniture"));
+    ligne("Pose, colle et joints compris", qteA, montant("pose"));
     ligne("Déplacement et évacuation des gravats", el("span", { classe: "pm-qte", html: T("1 forfait × " + euros(SUJET.forfait)) }), el("span", { classe: "pm-fixe", html: euros(SUJET.forfait) }));
-    ligne("Total HT", null, champ("ht", "Total hors taxe"), true);
-    ligne("TVA " + SUJET.tva + " % (" + SUJET.tvaMot + ")", null, champ("tva", "Montant de la TVA"), true);
-    ligne("Total TTC (toutes taxes comprises)", null, champ("ttc", "Total toutes taxes comprises"), true);
+    ligne("Total HT", null, montant("ht"), true);
+    ligne("TVA " + SUJET.tva + " % (" + SUJET.tvaMot + ")", null, montant("tva"), true);
+    ligne("Total TTC (toutes taxes comprises)", null, montant("ttc"), true);
     d.appendChild(el("p", { classe: "pm-promesse", html: T("<b>Remises :</b> " + SUJET.r1 + " % à la signature, puis encore " + SUJET.r2 + " % si vous payez comptant.") }));
     zone.appendChild(d);
     majs.push(majQte); majQte();
   }
   function majQte() {
     if (!qteC) return;
-    qteC.innerHTML = T(vu(DON.cartons) + " cartons × " + euros(SUJET.prixCarton));
-    qteA.innerHTML = T(vu(DON.aire) + " m² × " + euros(SUJET.pose) + " le m²");
+    var c = devisCalc();
+    qteC.innerHTML = T(vu(c.n) + " cartons × " + euros(SUJET.prixCarton));
+    qteA.innerHTML = T(vu(c.aire) + " m² × " + euros(SUJET.pose) + " le m²");
+    MONTANTS.forEach(function (k) { montants[k].innerHTML = T(euros(c[k])); });
   }
-  function lireChamps() { var o = {}; CHAMPS.forEach(function (k) { o[k] = S.lire(champs[k] ? champs[k].value : ""); }); return o; }
-  labo.devis = function (o) { CHAMPS.forEach(function (k) { if (champs[k] && o[k] !== undefined) champs[k].value = String(o[k]).replace(".", ","); }); };
 
   /* ── Phase 4 · la barre du prix, et les deux etiquettes de remise ─────────────────────── */
   var tBase = null, dessinerBarre = null;
@@ -3453,12 +3484,10 @@ var Sim = (function () {
     labo.p4 = { appliquer: function (k) { appliquer(k); dessiner(); }, retirer: function () { labo.remises = []; dessiner(); }, svg: s, message: function () { return msg.textContent; }, ET: ET, EY: EY,
       BX: BX, BY: BY, BH: BH };
   }
-  /* la base des remises : le total TTC du devis de l'eleve, enregistre ou seulement ecrit dans sa case */
-  function baseTTC() {
-    var v = DON.ttc;
-    if (!(typeof v === "number" && isFinite(v) && v > 0) && champs.ttc) v = S.lire(champs.ttc.value);
-    return typeof v === "number" && isFinite(v) && v > 0 ? v : NaN;
-  }
+  /* la base des remises : le total TTC du devis, fait avec les nombres de l'eleve ; le prix apres la premiere remise */
+  function baseTTC() { var t = devisCalc().ttc; return isFinite(t) && t > 0 ? t : NaN; }
+  function apres1() { return r2(baseTTC() * (1 - SUJET.r1 / 100)); }
+  labo.baseTTC = baseTTC; labo.apres1 = apres1;
   function majBase() { if (tBase) tBase.textContent = isFinite(baseTTC()) ? "Le total TTC de votre devis : " + fr(baseTTC(), 2) + NB + "€ (100" + NB + "%)" : "Le total TTC de votre devis : … (complétez-le en phase 3)"; }
 
   /* ── Phase 5 · la lettre a Mme Moreau ─────────────────────────────────────── */
@@ -3505,9 +3534,20 @@ var Sim = (function () {
   }
   function majLettre() {
     if (!nbLettre.aire) return;
-    nbLettre.aire.textContent = vu(DON.aire); nbLettre.cartons.textContent = vu(DON.cartons);
-    nbLettre.ttc.textContent = isFinite(DON.ttc) ? euros(DON.ttc) : "…" + NB + "€"; nbLettre.net.textContent = isFinite(DON.net) ? euros(DON.net) : "…" + NB + "€";
+    var c = devisCalc();
+    nbLettre.aire.textContent = vu(c.aire); nbLettre.cartons.textContent = vu(c.n);
+    nbLettre.ttc.textContent = isFinite(c.ttc) ? euros(c.ttc) : "…" + NB + "€"; nbLettre.net.textContent = aSaisi("net") ? euros(valeur("net")) : "…" + NB + "€";
   }
+
+  /* ── Les nombres que les questions ecrivent, tenus a jour (majVals) ── */
+  function m2(x) { return isFinite(x) ? fr(x, 2) : "…"; }
+  VALS.r1 = function () { var d = decomp(); return d.r1Mot + " = " + m2(d.r1) + " m²"; };
+  VALS.Ll = function () { var d = decomp(); return "L = " + d.Lmot + " et l = " + d.lmot; };
+  VALS.sol = function () { var d = decomp(); return m2(d.r1) + " + " + (aSaisi("a2") ? vu(valeur("a2")) : "…") + " = " + m2(aireSol()) + " m²"; };
+  VALS.besoin = function () { return m2(besoin()) + " m²"; };
+  VALS.base = function () { return euros(baseTTC()); };
+  VALS.y1 = function () { var b = baseTTC(); return isFinite(b) ? fr(b, 2) + " × " + fr(1 - SUJET.r1 / 100, 2) + " = " + euros(apres1()) : "… (le devis attend vos nombres de la phase 3)"; };
+  VALS.y1n = function () { return m2(apres1()); };
 
   /* ── Le parcours ── */
   var p = S.parcours("#parcours", {
@@ -3539,23 +3579,29 @@ var Sim = (function () {
     surPhase: function () { majTout(); if (dessinerBarre) dessinerBarre(); },
     phases: [
       { competence: "APP", titre: "Le plan et le carrelage",
-        recit: T("Mme Moreau : « Le carreleur a tout mesuré, mais j'ai renversé mon café sur le plan. Et je ne sais même pas combien couvre un carton ! »"),
-        consigne: T("Le plan est à l'échelle 1/" + SUJET.E + " (le cartouche). Glissez la règle sur la cote tachée : son bord gradué contre le mur du haut, le zéro dans l'angle. Videz le carton sur la table pour compter ses carreaux."),
+        recit: T("Mme Moreau : « Le carreleur a tout mesuré, mais j'ai renversé mon café sur le plan. Et je ne sais même pas ce que couvre un carton ! »"),
+        consigne: T("Le plan est à l'échelle 1/" + SUJET.E + " (le cartouche). Glissez la règle sur la cote tachée : son bord gradué contre le mur du haut, le zéro dans l'angle. Lisez l'étiquette du carton ; touchez-le pour voir ses carreaux."),
         scene: sceneDossier,
         questions: [
-          { type: "nombre", lib: T("La tache cache la longueur du <b>mur du haut</b>. Mesurez-la sur le plan avec la règle : quelle est sa <b>longueur réelle</b>, en mètres ? (plan à l'échelle 1/" + SUJET.E + ")"), unite: "m",
-            attendu: SUJET.a, tolerance: 0, toleranceAbsolue: 0.03,
-            methode: T("Lisez la règle au millimètre, à l'angle du mur (la loupe aide). À l'échelle 1/" + SUJET.E + ", 1 cm du plan vaut " + SUJET.E + " cm dans la pièce : multipliez par " + SUJET.E + ", puis convertissez les centimètres en mètres."),
-            fini: garder("cote") },
-          { type: "nombre", lib: T("Le carton contient des carreaux de " + TCM + " cm × " + TCM + " cm. Quelle <b>surface</b> couvrent tous les carreaux d'un carton, en m² ?"), unite: "m²",
-            attendu: S_CARTON, tolerance: 0, toleranceAbsolue: 0.005,
-            methode: T("Aire d'un carreau = côté × côté, en mètres (" + TCM + " cm = " + fr(SUJET.t, 2) + " m). Puis multipliez par le nombre de carreaux du carton : videz-le pour les compter."),
-            fini: garder("carton") }
+          { type: "nombre", lib: T("La tache cache la cote du <b>mur du haut</b>. Mesurez-la sur le plan avec la règle : combien de <b>centimètres</b> sur le plan ?"), unite: "cm",
+            attendu: Math.round(SUJET.a * 1000 / SUJET.E) / 10, tolerance: 0, toleranceAbsolue: 0.051,
+            methode: T("Le bord gradué contre le mur, le zéro dans l'angle : lisez au millimètre où finit le mur (la loupe aide). Un petit trait vaut 1 mm, soit 0,1 cm."),
+            fini: garder("coteCm") },
+          { type: "choix", lib: T("Le cartouche dit « échelle 1/" + SUJET.E + " ». Que veut dire cette échelle ?"),
+            options: [T("1 cm sur le plan représente " + SUJET.E + " cm" + (SUJET.E === 100 ? ", soit 1 m," : "") + " dans la pièce"),
+              T("1 cm sur le plan représente " + SUJET.E + " m dans la pièce"),
+              T(SUJET.E + " cm sur le plan représentent 1 cm dans la pièce"),
+              T("Le plan est " + SUJET.E + " fois plus grand que la pièce")], bonne: 0,
+            methode: T("Une échelle 1/n compare le plan à la réalité : 1 unité sur le plan pour n unités, la même, dans la réalité. Un plan est une réduction : la pièce est plus grande que le dessin.") },
+          { type: "choix", lib: T("Un carreau mesure " + TCM + " cm × " + TCM + " cm. Sans calculer au centième près, quelle est l'<b>aire d'un carreau</b> ?"),
+            options: [T(Math.round(SUJET.t * SUJET.t * 1e4) % 100 ? "Environ " + fr(SUJET.t * SUJET.t, 1) + " m²" : fr(SUJET.t * SUJET.t, 2) + " m²"),
+              T(fr(TCM * TCM, 0) + " m²"), T(fr(2 * SUJET.t, 1) + " m²"), T(fr(4 * SUJET.t, 1) + " m²")], bonne: 0,
+            methode: T("Aire d'un carré = côté × côté. Convertissez d'abord le côté en mètres (" + TCM + " cm = " + fr(SUJET.t, 2) + " m) : l'aire est alors en m². Un carreau se porte d'une main : il couvre bien moins d'un mètre carré.") }
         ],
         bravo: T("Mme Moreau : « Une tache de café ne fait pas peur à une règle. »") },
       { competence: "ANA", titre: "Découper la pièce",
         recit: T("Mme Moreau : « Une pièce en L, je ne sais pas en calculer l'aire. Le carreleur dit qu'il suffit de la couper en deux. »"),
-        consigne: T("Glissez un trait de coupe du plateau sur le plan, pour partager la pièce en deux rectangles. Puis réfléchissez à ce qui est proportionnel dans le devis."),
+        consigne: T("Glissez un trait de coupe du plateau sur le plan, pour partager la pièce en deux rectangles. Puis choisissez les bonnes méthodes, et réfléchissez à ce qui est proportionnel dans le devis."),
         scene: sceneDecoupe,
         questions: [
           { type: "action", lib: T("Placez <b>un</b> trait de coupe qui partage la pièce en <b>deux rectangles</b>."),
@@ -3571,23 +3617,28 @@ var Sim = (function () {
                   [v === null || vBon, "le trait vertical ne passe pas par l'angle rentrant : un des morceaux n'est pas un rectangle"]] };
             },
             methode: T("Le trait part de l'angle rentrant (celui qui pointe vers l'intérieur de la pièce) et traverse jusqu'au mur d'en face : horizontal ou vertical, les deux marchent.") },
-          { type: "nombre", lib: T("Avec votre trait, un des deux rectangles a un côté dont la longueur <b>n'est pas écrite</b> sur le plan. Calculez-la, en mètres."), unite: "m",
-            attendu: function () { var c = coupe(); return c === "h" ? SUJET.H - SUJET.b : c === "v" ? SUJET.W - aE() : NaN; }, tolerance: 0, toleranceAbsolue: 0.006,
-            methode: T("Sur un mur partagé en deux morceaux, les longueurs s'ajoutent : la longueur qui manque = la grande longueur − la longueur connue. Lisez les cotes du même côté de la pièce."),
-            fini: garder("manque") },
+          { type: "choix", lib: T("Comment calculer l'<b>aire</b> de cette pièce en L ?"),
+            options: [T("Aire du rectangle 1 + aire du rectangle 2"),
+              T("La plus grande longueur × la plus grande largeur : " + fr(SUJET.W, 2) + " × " + fr(SUJET.H, 2)),
+              T("La somme des longueurs des six murs"),
+              T("Aire du rectangle 1 × aire du rectangle 2")], bonne: 0,
+            methode: T("L'aire d'une figure découpée en morceaux est la somme des aires des morceaux. Regardez sur le plan ce que chaque calcul recouvre : le sol de la pièce, et rien d'autre.") },
+          { type: "choix", lib: T("Le carreleur commande <b>10 % de plus</b> que l'aire du sol, pour les chutes. Quel calcul donne la <b>surface à commander</b> ?"),
+            options: [T("Aire du sol × 1,10"), T("Aire du sol × 0,10"), T("Aire du sol + 10"), T("Aire du sol × 0,90")], bonne: 0,
+            methode: T("On garde toute l'aire (100 %) et on en ajoute 10 % : quel pourcentage de l'aire commande-t-on ? Un pourcentage devient un coefficient multiplicateur en le divisant par 100.") },
           { type: "classer", lib: T("Ces grandeurs sont-elles <b>proportionnelles</b> ?"),
             items: S.note ? ["Le total HT et le montant de la TVA", "L'aire du sol et le total HT du devis", "Le nombre de cartons et leur prix", "Le côté d'un carreau et l'aire du carreau", "La longueur réelle et la longueur sur le plan", "L'aire du sol et le nombre de cartons"]
               : ["La longueur réelle et la longueur sur le plan", "Le nombre de cartons et leur prix", "L'aire posée et le prix de la pose", "L'aire du sol et le total HT du devis", "L'aire du sol et le nombre de cartons", "Le côté d'un carreau et l'aire du carreau"],
             categories: ["Proportionnelles", "Pas proportionnelles"], bonnes: S.note ? [0, 1, 0, 1, 0, 1] : [0, 0, 0, 1, 1, 1],
             methode: T("Deux grandeurs sont proportionnelles si l'on passe toujours de l'une à l'autre en multipliant par le même nombre. Un forfait qui s'ajoute, un arrondi au carton entier ou un côté au carré cassent la proportionnalité.") },
-          { type: "nombre", niveau: "Seconde", lib: T("À l'échelle 1/" + SUJET.E + ", une longueur réelle est " + SUJET.E + " fois plus grande que sur le plan. Une <b>aire</b> réelle est combien de fois plus grande que sur le plan ?"),
+          { type: "nombre", niveau: "Seconde", lib: T("À l'échelle 1/" + SUJET.E + ", une longueur réelle est " + SUJET.E + " fois plus grande que sur le plan. Une aire est le produit de <b>deux</b> longueurs (longueur × largeur), chacune " + SUJET.E + " fois plus grande : une <b>aire</b> réelle est combien de fois plus grande que sur le plan ?"),
             attendu: ECH2, tolerance: 0,
             methode: T("Une aire est le produit de deux longueurs, et chacune est multipliée par " + SUJET.E + " : l'aire l'est par " + SUJET.E + " × " + SUJET.E + ".") }
         ],
         bravo: T("Mme Moreau : « Deux rectangles, je sais faire. Et un devis n'est pas forcément proportionnel à la pièce. »") },
       { competence: "REA", titre: "Poser, compter, chiffrer", large: true,
         recit: T("Le carreleur : « Posez les carreaux, vous verrez les coupes au bord. Chez nous, on commande toujours 10 % de plus que l'aire. »"),
-        consigne: T("Posez tout le carrelage au doigt, depuis le coin de départ. Puis calculez l'aire, la surface à commander, le nombre de cartons, et complétez le devis sous le plan."),
+        consigne: T("Posez tout le carrelage au doigt, depuis le coin de départ. Puis calculez l'aire du rectangle 2 et le nombre de cartons : le carreleur complète le devis, sous le plan, avec vos nombres."),
         scene: scenePose,
         questions: [
           { type: "action", lib: T("Posez le carrelage sur <b>tout le sol</b> du séjour."),
@@ -3599,60 +3650,39 @@ var Sim = (function () {
                 controles: [[c.n === CASES.length, "il reste des endroits du sol sans carreau : couvrez tout, jusqu'aux murs et dans les coins"]] };
             },
             methode: T("Glissez le doigt rangée par rangée, du coin de départ jusqu'au mur d'en face, sans oublier les bords ni les deux bras du L.") },
-          { type: "nombre", lib: T("Quelle est l'<b>aire du sol</b> du séjour, en m² ? (vos deux rectangles)"), unite: "m²",
-            attendu: function () { return aireDe(aE()); }, tolerance: 0, toleranceAbsolue: 0.015,
-            methode: T("Aire d'un rectangle = longueur × largeur. L'aire de la pièce = l'aire du rectangle 1 + l'aire du rectangle 2, avec les cotes du plan et votre mesure du mur du haut."),
-            fini: garder("aire") },
-          { type: "nombre", lib: T("Le carreleur commande <b>10 % de plus</b> que l'aire du sol, pour les chutes. Quelle surface de carrelage faut-il commander, en m² ?"), unite: "m²",
-            attendu: function () { return aireE() * 1.1; }, tolerance: 0, toleranceAbsolue: 0.02,
-            methode: T("Ajouter 10 %, c'est multiplier par 1,10 : surface à commander = aire du sol × 1,10."),
-            fini: garder("besoin") },
-          { type: "nombre", lib: T("Un carton contient " + SUJET.par + " carreaux de " + TCM + " × " + TCM + " cm. Combien de <b>cartons</b> faut-il commander ?"), unite: "cartons",
-            attendu: function () { return Math.ceil(besoinE() / cartonE() - 1e-9); }, tolerance: 0, toleranceAbsolue: 0,
-            methode: T("Nombre de cartons = surface à commander ÷ surface d'un carton. Le magasin ne vend pas de demi-carton : on arrondit au carton supérieur, même si la virgule est petite."),
+          { type: "nombre", get lib() { return T("L'aire du sol = aire du rectangle 1 + aire du rectangle 2 (votre trait de coupe). Le rectangle 1, " + v("r1") + ", est calculé par le carreleur. Calculez l'<b>aire du rectangle 2</b>, en m² : A = L × l, avec " + v("Ll") + "."); }, unite: "m²",
+            attendu: function () { var d = decomp(); return d.L * d.l; },
+            tolerance: function (ctx) { return ctx.niveau() === "CAP" ? 0.01 : 0; }, toleranceAbsolue: 0.015,
+            methode: T("Aire d'un rectangle = longueur × largeur : multipliez les deux longueurs écrites dans la question. Elles sont en mètres : l'aire est en m²."),
+            fini: garder("a2") },
+          { type: "nombre", get lib() { return T("Avec votre rectangle 2, le sol fait " + v("sol") + " ; plus 10 % pour les chutes, il faut commander " + v("besoin") + ". Un carton couvre " + fr(S_CARTON, 2) + " m² (l'étiquette). Combien de <b>cartons</b> faut-il commander ? Nombre de cartons = surface à commander ÷ surface d'un carton."); }, unite: "cartons",
+            attendu: function () { var b = besoin(); return isFinite(b) ? Math.ceil(b / S_CARTON - 1e-9) : NaN; }, tolerance: 0, toleranceAbsolue: 0,
+            methode: T("Divisez la surface à commander par la surface d'un carton. Le magasin ne vend pas de demi-carton : un résultat à virgule se change en un nombre entier de cartons, et il faut assez de carrelage pour tout le sol."),
             fini: garder("cartons") },
-          { type: "action", lib: T("Complétez le <b>devis</b> sous le plan : le montant de chaque ligne, le total HT, la TVA à " + SUJET.tva + " % et le total TTC."),
-            aide: T("Les quantités sont vos réponses : l'aire et le nombre de cartons. Toutes les cases remplies, puis vérifiez."),
-            verifier: function () {
-              var c = lireChamps(), remplies = CHAMPS.filter(function (k) { return isFinite(c[k]); });
-              if (!remplies.length) return null;
-              if (!(isFinite(DON.cartons) && isFinite(DON.aire))) return { attente: "Le devis reprend votre aire et votre nombre de cartons : répondez d'abord à ces deux questions." };
-              if (remplies.length < CHAMPS.length) return { attente: "Il reste des cases vides dans le devis : remplissez les cinq montants." };
-              var tva = SUJET.tva / 100;
-              return { reponse: "carrelage " + euros(c.fourniture) + " ; pose " + euros(c.pose) + " ; total HT " + euros(c.ht) + " ; TVA " + euros(c.tva) + " ; total TTC " + euros(c.ttc),
-                controles: [[Math.abs(c.fourniture - DON.cartons * SUJET.prixCarton) <= 0.015, "le montant du carrelage n'est pas le nombre de cartons × le prix d'un carton"],
-                  [Math.abs(c.pose - DON.aire * SUJET.pose) <= 0.015, "le montant de la pose n'est pas l'aire × le prix du m²"],
-                  [Math.abs(c.ht - (c.fourniture + c.pose + SUJET.forfait)) <= 0.015, "le total HT n'est pas la somme des trois lignes, forfait compris"],
-                  [Math.abs(c.tva - c.ht * tva) <= 0.011, "la TVA n'est pas " + SUJET.tva + " % du total HT"],
-                  [Math.abs(c.ttc - (c.ht + c.tva)) <= 0.015, "le total TTC n'est pas le total HT plus la TVA"]] };
-            },
-            methode: T("Montant = quantité × prix unitaire, ligne par ligne. Total HT = la somme des trois lignes. TVA = " + SUJET.tva + " % du total HT, soit × " + fr(SUJET.tva / 100, 2) + ". Total TTC = total HT + TVA."),
-            fini: function (ctx) {
-              var c = lireChamps(); if (isFinite(c.ttc)) DON.ttc = c.ttc;
-              if (!ctx.note) CHAMPS.forEach(function (k) { champs[k].disabled = true; });
-              majTout();
-            } }
+          { type: "choix", lib: T("Le carreleur a complété le devis avec vos nombres (sous le plan). Comment a-t-il calculé la ligne « TVA " + SUJET.tva + " % » ?"),
+            options: [T("Total HT × " + fr(SUJET.tva / 100, 2)), T("Total TTC × " + fr(SUJET.tva / 100, 2)), T("Total HT + " + SUJET.tva + " €"), T("Total HT × " + fr(1 + SUJET.tva / 100, 2))], bonne: 0,
+            methode: T("La TVA est un pourcentage du prix hors taxe (HT) : p % d'un nombre, c'est ce nombre × p ÷ 100. Le total TTC vient ensuite : total HT + TVA. Vous pouvez vérifier sur le devis, à la calculatrice.") }
         ],
         bravo: T("Mme Moreau : « Le devis est complet, et je sais d'où vient chaque nombre. »") },
       { competence: "VAL", titre: "Les deux remises",
         recit: T("Mme Moreau : « " + SUJET.r1 + " % plus " + SUJET.r2 + " %, ça fait " + CIBLE + " % de moins. Le carreleur est généreux ! »"),
-        consigne: T("Glissez les deux étiquettes de remise sur la barre du prix : la seconde se pose sur ce qui reste. Puis calculez."),
+        consigne: T("Glissez les deux étiquettes de remise sur la barre du prix : la seconde se pose sur ce qui reste. Puis calculez le prix payé."),
         scene: sceneRemises,
         questions: function () {
-          var base = baseTTC();
           return [
-            { type: "nombre", lib: T("Avec " + REMISES_MOT + ", combien Mme Moreau paiera-t-elle, sur le total TTC de votre devis (" + (isFinite(base) ? euros(base) : "… : complétez d'abord le devis") + ") ?"), unite: "€",
-              attendu: function () { var b = baseTTC(); return isFinite(b) ? b * COEF : NaN; }, tolerance: 0, toleranceAbsolue: 0.02,
-              methode: T("Une remise de " + SUJET.r1 + " % multiplie le prix par " + fr(1 - SUJET.r1 / 100, 2) + " ; la seconde, de " + SUJET.r2 + " %, multiplie ce nouveau prix par " + fr(1 - SUJET.r2 / 100, 2) + "."),
+            { type: "nombre", get lib() { return T("Sur le total TTC de votre devis, " + v("base") + ", la remise de " + SUJET.r1 + " % à la signature laisse " + v("y1") + ". Calculez le <b>prix payé</b> après la seconde remise, de " + SUJET.r2 + " % : P = " + v("y1n") + " × " + fr(1 - SUJET.r2 / 100, 2) + ", en euros."); }, unite: "€",
+              attendu: function () { var y = apres1(); return isFinite(y) ? y * (1 - SUJET.r2 / 100) : NaN; },
+              tolerance: 0, toleranceAbsolue: function (ctx) { return ctx.niveau() === "CAP" ? 0.6 : 0.02; },
+              methode: T("Une remise de " + SUJET.r2 + " % laisse " + (100 - SUJET.r2) + " % du prix : on multiplie le prix déjà réduit par " + fr(1 - SUJET.r2 / 100, 2) + ". Multipliez les deux nombres écrits dans la question."),
               fini: garder("net") },
-            { type: "nombre", lib: T("Mme Moreau : « " + SUJET.r1 + " + " + SUJET.r2 + ", ça fait " + CIBLE + " % de moins. » De <b>combien de pour cent</b> le prix a-t-il vraiment baissé ?"), unite: "%",
-              attendu: REMISE, tolerance: 0, toleranceAbsolue: 0.06,
-              methode: T("Baisse en % = (prix de départ − prix payé) ÷ prix de départ × 100. Ou avec les coefficients : 1 − " + fr(1 - SUJET.r1 / 100, 2) + " × " + fr(1 - SUJET.r2 / 100, 2) + ", en pour cent.") },
-            { type: "multi", niveau: "Seconde", lib: T("Quelles offres font baisser le prix d'<b>au moins " + CIBLE + " %</b> ? Plusieurs réponses."),
-              options: S.note ? ["Une remise de 15 %, puis une de 10 %", "Une seule remise de 25 %", "Une remise de 20 %, puis une de 5 %", "Une remise de 15 %, puis une de 12 %", "Une remise de 13 %, puis une de 13 %", "Une remise de 10 %, puis une de 17 %"].map(T)
-                : ["Une seule remise de 20 %", "Une remise de 10 %, puis une de 10 %", "Une remise de 10 %, puis une de 12 %", "Une remise de 15 %, puis une de 5 %", "Une remise de 5 %, puis une de 16 %", "Une remise de 12 %, puis une de 9 %"].map(T),
-              bonne: S.note ? [1, 3, 5] : [0, 2, 4],
-              methode: T("Pour chaque offre, multipliez les coefficients (1 − remise) ; la baisse est 1 moins ce produit. Au moins " + CIBLE + " % : le produit doit valoir " + fr(1 - CIBLE / 100, 2) + " ou moins.") }
+            { type: "choix", lib: T("Les deux remises multiplient le prix de départ par " + fr(COEF, Math.round(COEF * 1000) % 10 ? 3 : 2) + " (" + fr(1 - SUJET.r1 / 100, 2) + " × " + fr(1 - SUJET.r2 / 100, 2) + "). Mme Moreau croyait à " + CIBLE + " % de moins. De combien de <b>pour cent</b> le prix a-t-il vraiment baissé ?"),
+              options: [T(fr(REMISE, REMISE % 1 ? 1 : 0) + " %"), T(fr(100 - REMISE, REMISE % 1 ? 1 : 0) + " %"), T(CIBLE + " %"), T(fr(REMISE / 100, Math.round(REMISE * 10) % 10 ? 3 : 2) + " %")], bonne: 0,
+              methode: T("Un coefficient multiplicateur k garde k × 100 % du prix. La baisse, en %, est l'écart entre 100 % et ce qui reste.") },
+            { type: "multi", niveau: "Seconde", lib: T("Qu'est-ce qui est vrai pour ces deux remises ? Plusieurs réponses."),
+              options: S.note ? ["Une seule remise de 25 % donnerait le même prix que les deux remises", "Les deux remises multiplient le prix par 0,85 × 0,90", "Faire d'abord la remise de 10 %, puis celle de 15 %, change le prix payé", "La remise de 10 % se calcule sur le prix déjà réduit de 15 %", "Une remise de 15 % puis une hausse de 15 % ramènent au prix de départ"].map(T)
+                : ["Les deux remises multiplient le prix par 0,90 × 0,90", "La seconde remise retire moins d'euros que la première", "Faire d'abord la remise du paiement comptant, puis celle de la signature, change le prix payé", "Une seule remise de 20 % donnerait le même prix que les deux remises de 10 %", "Une remise de 10 % puis une hausse de 10 % ramènent au prix de départ"].map(T),
+              bonne: S.note ? [1, 3] : [0, 1],
+              methode: T("Chaque remise de p % multiplie le prix par (1 − p ÷ 100), et la seconde porte sur le prix déjà réduit. Une hausse de p % multiplie par (1 + p ÷ 100). L'ordre de deux multiplications ne change pas le produit.") }
           ];
         },
         bravo: T("Mme Moreau : « Pas tout à fait " + CIBLE + " %, donc. Je le saurai pour les soldes. »") },
@@ -3697,6 +3727,11 @@ var Sim = (function () {
   labo.DON = DON;
   p.labo = labo;
   window.carreleur = p;
+  /* une verification fausse ne previent pas la scene : les nombres ecrits dans les questions se tiennent a jour
+     apres chaque « Verifier » ou « Enregistrer » */
+  var racineP = document.getElementById("parcours");
+  racineP.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".pc-q")) setTimeout(majTout, 0); });
+  racineP.addEventListener("keydown", function (e) { if (e.key === "Enter") setTimeout(majTout, 0); });
 })();
 </script>
 <footer class="pied">Simulation hors ligne, sans compte et sans enregistrement. Modèle simplifié : ce qu'il néglige est écrit sous la simulation.</footer>

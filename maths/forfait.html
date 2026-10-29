@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quel forfait choisir ?</title>
-<meta name="description" content="Lina commence l&#x27;escalade, et ses parents paient l&#x27;offre la moins chère de la salle. Ranger les tickets de caisse sous leur offre, remplir le tableau de valeurs, placer les points au doigt et tracer les trois droites, lire où elles se croisent et résoudre l&#x27;équation, puis répondre à l&#x27;ami qui jure que l&#x27;illimité est toujours le bon plan. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.">
+<meta name="description" content="Lina commence l&#x27;escalade, et ses parents paient l&#x27;offre la moins chère de la salle. Ranger les tickets de caisse sous leur offre, remplir le tableau de valeurs, placer les points au doigt et tracer les trois droites, lire où elles se croisent et résoudre l&#x27;équation, puis répondre à l&#x27;ami qui jure que l&#x27;illimité est toujours le bon plan. En TD, la page guide ; en évaluation notée, dans l&#x27;espace d&#x27;évaluation, elle finit par un fichier.">
 <meta name="etiquette" content="Simulation · Parcours PARM-03">
 <style>
 /* Simulations des TP · feuille commune, inlinee dans chaque page par assembler-simulations.py.
@@ -2762,7 +2762,7 @@ var Sim = (function () {
 <header class="tete">
 <div class="surtitre">Mathématiques · parcours CAP et seconde · une heure sur tablette</div>
 <h1>Quel forfait choisir ?</h1>
-<p class="chapeau">Lina commence l'escalade, et ses parents paient l'offre la moins chère de la salle. Ranger les tickets de caisse sous leur offre, remplir le tableau de valeurs, placer les points au doigt et tracer les trois droites, lire où elles se croisent et résoudre l'équation, puis répondre à l'ami qui jure que l'illimité est toujours le bon plan. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.</p>
+<p class="chapeau">Lina commence l'escalade, et ses parents paient l'offre la moins chère de la salle. Ranger les tickets de caisse sous leur offre, remplir le tableau de valeurs, placer les points au doigt et tracer les trois droites, lire où elles se croisent et résoudre l'équation, puis répondre à l'ami qui jure que l'illimité est toujours le bon plan. En TD, la page guide ; en évaluation notée, dans l'espace d'évaluation, elle finit par un fichier.</p>
 </header>
 <style>
 :root{--papier:#f8f6f0;--encre-papier:#1d1d1b;--papier-trait:#8a8579;--prise-mur:#9aa3ad}
@@ -2889,6 +2889,11 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
   function expr(o) { return insec(o === "A" ? SUJET.A + "x" : o === "B" ? SUJET.B + "x + " + SUJET.fixeB : String(SUJET.C)); }
   function systeme(a, b) { return insec("{ y = " + a + " ; y = " + b + " }"); }
 
+  /* le detail d'un ticket, comme sur une vraie caisse (21 octobre 2026, allegement) : on reconnait l'offre a sa facon
+     de compter, sans recalculer chaque offre pour chaque ticket */
+  function detailTicket(t) {
+    return t.offre === "A" ? t.n + " × " + euros(SUJET.A) : t.offre === "B" ? euros(SUJET.fixeB) + " + " + t.n + " × " + euros(SUJET.B) : "forfait, " + seances(t.n);
+  }
   /* les six tickets de caisse d'octobre, dans un ordre tire au sort */
   var TICKETS = SUJET.tickets.map(function (t) { return { nom: t[0], n: t[1], offre: t[2], prix: F[t[2]](t[1]), place: null }; });
   var ORDRE_T = [0, 1, 2, 3, 4, 5];
@@ -2966,7 +2971,7 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
       svg("rect", { x: -4, y: -4, width: TW + 8, height: TH + 4, rx: 4, "class": "f-contour" }, g);
       svg("text", { x: 12, y: 18, "class": "f-t-petit", texte: "LE BLOC · OCTOBRE" }, g);
       svg("text", { x: 12, y: 40, "class": "f-t-nom", texte: t.nom }, g);
-      svg("text", { x: 12, y: 61, "class": "f-t-txt", texte: seances(t.n) }, g);
+      svg("text", { x: 12, y: 61, "class": "f-t-txt", style: "font-size:14px", texte: detailTicket(t) }, g);
       svg("text", { x: 12, y: 84, "class": "f-t-prix", texte: "Total " + euros(t.prix, 2) }, g);
       var tampon = svg("g", null, g);
       t.g = g; t.tampon = tampon; t.slot = slot;
@@ -3029,6 +3034,8 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
     OFFRES.forEach(function (o) {
       champs[o] = [];
       var r = el("tr", null, [el("th", { scope: "row", html: o + "(<i>x</i>) en €" })]);
+      /* la ligne B, la carte jeune, est donnee (21 octobre 2026) : deux operations par case, l'eleve remplit A et C */
+      if (o === "B") { SUJET.xs.forEach(function (x) { r.appendChild(el("td", { classe: "f-lu", texte: fr(F.B(x), 0) })); }); t.appendChild(r); return; }
       SUJET.xs.forEach(function (x, k) {
         var inp = el("input", { type: "text", inputmode: "decimal", autocomplete: "off", "aria-label": "Offre " + o + ", " + seances(x) + " : prix du mois en euros" });
         inp.value = labo.tab[o][k];
@@ -3040,7 +3047,7 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
     });
     zone.appendChild(t);
     zone.appendChild(el("p", { classe: "f-legende", texte: "A : à la séance · B : carte jeune · C : illimité." }));
-    labo.p2 = { remplir: function (o, k, v) { champs[o][k].value = String(v).replace(".", ","); labo.tab[o][k] = champs[o][k].value; } };
+    labo.p2 = { remplir: function (o, k, v) { if (o === "B") return; champs[o][k].value = String(v).replace(".", ","); labo.tab[o][k] = champs[o][k].value; } };
   }
   /* le tableau de l'eleve, rappele en phase 3 */
   function tableauLu(zone) {
@@ -3052,7 +3059,7 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
       t.appendChild(tr);
       OFFRES.forEach(function (o) {
         var r = el("tr", null, [el("th", { scope: "row", html: SYMB[o] + " " + o + "(<i>x</i>)" })]);
-        SUJET.xs.forEach(function (x, k) { var v = S.lire(labo.tab[o][k]); r.appendChild(el("td", { classe: "f-lu", texte: isFinite(v) ? fr(v, v % 1 ? 2 : 0) : "…" })); });
+        SUJET.xs.forEach(function (x, k) { var v = o === "B" ? F.B(x) : S.lire(labo.tab[o][k]); r.appendChild(el("td", { classe: "f-lu", texte: isFinite(v) ? fr(v, v % 1 ? 2 : 0) : "…" })); });
         t.appendChild(r);
       });
     }
@@ -3351,7 +3358,7 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
         consigne: "Lisez le dépliant. Glissez chaque ticket sur l'offre qui l'a produit, ou touchez le ticket puis l'offre.",
         scene: sceneTickets,
         questions: [
-          { type: "action", lib: "Rangez chaque ticket d'octobre sous <b>l'offre qui l'a produit</b> : son nombre de séances et son total le disent, avec les prix du dépliant.",
+          { type: "action", lib: "Rangez chaque ticket d'octobre sous <b>l'offre qui l'a produit</b> : comparez le détail de son prix aux tarifs du dépliant.",
             aide: "Les six tickets rangés, puis vérifiez.",
             verifier: function () {
               var ranges = TICKETS.filter(function (t) { return t.place; }).length;
@@ -3359,11 +3366,11 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
               var reste = TICKETS.length - ranges;
               if (reste) return { attente: (reste > 1 ? reste + " tickets ne sont pas encore rangés : glissez-les" : "Un ticket n'est pas encore rangé : glissez-le") + " sur une offre." };
               var faux = TICKETS.filter(function (t) { return t.place !== t.offre; }).length;
-              return { controles: [[!faux, (faux > 1 ? faux + " tickets ne sont pas" : "un ticket n'est pas") + " sous la bonne offre : pour chacun, calculez ce que coûterait chaque offre avec son nombre de séances"]],
+              return { controles: [[!faux, (faux > 1 ? faux + " tickets ne sont pas" : "un ticket n'est pas") + " sous la bonne offre : comparez le détail de chaque ticket aux trois tarifs du dépliant"]],
                 reponse: TICKETS.map(function (t) { return t.nom + " (" + seances(t.n) + ", " + euros(t.prix, 2) + ") → " + t.place; }).join(" ; "),
                 lu: "les six tickets rangés" };
             },
-            methode: "Pour un ticket, calculez le prix du mois avec chaque offre du dépliant, pour son nombre de séances : le prix fixe du mois s'il y en a un, plus les entrées. Le ticket va sous l'offre qui donne exactement son total." },
+            methode: "Chaque offre a sa façon de compter : un prix par entrée seul, un prix du mois plus un prix par entrée, ou un forfait qui ne dépend pas des séances. Le détail du ticket dit laquelle." },
           { type: "choix", lib: "Le prix du mois change avec une seule chose. Quelle est la <b>variable</b>, notée x ?",
             options: ["Le nombre de séances dans le mois", "Le prix payé dans le mois", "Le prix d'une entrée", "Le nombre d'offres du dépliant"], bonne: 0,
             methode: "La variable, c'est ce qu'on choisit et qui fait changer le prix : x. Le prix du mois est l'image de x par la fonction de l'offre." },
@@ -3374,14 +3381,14 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
         bravo: "Lina : « Chaque offre a sa façon de compter. Reste à savoir laquelle coûte le moins. »" },
       { competence: "ANA", titre: "Le tableau de valeurs",
         recit: "Lina : « Avant de choisir, je voudrais voir ce que coûte chaque offre pour " + SUJET.xs.slice(0, -1).join(", ") + " ou " + SUJET.xs[SUJET.xs.length - 1] + " séances dans le mois. »",
-        consigne: "Calculez le prix du mois pour chaque offre et chaque nombre de séances, et écrivez-le dans le tableau, en euros.",
+        consigne: "Complétez le tableau : le prix du mois, en euros, des offres A et C pour chaque nombre de séances. La ligne B est déjà calculée.",
         scene: sceneTableau,
         questions: [
-          { type: "action", lib: "Complétez le <b>tableau de valeurs</b> des trois offres (le dépliant donne les prix).",
-            aide: "Les douze cases remplies, puis vérifiez.",
+          { type: "action", lib: "Complétez les lignes <b>A</b> et <b>C</b> du tableau de valeurs : A(x) = " + SUJET.A + " × x (à la séance) et C(x) = " + SUJET.C + " (l'illimité). La ligne B, la carte jeune, est déjà calculée.",
+            aide: "Les huit cases remplies, puis vérifiez.",
             verifier: function () {
               var remplies = 0, vides = 0, fausses = { A: 0, B: 0, C: 0 };
-              OFFRES.forEach(function (o) {
+              ["A", "C"].forEach(function (o) {
                 SUJET.xs.forEach(function (x, k) {
                   var v = S.lire(labo.tab[o][k]);
                   if (!isFinite(v)) { vides++; return; }
@@ -3391,10 +3398,10 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
               });
               if (!remplies) return null;
               if (vides) return { attente: "Il reste " + vides + " case" + (vides > 1 ? "s" : "") + " vide" + (vides > 1 ? "s" : "") + " dans le tableau." };
-              return { controles: OFFRES.map(function (o) { return [!fausses[o], "ligne " + o + " (" + NOMS[o].toLowerCase() + ") : " + fausses[o] + " case" + (fausses[o] > 1 ? "s fausses" : " fausse")]; }),
-                reponse: OFFRES.map(function (o) { return o + " : " + labo.tab[o].map(function (v) { return v.trim() || "…"; }).join(" ; "); }).join(" · ") };
+              return { controles: ["A", "C"].map(function (o) { return [!fausses[o], "ligne " + o + " (" + NOMS[o].toLowerCase() + ") : " + fausses[o] + " case" + (fausses[o] > 1 ? "s fausses" : " fausse")]; }),
+                reponse: ["A", "C"].map(function (o) { return o + " : " + labo.tab[o].map(function (v) { return v.trim() || "…"; }).join(" ; "); }).join(" · ") };
             },
-            methode: "Pour chaque case, prenez le nombre de séances de la colonne. À la séance : le prix d'une entrée × les séances. Carte jeune : le prix fixe du mois, plus le prix d'une entrée × les séances. Illimité : le même prix, quel que soit le nombre de séances." },
+            methode: "Pour chaque case, prenez le nombre de séances de la colonne. Ligne A : le prix d'une entrée × les séances. Ligne C : l'illimité coûte le même prix, quel que soit le nombre de séances." },
           { type: "choix", lib: "Une seule offre est une situation de <b>proportionnalité</b>. Laquelle, et pourquoi ?",
             options: ["L'offre A : 0 séance coûte 0 €, et le prix double quand le nombre de séances double",
               "L'offre B : son prix augmente avec le nombre de séances",
@@ -3437,9 +3444,9 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
             attendu: XAB, tolerance: 0, toleranceAbsolue: 0.2,
             methode: "La solution du système, ce sont les coordonnées (x ; y) du point commun aux deux droites : x se lit sur l'axe des séances, y sur l'axe des prix.",
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.xab = rep; } },
-          { type: "nombre", lib: "Les droites B et C se croisent entre deux graduations. Résolvez par le calcul l'équation <b>" + insec(expr("B") + " = " + SUJET.C) + "</b>. Que vaut x ?",
+          { type: "nombre", lib: "Les droites B et C se croisent entre deux graduations. Résolvez par le calcul l'équation <b>" + insec(expr("B") + " = " + SUJET.C) + "</b> : en enlevant " + SUJET.fixeB + " aux deux membres, " + insec(SUJET.B + "x = " + (SUJET.C - SUJET.fixeB)) + ". Que vaut x ? (" + insec("x = " + (SUJET.C - SUJET.fixeB) + " ÷ " + SUJET.B) + ")",
             attendu: XBC, tolerance: 0, toleranceAbsolue: 0.05,
-            methode: "Enlevez " + SUJET.fixeB + " aux deux membres, puis divisez les deux membres par " + SUJET.B + ".",
+            methode: "Pour trouver x, divisez les deux membres de " + insec(SUJET.B + "x = " + (SUJET.C - SUJET.fixeB)) + " par " + SUJET.B + ", le nombre qui multiplie x.",
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.xbc = rep; } },
           { type: "choix", niveau: "Seconde", lib: "Le frère de Lina a écrit ce programme Python. Que renvoie <code>bascule()</code> ?<code class=\"f-python\">" + PYTHON + "</code>",
             options: [BASCULE + " : le premier nombre de séances pour lequel la carte jeune coûte moins cher que la séance à l'unité",
@@ -3454,7 +3461,7 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
         consigne: "L'agenda de Lina montre ses séances prévues. Comptez-les, puis glissez la poignée x du graphique pour comparer les offres.",
         scene: sceneAgenda,
         questions: [
-          { type: "nombre", lib: "En <b>" + BAS.nom + "</b>, Lina grimpera peu (l'agenda). Avec l'illimité à " + euros(SUJET.C) + " par mois, combien lui coûterait <b>chaque séance</b> ce mois-là ?", unite: "€",
+          { type: "nombre", lib: "En <b>" + BAS.nom + "</b>, Lina grimpera peu : comptez ses séances dans l'agenda. Avec l'illimité à " + euros(SUJET.C) + " par mois, prix d'une séance = " + euros(SUJET.C) + " ÷ le nombre de séances. Combien coûterait <b>chaque séance</b> ce mois-là ?", unite: "€",
             attendu: SUJET.C / BAS.n, tolerance: 0.01, toleranceAbsolue: 0.005,
             methode: "Comptez les jours de séance de " + BAS.nom + " dans l'agenda, puis divisez le prix du mois de l'illimité par ce nombre. Comparez au prix d'une entrée à la séance.",
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.seance = rep; } },
@@ -3469,15 +3476,9 @@ code.f-python{display:block;white-space:pre;overflow-x:auto;background:var(--car
             categories: OFFRES.map(function (o) { return o + " · " + NOMS[o]; }),
             bonnes: MOIS.map(function (mo) { return OFFRES.indexOf(mo.offre); }),
             methode: "Comptez les séances de chaque mois ; placez la poignée x sur ce nombre et cherchez le point le plus bas, ou calculez les trois prix du mois." },
-          { type: "multi", niveau: "Seconde", lib: "Une autre salle propose un pass. Deux factures d'un ami : <b>" + seances(SUJET.pass.n1) + " → " + euros(SUJET.pass.p1) + "</b> et <b>" + seances(SUJET.pass.n2) + " → " + euros(SUJET.pass.p2) + "</b>. Le prix est une fonction affine du nombre de séances. Qu'est-ce qui est vrai ? Plusieurs réponses.",
-            options: ["Avec ce pass, chaque séance de plus coûte " + euros(PASS_A),
-              "Ce pass coûte " + euros(PASS_B) + " par mois, même sans aucune séance",
-              "Sa droite est parallèle à celle de la carte jeune : elles ne se croisent jamais",
-              "Ce pass coûte " + euros(SUJET.pass.p2 / SUJET.pass.n2, 2) + " la séance",
-              "Ce pass devient moins cher que la carte jeune à partir de " + seances(SUJET.pass.n2),
-              "Le système " + systeme(expr("B"), PASS_A + "x + " + PASS_B) + " a une solution, puisque les deux offres ont le même prix par séance"],
-            bonne: [0, 1, 2],
-            methode: "Coefficient directeur : (différence des prix) ÷ (différence des séances). Ordonnée à l'origine : un prix moins ce coefficient × ses séances. Deux droites de même coefficient directeur sont parallèles." }
+          { type: "nombre", niveau: "Seconde", lib: "Une autre salle propose un pass ; son prix est une fonction affine du nombre de séances. Deux factures d'un ami : <b>" + seances(SUJET.pass.n1) + " → " + euros(SUJET.pass.p1) + "</b> et <b>" + seances(SUJET.pass.n2) + " → " + euros(SUJET.pass.p2) + "</b>. Le prix augmente de " + insec(SUJET.pass.p2 + " − " + SUJET.pass.p1 + " = " + (SUJET.pass.p2 - SUJET.pass.p1)) + " € pour " + insec(SUJET.pass.n2 + " − " + SUJET.pass.n1 + " = " + (SUJET.pass.n2 - SUJET.pass.n1)) + " séances de plus. Combien coûte <b>chaque séance de plus</b> ? (le coefficient directeur, " + insec((SUJET.pass.p2 - SUJET.pass.p1) + " ÷ " + (SUJET.pass.n2 - SUJET.pass.n1)) + ")", unite: "€",
+            attendu: PASS_A, tolerance: 0, toleranceAbsolue: 0.005,
+            methode: "Pour une fonction affine, le prix augmente toujours de la même somme à chaque séance de plus : divisez l'augmentation du prix par l'augmentation du nombre de séances." }
         ],
         bravo: "Lina : « Malik se trompait : l'illimité ne gagne que les mois où je grimpe beaucoup. »" },
       { competence: "COM", titre: "Le conseil à Lina",

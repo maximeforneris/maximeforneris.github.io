@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>La rampe d'accès</title>
-<meta name="description" content="Papi Jo rentre chez lui en fauteuil roulant, et un perron l&#x27;attend devant sa porte. Mesurer la hauteur à monter, prévoir la longueur d&#x27;une rampe à 5 %, poser son pied au doigt et calculer sa planche avec Pythagore, puis mesurer au rapporteur la vieille planche de l&#x27;oncle, qui compare des degrés à des pour cent. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.">
+<meta name="description" content="Papi Jo rentre chez lui en fauteuil roulant, et un perron l&#x27;attend devant sa porte. Mesurer la hauteur à monter, prévoir la longueur d&#x27;une rampe à 5 %, poser son pied au doigt et calculer sa planche avec Pythagore, puis mesurer au rapporteur la vieille planche de l&#x27;oncle, qui compare des degrés à des pour cent. En TD, la page guide ; en évaluation notée, dans l&#x27;espace d&#x27;évaluation, elle finit par un fichier.">
 <meta name="etiquette" content="Simulation · Parcours PARM-05">
 <style>
 /* Simulations des TP · feuille commune, inlinee dans chaque page par assembler-simulations.py.
@@ -2762,7 +2762,7 @@ var Sim = (function () {
 <header class="tete">
 <div class="surtitre">Mathématiques · parcours CAP et seconde · une heure sur tablette</div>
 <h1>La rampe d'accès</h1>
-<p class="chapeau">Papi Jo rentre chez lui en fauteuil roulant, et un perron l'attend devant sa porte. Mesurer la hauteur à monter, prévoir la longueur d'une rampe à 5 %, poser son pied au doigt et calculer sa planche avec Pythagore, puis mesurer au rapporteur la vieille planche de l'oncle, qui compare des degrés à des pour cent. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.</p>
+<p class="chapeau">Papi Jo rentre chez lui en fauteuil roulant, et un perron l'attend devant sa porte. Mesurer la hauteur à monter, prévoir la longueur d'une rampe à 5 %, poser son pied au doigt et calculer sa planche avec Pythagore, puis mesurer au rapporteur la vieille planche de l'oncle, qui compare des degrés à des pour cent. En TD, la page guide ; en évaluation notée, dans l'espace d'évaluation, elle finit par un fichier.</p>
 </header>
 <style>
 :root{--papier:#f8f6f0;--encre-papier:#1d1d1b;--papier-trait:#8a8579;--bois:#cfae7b;--bois-trait:#7a5c32;--regle:#f2e8b6;--regle-trait:#35322a}
@@ -2826,6 +2826,7 @@ table.r-tableau th,table.r-tableau td{border:1px solid var(--trait);padding:3px;
 table.r-tableau th{font-size:.86rem;font-weight:650;background:var(--carte2);padding:4px 6px}
 table.r-tableau th[scope="row"]{text-align:left}
 table.r-tableau td.r-donne{font-family:ui-monospace,Consolas,monospace;min-width:52px}
+table.r-tableau td.r-vous{font-weight:750;color:var(--accent)}
 table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;font-size:1rem;width:64px;min-height:44px;text-align:center;
   border:1px solid var(--trait);border-radius:4px;background:var(--carte);color:var(--encre);padding:2px}
 @media (max-width:420px){table.r-tableau input{width:54px}table.r-tableau th{padding:3px 4px;font-size:.8rem}}
@@ -2869,16 +2870,35 @@ table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;f
   var NUM = ["①", "②", "③"];
   function metres(xcm) { return fr(xcm / 100, 2) + " m"; }
 
-  /* les mesures de l'eleve : sa hauteur du perron (phase 1), sa longueur au sol de la planche de l'oncle (phase 3) ;
-     tant qu'il n'a rien repondu, les calculs suivants se verifient sur les vraies valeurs */
-  function hEl(ctx) { var v = ctx.donnees.h; return isFinite(v) && v > 0 ? v : H; }
-  function duEl(ctx) { var v = ctx.donnees.du; return isFinite(v) && v > 0 ? v : DU; }
+  /* ALLEGEMENT DU 21 OCTOBRE 2026 (« trop dur pour les eleves ») : trois calculs, une operation chacun, les nombres
+     ecrits dans la question : la longueur au sol (20 × la hauteur mesuree), la racine de la somme des carres (la page
+     l'ecrit avec le pied pose), la pente (la page donne le pied de la planche de Karim, Pythagore fait avec la hauteur
+     de l'eleve). Tant que l'eleve n'a pas mesure la hauteur, la page ecrit « … » et la question attend. En TD, une
+     reponse fausse laisse sa question ouverte (« fini » n'est pas appele) : on prend le dernier nombre verifie. */
+  function hV() {
+    var dn = p && p.donnees, x = dn && dn.h;
+    if (typeof x === "number" && isFinite(x) && x > 0) return x;
+    var fs = p && p.fiches ? p.fiches()[0] : null, f = fs && fs[0];
+    return f && typeof f.valeur === "number" && isFinite(f.valeur) && f.valeur > 0 ? f.valeur : NaN;
+  }
+  function duV() { var h = hV(); return h < LU ? Math.round(Math.sqrt(LU * LU - h * h) * 10) / 10 : NaN; }   // le pied de la planche de Karim, au mm
+  function carres() { var h = hV(); return labo.d * labo.d + h * h; }
+  function nbx(x, d) { return isFinite(x) ? fr(x, d) : "…"; }
+  function fh(x) { return isFinite(x) ? fr(x, x % 1 ? 1 : 0) : "…"; }   // la hauteur telle que mesuree : 24 ; 23,5
+  var VALS = {
+    h: function () { return fh(hV()); },
+    carres: function () { var h = hV(); return labo.d + "² + " + fh(h) + "² = " + nbx(carres(), h % 1 ? 2 : 0); },
+    du: function () { return nbx(duV(), 1) + " cm"; },
+    pente: function () { return fh(hV()) + " ÷ " + nbx(duV(), 1); }
+  };
+  function v(cle) { return "<span class=\"rmp-v\" data-v=\"" + cle + "\">" + VALS[cle]() + "</span>"; }
+  function majVals() { [].forEach.call(document.querySelectorAll(".rmp-v"), function (s) { s.textContent = VALS[s.getAttribute("data-v")](); }); }
+  var celluleH = null;                                   // la colonne du perron, dans le tableau de la phase 2
 
   /* ── L'etat partage entre les phases, et la porte des essais ── */
   var labo = {
-    SUJET: SUJET, H: H, DMIN: DMIN, LRAMPE: LRAMPE, LU: LU, DU: DU, ANGLE: ANGLE, PENTE_U: PENTE_U,
+    SUJET: SUJET, H: H, DMIN: DMIN, LRAMPE: LRAMPE, LU: LU, DU: DU, ANGLE: ANGLE, PENTE_U: PENTE_U, hV: hV, duV: duV, carres: carres,
     regleX: SUJET.regle0,                                // le bord gauche du metre pliant (phase 1)
-    tab: ["", "", ""],                                   // les trois cases du tableau (phase 2)
     d: SUJET.pied0, piedBouge: false,                    // le pied de la rampe, en cm du perron (phase 3)
     rap: { x: 468, y: 178 }, rapPose: false,             // le centre du rapporteur (phase 4)
     fiche: {}
@@ -2918,13 +2938,15 @@ table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;f
     var d = ctx.donnees, lignes = {
       h: d.hTxt && "Hauteur du perron (phase 1) : " + d.hTxt,
       d: d.dTxt && "Longueur au sol à 5 % (phase 2) : " + d.dTxt,
-      du: d.duTxt && "Pied de la planche de Karim (phase 3) : " + d.duTxt + " du perron",
+      du: isFinite(duV()) && "Pied de la planche de Karim (Pythagore, avec votre hauteur) : " + nbx(duV(), 1) + " cm du perron",
       angle: d.angleTxt && "Angle de la planche de Karim (phase 4) : " + d.angleTxt };
     mesuresZones.forEach(function (m) {
       var li = m.cles.map(function (k) { return lignes[k]; }).filter(Boolean);
       m.z.innerHTML = "<p class=\"r-titre\">Vos mesures et vos résultats</p><ul class=\"vos-mesures\">" +
         (li.length ? li.map(function (x) { return "<li>" + x + "</li>"; }).join("") : "<li>(les phases précédentes les rempliront)</li>") + "</ul>";
     });
+    if (celluleH) celluleH.textContent = fh(hV());
+    majVals();
   }
 
   /* ── La note de l'ergotherapeute, avec son schema numerote ── */
@@ -3019,25 +3041,22 @@ table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;f
 
   /* ── Phase 2 · le tableau de proportionnalite ─────────────────────────────── */
   function sceneTableau(zone, ctx) {
-    zone.appendChild(el("p", { classe: "r-rappel", html: "<b>La note de l'ergothérapeute :</b> pente de 5 % au plus, soit 5 cm de montée pour 1 m (100 cm) parcouru à l'horizontale." }));
+    zone.appendChild(el("p", { classe: "r-rappel", html: "<b>La note de l'ergothérapeute :</b> pente de 5 % au plus, soit 5 cm de montée pour 1 m (100 cm) parcouru à l'horizontale." }));
+    /* le tableau de la note, donne (21 octobre 2026) : la derniere colonne est celle du perron, que l'eleve calcule */
     var t = el("table", { classe: "r-tableau" });
     var l1 = el("tr", null, [el("th", { scope: "row", texte: "Hauteur à monter (cm)" })]);
     var l2 = el("tr", null, [el("th", { scope: "row", texte: "Longueur au sol (cm)" })]);
-    var champs = [];
-    SUJET.hs.forEach(function (hh, k) {
+    SUJET.hs.forEach(function (hh) {
       l1.appendChild(el("td", { classe: "r-donne", texte: String(hh) }));
-      if (k === 0) { l2.appendChild(el("td", { classe: "r-donne", texte: "100" })); return; }
-      var inp = el("input", { type: "text", inputmode: "decimal", autocomplete: "off", "aria-label": "Longueur au sol, en cm, pour monter " + hh + " cm" });
-      inp.value = labo.tab[k - 1];
-      inp.addEventListener("input", function () { labo.tab[k - 1] = inp.value; });
-      champs.push(inp);
-      l2.appendChild(el("td", null, [inp]));
+      l2.appendChild(el("td", { classe: "r-donne", texte: String(20 * hh) }));
     });
+    celluleH = el("td", { classe: "r-donne r-vous", texte: fh(hV()) });
+    l1.appendChild(celluleH); l2.appendChild(el("td", { classe: "r-donne r-vous", texte: "?" }));
     t.appendChild(l1); t.appendChild(l2);
     zone.appendChild(t);
-    zone.appendChild(el("p", { classe: "r-legende", texte: "La première colonne vient de la note : 5 cm de montée pour 100 cm à l'horizontale." }));
+    zone.appendChild(el("p", { classe: "r-legende", texte: "Le tableau de la note : à 5 %, la longueur au sol est proportionnelle à la hauteur à monter. La dernière colonne est celle de votre perron." }));
     zoneMesures(zone, ctx, ["h"]);
-    labo.p2 = { remplir: function (k, v) { champs[k].value = String(v).replace(".", ","); labo.tab[k] = champs[k].value; } };
+    labo.p2 = {};
   }
 
   /* ── Phase 3 · l'allee : le pied de la rampe, le metre ruban, la loupe ──────────── */
@@ -3091,7 +3110,7 @@ table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;f
       viser(xf, G3 + 4);
     }
     function regler(d) {
-      labo.d = borne(Math.round(d / 5) * 5, 60, SUJET.allee); labo.piedBouge = true; poser();
+      labo.d = borne(Math.round(d / 5) * 5, 60, SUJET.allee); labo.piedBouge = true; poser(); majVals();
       message(msg, "Le pied de la rampe est posé : lisez sa position sur le mètre ruban, dans la loupe.");
     }
     var drag = null;
@@ -3288,31 +3307,24 @@ table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;f
             categories: ["La hauteur à monter", "La longueur au sol", "La longueur de la planche"],
             bonnes: SUJET.schema.map(function (r) { return ROLES[r]; }),
             methode: "La hauteur est verticale, contre le perron ; la longueur au sol est horizontale, sur l'allée ; la planche est le côté penché, en face de l'angle droit." },
-          { type: "nombre", lib: "D'après la note, une rampe à 5 % monte de 5 cm pour 1 m à l'horizontale. De combien monte-t-elle quand on avance de <b>" + SUJET.essai.m + " m</b> à l'horizontale ?", unite: "cm",
-            attendu: SUJET.essai.monte, tolerance: 0, toleranceAbsolue: 0.01,
-            methode: "La montée est proportionnelle à l'avancée à l'horizontale : multipliez les 5 cm de la note par le nombre de mètres." }
+          { type: "choix", lib: "La note dit « pente : 5 % au plus ». Pour une rampe qui avance de <b>1 m à l'horizontale</b>, cela veut dire :",
+            options: ["Elle monte de 5 cm au plus", "Elle fait un angle de 5° au plus avec le sol", "Elle monte de 5 cm en tout, quelle que soit sa longueur", "Sa planche mesure 5 cm de plus que le sol"], bonne: 0,
+            methode: "Un pourcentage compare deux nombres de même unité : 5 % de 100 cm, c'est 5 cm. La note parle de la montée pour un mètre parcouru à l'horizontale." }
         ],
         bravo: "Yasmine : « Le perron est mesuré, et la règle est claire. Reste à voir ce qu'elle demande. »" },
       { competence: "ANA", titre: "Prévoir la rampe",
         recit: "Yasmine : « 5 %, ça paraît peu. Mais quelle longueur faut-il pour monter tout le perron ? Et la planche sera-t-elle plus longue ? »",
-        consigne: "Complétez le tableau : à 5 %, la longueur au sol est proportionnelle à la hauteur à monter.",
+        consigne: "Lisez le tableau de la note : à 5 %, la longueur au sol est proportionnelle à la hauteur à monter. La dernière colonne est celle de votre perron.",
         scene: sceneTableau,
         questions: [
-          { type: "action", lib: "Complétez le <b>tableau de proportionnalité</b> : la longueur au sol, en cm, pour chaque hauteur.",
-            aide: "Les trois cases remplies, puis vérifiez.",
-            verifier: function () {
-              var vals = labo.tab.map(function (x) { return S.lire(x); });
-              var remplies = vals.filter(isFinite).length;
-              if (!remplies) return null;
-              if (remplies < vals.length) return { attente: "Il reste " + (vals.length - remplies) + " case" + (vals.length - remplies > 1 ? "s" : "") + " vide" + (vals.length - remplies > 1 ? "s" : "") + " dans le tableau." };
-              return { controles: vals.map(function (v, k) { var hh = SUJET.hs[k + 1]; return [Math.abs(v - 20 * hh) < 0.01, "la case sous « " + hh + " cm » n'est pas juste"]; }),
-                reponse: SUJET.hs.slice(1).map(function (hh, k) { return hh + " cm → " + (labo.tab[k].trim() || "…"); }).join(" ; ") };
-            },
-            methode: "Dans la première colonne, 5 cm de hauteur demandent 100 cm au sol : par combien multiplie-t-on la hauteur pour trouver la longueur au sol ? Ce nombre est le même dans toutes les colonnes." },
-          { type: "nombre", lib: "Pour monter la hauteur du perron (votre mesure, phase 1) à 5 % pile, quelle <b>longueur au sol</b> faut-il ? En mètres.", unite: "m",
-            attendu: function (ctx) { return hEl(ctx) * 20 / 100; }, tolerance: 0, toleranceAbsolue: 0.005,
-            methode: "Multipliez la hauteur du perron par le coefficient du tableau : vous avez des centimètres. Divisez par 100 pour des mètres.",
+          { type: "nombre", get lib() { return "Dans le tableau, la longueur au sol vaut toujours <b>20 fois</b> la hauteur (5 cm → 100 cm). Complétez la colonne de votre perron, en cm : longueur au sol = 20 × " + v("h") + " (votre hauteur, en cm)."; }, unite: "cm",
+            attendu: function () { return 20 * hV(); }, tolerance: 0, toleranceAbsolue: 0.5,
+            methode: "Multipliez la hauteur de votre perron, mesurée en phase 1, par 20 : le résultat est en centimètres, comme la hauteur.",
             fini: function (ctx, ok, rep, v) { if (isFinite(v)) ctx.donnees.dTxt = rep; } },
+          { type: "choix", lib: S.note ? "Le perron de la voisine est <b>trois fois moins haut</b>. À 5 %, sa rampe sera, au sol :" : "Le perron de la voisine est <b>deux fois plus haut</b>. À 5 %, sa rampe sera, au sol :",
+            options: S.note ? ["Trois fois plus courte", "Neuf fois plus courte", "Aussi longue : la pente est la même", "Plus courte de 20 cm"]
+              : ["Deux fois plus longue", "Quatre fois plus longue", "Aussi longue : la pente est la même", "Plus longue de 20 cm"], bonne: 0,
+            methode: "Dans un tableau de proportionnalité, multiplier ou diviser la hauteur par un nombre multiplie ou divise la longueur au sol par le même nombre." },
           { type: "choix", lib: "La planche, posée en pente, sera plus longue que la longueur au sol. <b>De combien</b>, à votre avis ?",
             options: ["De moins d'un centimètre : pour une pente douce, la planche et le sol ont presque la même longueur",
               "De la hauteur du perron : on ajoute la hauteur à la longueur au sol",
@@ -3335,13 +3347,12 @@ table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;f
                 reponse: "pied de la rampe à " + labo.d + " cm du perron", lu: "le pied de la rampe posé dans l'allée" };
             },
             methode: "Reprenez la longueur au sol de la phase 2 : le tableau donne par combien multiplier la hauteur. Glissez le pied jusqu'à cette graduation du mètre ruban, puis ajustez de 5 cm en 5 cm en lisant la loupe." },
-          { type: "nombre", lib: "Votre rampe posée : la hauteur du perron (phase 1) et la longueur au sol (le mètre ruban, dans la loupe). Avec le <b>théorème de Pythagore</b>, calculez la <b>longueur de la planche</b>, en cm, au millimètre près.", unite: "cm",
-            attendu: function (ctx) { if (!labo.piedBouge) return NaN; var hh = hEl(ctx); return Math.sqrt(hh * hh + labo.d * labo.d); }, tolerance: 0, toleranceAbsolue: 0.1,
-            methode: "Le sol, le perron et la planche forment un triangle rectangle ; la planche est l'hypoténuse. Ajoutez le carré de la longueur au sol et le carré de la hauteur, puis prenez la racine carrée. Gardez un chiffre après la virgule." },
-          { type: "nombre", lib: "Karim veut poser sa vieille planche de <b>" + metres(LU) + "</b> sur l'arête du perron (hauteur : votre mesure). Avec le <b>théorème de Pythagore</b>, à quelle distance du perron son pied touchera-t-il le sol ? En cm, au millimètre près.", unite: "cm",
-            attendu: function (ctx) { var hh = hEl(ctx); return hh < LU ? Math.sqrt(LU * LU - hh * hh) : NaN; }, tolerance: 0, toleranceAbsolue: 0.1,
-            methode: "Ici, la planche est l'hypoténuse et vous cherchez un côté de l'angle droit : du carré de la planche, retirez le carré de la hauteur, puis prenez la racine carrée. Tout en centimètres.",
-            fini: function (ctx, ok, rep, v) { if (isFinite(v)) { ctx.donnees.du = v; ctx.donnees.duTxt = rep; } } },
+          { type: "nombre", get lib() { return "Le sol, le perron et la planche forment un triangle rectangle ; la planche est l'hypoténuse. Avec votre pied posé et votre hauteur, planche² = sol² + hauteur² = " + v("carres") + ". Calculez la <b>longueur de la planche</b> : planche = √(ce nombre), en cm, au millimètre près."; }, unite: "cm",
+            attendu: function () { return labo.piedBouge ? Math.sqrt(carres()) : NaN; }, tolerance: 0, toleranceAbsolue: 0.1,
+            methode: "La touche √ de la calculatrice : tapez le nombre écrit dans la question, puis prenez sa racine carrée. Gardez un chiffre après la virgule : des millimètres." },
+          { type: "choix", lib: "Karim veut poser sa vieille planche de <b>" + metres(LU) + "</b> sur l'arête du perron. Pour savoir à quelle distance du perron son pied touchera le sol, quel calcul faut-il ? (Pythagore : la planche est l'hypoténuse)",
+            options: ["√(planche² − hauteur²)", "√(planche² + hauteur²)", "planche − hauteur", "planche + hauteur"], bonne: 0,
+            methode: "On cherche un côté de l'angle droit, pas l'hypoténuse : du carré de l'hypoténuse, on retire le carré de l'autre côté, puis on prend la racine carrée." },
           { type: "choix", niveau: "Seconde", lib: "Dans un repère orthonormé, l'origine au pied de la rampe à 5 %, l'axe des abscisses sur le sol vers le perron, en centimètres : le dessus de la rampe est porté par une droite. Quelle est son <b>équation réduite</b> ?",
             options: ["y = 0,05x", "y = 5x", "y = 20x", "y = 0,05x + 5"], bonne: 0,
             methode: "La pente est le coefficient directeur : la montée divisée par l'avancée, ici 5 cm pour 100 cm. La droite passe par l'origine, le pied de la rampe : son ordonnée à l'origine est 0." }
@@ -3356,15 +3367,16 @@ table.r-tableau input{font:inherit;font-family:ui-monospace,Consolas,monospace;f
             attendu: ANGLE, tolerance: 0, toleranceAbsolue: 0.5,
             methode: "Centre du rapporteur sur le pied de la planche, sa base sur le sol. Comptez depuis le zéro posé sur le sol, du côté du perron : des deux graduations, c'est celle qui part de 0 de ce côté.",
             fini: function (ctx, ok, rep, v) { if (isFinite(v)) ctx.donnees.angleTxt = rep; } },
-          { type: "nombre", lib: "Calculez la <b>pente</b> de la planche de Karim, en % : la hauteur du perron (phase 1) divisée par la longueur au sol de sa planche (phase 3), multipliée par 100. Au dixième près.", unite: "%",
-            attendu: function (ctx) { return 100 * hEl(ctx) / duEl(ctx); }, tolerance: 0, toleranceAbsolue: 0.03,
-            methode: "Divisez la hauteur par la longueur au sol, toutes deux en centimètres, puis multipliez par 100. Pas la longueur de la planche : la pente se compte à l'horizontale." },
+          { type: "nombre", get lib() { return "La pente se compte à l'horizontale : pente = hauteur ÷ longueur au sol. Avec Pythagore et votre hauteur, le pied de la planche de Karim est à " + v("du") + " du perron. Calculez sa <b>pente</b> : " + v("pente") + ", au millième (0,05, c'est 5 %)."; },
+            attendu: function () { var h = hV(), du = duV(); return isFinite(h) && isFinite(du) ? h / du : NaN; }, tolerance: 0,
+            toleranceAbsolue: 0.00031,   // l'arrondi au millieme ; 0,104 (la hauteur divisee par la planche, en TD) est refuse
+            methode: "Divisez la hauteur par la longueur au sol, toutes deux en centimètres : les deux nombres sont écrits dans la question. Pas la longueur de la planche : la pente se compte à l'horizontale." },
           { type: "choix", lib: "Le nombre de l'appli de Karim est celui de votre rapporteur. Karim le compare aux 5 % de la note. Que lui répondre ?",
             options: ["Non : ton appli affiche des degrés, comme le rapporteur. La pente en %, c'est la hauteur divisée par la longueur au sol, et la tienne dépasse nettement 5 %",
               "Oui : un angle en degrés et une pente en % sont le même nombre, ta planche respecte presque la note",
               "Non : ton téléphone se trompe, le rapporteur donne un tout autre angle",
               "Oui, à condition de raccourcir un peu la planche pour adoucir la pente"], bonne: 0,
-            methode: "Comparez votre pente en % (question 2) aux 5 % de la note, et l'unité de l'appli à celle du rapporteur. Une planche plus courte, posée sur le même perron, est plus raide." },
+            methode: "Comparez votre pente (question 2) à 0,05, c'est-à-dire 5 %, et l'unité de l'appli à celle du rapporteur. Une planche plus courte, posée sur le même perron, est plus raide." },
           { type: "multi", niveau: "Seconde", lib: "Pour aller plus loin, qu'est-ce qui est vrai ? Plusieurs réponses.",
             options: ["Une pente de 100 % fait un angle de 45° : on monte autant qu'on avance",
               "Une pente de 100 % est un mur vertical",

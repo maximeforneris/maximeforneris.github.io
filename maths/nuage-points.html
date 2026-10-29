@@ -3598,7 +3598,11 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
    les annonces au tableur et lance l'ajustement ; la page ne l'affiche pas avant.
    La partie 4 retourne l'evidence du comptable : « a 14 ans, la droite dit que le fourgon ne vaut plus rien ».
    DEUX JEUX DE VALEURS : le TD (#ccf) a des fourgons de 1 a 8 ans ; l'evaluation notee (#note) des minibus
-   de 1 a 9 ans, un autre prix neuf, une autre decote, d'autres ages a prevoir. */
+   de 1 a 9 ans, un autre prix neuf, une autre decote, d'autres ages a prevoir.
+   ALLEGEMENT du 21 octobre 2026 (« trop dur pour les eleves ») : deux operations au plus par calcul, la formule
+   ecrite dans l'intitule. Le pourcentage de baisse (partie 1) devient un releve et le choix de son calcul ; le seuil
+   du modele exponentiel (partie 4, Tle) devient l'erreur d'un camarade a reperer. La conclusion n'affiche que les
+   nombres de l'eleve (« … » avant) : ouverte la premiere, elle donnait ceux du sujet, donc les reponses. */
 (function () {
   var P = window.nuagePoints, fr = Sim.fr, el = Sim.el, svg = Sim.svg, NB = " ";
   function euros(v) { return isFinite(v) ? fr(Math.round(v), 0) + NB + "€" : "…"; }
@@ -3632,6 +3636,9 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
      en mode note, fini est appele a chaque enregistrement : la valeur est gardee quelle qu'elle soit */
   function garde(cle, mesure) { return function (ctx, juste, rep, v) { ctx.donnees[cle] = (juste || ctx.note) && isFinite(v) ? v : mesure(ctx); }; }
   function val(ctx, cle, mesure) { var x = ctx.donnees[cle]; return isFinite(x) ? x : mesure(ctx); }
+  /* pour l'affichage : le nombre de l'eleve, ou rien (« … ») tant qu'il n'a pas repondu ; jamais celui du sujet */
+  function vu(ctx, cle) { var x = ctx.donnees[cle]; return isFinite(x) ? x : NaN; }
+  function nb(v, d) { return isFinite(v) ? fr(v, d) : "…"; }
   var M = {
     a: function () { return Math.round(D.reg.a); }, b: function () { return Math.round(D.reg.b); },
     q: function () { return Math.round(Math.pow(10, D.regz.a) * 1000) / 1000; }, k: function () { return Math.round(Math.pow(10, D.regz.b) / 100) * 100; },
@@ -3796,10 +3803,13 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
           { type: "classer", lib: "Le document 3 demande l'ajustement de y en x. Quel rôle joue chaque donnée d'une annonce ?",
             items: SUJET.itemsApp, categories: ["x", "y", "ne sert pas à cet ajustement"], bonnes: SUJET.bonnesApp,
             methode: "Le document 3 dit ce que sont x et y ; ce qu'il ne nomme pas n'entre pas dans l'ajustement." },
-          { type: "nombre", lib: "Touchez le " + C + " d'un an, mis en circulation en 2025, pour lire son annonce. De quel pourcentage son prix a-t-il baissé par rapport au prix neuf, "
-              + euros(P0) + " (document 2) ? Arrondi à l'unité.", unite: "%",
-            attendu: 100 * (P0 - D.un.prix) / P0, tolerance: 0, toleranceAbsolue: 0.6,
-            methode: "La baisse en euros, divisée par le prix neuf, multipliée par 100." },
+          { type: "nombre", lib: "Touchez le " + C + " d'un an, mis en circulation en 2025, pour lire son annonce. Relevez son <b>prix demandé</b>.", unite: "€",
+            attendu: D.un.prix, tolerance: 0, toleranceAbsolue: 0.5,
+            methode: "Le parc : le " + C + " mis en circulation en 2025 ; son annonce donne l'année, le kilométrage et le prix, en euros." },
+          { type: "choix", lib: "Le responsable veut savoir de quel pourcentage ce prix y<sub>1</sub> a baissé par rapport au prix neuf P<sub>0</sub> du document 2. Quel calcul le donne ?",
+            options: ["(P<sub>0</sub> − y<sub>1</sub>) ÷ P<sub>0</sub> × 100", "(P<sub>0</sub> − y<sub>1</sub>) ÷ y<sub>1</sub> × 100",
+              "y<sub>1</sub> ÷ P<sub>0</sub> × 100", "P<sub>0</sub> − y<sub>1</sub>"], bonne: 0,
+            methode: "Un pourcentage de baisse compare la baisse à la valeur de départ ; ici, la valeur de départ est le prix neuf." },
           { type: "choix", lib: "Le responsable veut deux prix : celui d'un " + C + " de " + XI + ", puis celui de son " + C + " de " + XE + ". Les annonces vont " + ANN + ". Ces deux prévisions sont…",
             options: ["une interpolation, puis une extrapolation", "une extrapolation, puis une interpolation", "deux interpolations : les deux âges sont des nombres positifs",
               "deux extrapolations : aucun des deux âges n'est celui d'une annonce"], bonne: 0,
@@ -3871,7 +3881,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
           { type: "nombre", niveau: "Première", lib: "Relevez le coefficient de détermination <b>R²</b>, arrondi au millième.",
             attendu: function () { return D.reg.r2; }, tolerance: 0, toleranceAbsolue: 0.0011, fini: garde("r2", M.r2),
             methode: "L'outil l'affiche avec a et b." },
-          { type: "nombre", niveau: "Première", lib: "Avec votre équation y = a x + b, vos a et b, prévoyez le prix d'un " + C + " de <b>" + XI + "</b>, soit x = " + fr(SUJET.xI, 1) + ". Arrondi à l'euro.", unite: "€",
+          { type: "nombre", niveau: "Première", lib: "Prévoyez le prix d'un " + C + " de <b>" + XI + "</b> : calculez <b>y = a × " + fr(SUJET.xI, 1) + " + b</b>, avec vos a et b relevés ci-dessus. Arrondi à l'euro.", unite: "€",
             attendu: M.yI, tolerance: 0.002, toleranceAbsolue: 2, fini: garde("yI", M.yI),
             methode: "Remplacez x par " + fr(SUJET.xI, 1) + " dans votre équation." },
           { type: "nombre", niveau: "Terminale", lib: "Avec l'outil numérique, l'ajustement affine de y en x par la méthode des moindres carrés : relevez son coefficient de détermination <b>R²</b>, arrondi au millième.",
@@ -3905,16 +3915,16 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
             "Elle est juste à quelques centaines d'euros près : un " + C + " de " + XE + " ne vaut plus rien, et les annonces du fond du parc sont trop chères.",
             "Elle est fausse seulement parce que a et b sont arrondis : avec toutes leurs décimales, la prévision serait positive."];
           return [
-            { type: "nombre", niveau: "Première", lib: "Avec votre équation, vos a et b, prévoyez le prix d'un " + C + " de <b>" + XE + "</b>. Arrondi à l'euro.", unite: "€",
+            { type: "nombre", niveau: "Première", lib: "Prévoyez le prix d'un " + C + " de <b>" + XE + "</b> avec votre droite : calculez <b>y = a × " + SUJET.xE + " + b</b>, vos a et b de la partie 3. Arrondi à l'euro.", unite: "€",
               attendu: M.yE1, tolerance: 0.002, toleranceAbsolue: 2, fini: garde("yE", M.yE1),
               methode: "Remplacez x par " + SUJET.xE + " dans votre équation, en gardant le signe de a." },
-            { type: "nombre", niveau: "Terminale", lib: "Avec la droite des moindres carrés de y en x, ses a et b lus au tableur, prévoyez le prix d'un " + C + " de <b>" + XE + "</b>. Arrondi à la centaine d'euros.", unite: "€",
+            { type: "nombre", niveau: "Terminale", lib: "Prévoyez le prix d'un " + C + " de <b>" + XE + "</b> avec la droite des moindres carrés de y en x : calculez <b>y = a × " + SUJET.xE + " + b</b>, avec ses a et b lus au tableur. Arrondi à la centaine d'euros.", unite: "€",
               attendu: M.yE2, tolerance: 0.01, toleranceAbsolue: 60, fini: garde("yE", M.yE2),
               methode: "Remplacez x par " + SUJET.xE + " dans y = a x + b, avec les coefficients de l'ajustement de y en x." },
             { type: "choix", lib: "Le comptable conclut : « À " + XE + ", notre " + C + " ne vaut plus rien. » Ouvrez le fond du parc. Que penser de la prévision de la droite ?",
               options: raison, bonne: 0,
               methode: "Comparez la prévision aux annonces du fond du parc, et situez " + XE + " par rapport aux âges des annonces." },
-            { type: "nombre", niveau: "Première", lib: "Pour quel âge votre droite prévoit-elle un prix nul ? Résolvez a x + b = 0 avec vos a et b ; au dixième.", unite: "ans",
+            { type: "nombre", niveau: "Première", lib: "Pour quel âge votre droite prévoit-elle un prix nul ? a x + b = 0 donne <b>x = −b ÷ a</b> : calculez-le avec vos a et b ; au dixième.", unite: "ans",
               attendu: M.x0, tolerance: 0, toleranceAbsolue: 0.06, fini: garde("x0", M.x0),
               methode: "a x + b = 0 : isolez x, une équation du premier degré." },
             { type: "choix", niveau: "Première", lib: "Votre R² est proche de 1. Que garantit-il ?",
@@ -3926,7 +3936,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
                 "Oui : un R² proche de 1 prouve que cet objet fait le prix, et il suffit donc de le changer.", "Oui, mais seulement pour les " + CS + " des annonces, " + ANN + ", pas pour les plus vieux.",
                 "Non : un R² proche de 1 ne suffit jamais à parler de corrélation entre deux variables."], bonne: 0,
               methode: "Une forte corrélation entre deux variables ne dit pas que l'une est la cause de l'autre : cherchez ce qui les fait varier ensemble." },
-            { type: "nombre", niveau: "Terminale", lib: "Avec le modèle y = k × q<sup>x</sup>, vos k et q, prévoyez le prix d'un " + C + " de <b>" + XE + "</b>. Arrondi à la centaine d'euros.", unite: "€",
+            { type: "nombre", niveau: "Terminale", lib: "Prévoyez le prix d'un " + C + " de <b>" + XE + "</b> avec le modèle exponentiel : calculez <b>y = k × q<sup>" + SUJET.xE + "</sup></b>, vos k et q de la partie 3. Arrondi à la centaine d'euros.", unite: "€",
               attendu: M.yX, tolerance: 0.01, toleranceAbsolue: 60, fini: garde("yX", M.yX),
               methode: "Remplacez x par " + SUJET.xE + " dans k × q<sup>x</sup> : la puissance d'abord, puis le produit." },
             { type: "choix", niveau: "Terminale", lib: "Quel modèle retenir pour prévoir le prix des " + CS + ", et pourquoi ?",
@@ -3934,9 +3944,13 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
                 "La droite : son R² est déjà proche de 1, et une droite se prolonge plus simplement qu'une courbe exponentielle.", "Le modèle exponentiel, parce que sa courbe passe exactement par chacune des huit annonces du parc.",
                 "Aucun des deux : un ajustement ne permet jamais de prévoir un prix, même tout près des annonces."], bonne: 0,
               methode: "Comparez les deux R², puis les deux prévisions aux annonces du fond du parc." },
-            { type: "nombre", niveau: "Terminale", lib: "À partir de quel âge le modèle exponentiel prévoit-il un prix inférieur à <b>" + SEUIL + "</b> ? Résolvez k × q<sup>x</sup> < " + fr(SUJET.seuil, 0) + " avec vos k et q, par le calcul ou à l'outil numérique ; au dixième.", unite: "ans",
-              attendu: M.xs, tolerance: 0, toleranceAbsolue: 0.12, fini: garde("xs", M.xs),
-              methode: "Divisez par k, puis prenez le logarithme : x × log(q) < log(" + fr(SUJET.seuil, 0) + " ÷ k). log(q) est négatif : le sens de l'inégalité change." }
+            { type: "choix", niveau: "Terminale", lib: "À partir de quel âge le modèle exponentiel prévoit-il un prix inférieur à <b>" + SEUIL + "</b> ? Un camarade résout k × q<sup>x</sup> < " + fr(SUJET.seuil, 0)
+                + " en quatre lignes : <br>① q<sup>x</sup> < " + fr(SUJET.seuil, 0) + " ÷ k <br>② log(q<sup>x</sup>) < log(" + fr(SUJET.seuil, 0) + " ÷ k) <br>③ x × log(q) < log(" + fr(SUJET.seuil, 0) + " ÷ k) <br>④ x < log(" + fr(SUJET.seuil, 0) + " ÷ k) ÷ log(q) <br>Que penser de sa résolution ?",
+              options: ["La ligne ④ est fausse : q est compris entre 0 et 1, log(q) est négatif, et diviser par un nombre négatif change le sens de l'inégalité.",
+                "La ligne ① est fausse : pour isoler q<sup>x</sup>, il fallait soustraire k des deux côtés, pas diviser par k.",
+                "La ligne ③ est fausse : log(q<sup>x</sup>) vaut log(q) puissance x, pas x × log(q).",
+                "Elle est juste : on a seulement divisé les deux membres par le même nombre, ce qui garde le sens de l'inégalité."], bonne: 0,
+              methode: "Vérifiez chaque ligne avec l'annexe. Puis le signe : un logarithme est-il positif ou négatif pour un nombre entre 0 et 1 ? Que devient une inégalité qu'on divise par un nombre négatif ?" }
           ];
         },
         bravo: "Une droite d'ajustement prévoit près des données ; prolongée loin d'elles, elle peut dire n'importe quoi."
@@ -3946,19 +3960,19 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         recit: "Le responsable attend une note courte : vos prévisions, avec leurs nombres, et ce qu'il faut faire du vieux " + C + ".",
         questions: function (ctx) {
           var tle = ctx.niveau() === "Terminale";
-          var yE = val(ctx, "yE", tle ? M.yE2 : M.yE1), o;
+          var yE = vu(ctx, "yE"), o;
           if (!tle) {
-            o = ["Pour un " + C + " de " + XI + ", la droite prévoit environ " + euros(val(ctx, "yI", M.yI)) + " : une interpolation, entre des annonces " + ANN + ".",
+            o = ["Pour un " + C + " de " + XI + ", la droite prévoit environ " + euros(vu(ctx, "yI")) + " : une interpolation, entre des annonces " + ANN + ".",
               "À " + XE + ", la droite prévoit " + euros(yE) + " : un prix négatif, absurde ; on ne prolonge pas une droite d'ajustement loin des annonces.",
               "Le R² proche de 1 dit que les annonces " + ANN + " sont proches de la droite, pas que la droite vaut au-delà.",
               "Notre " + C + " de " + XE + " ne vaut plus rien : la droite d'ajustement l'a montré.",
               SUJET.faux,
               "La droite donne le prix exact de chaque " + C + " du parc."];
           } else {
-            var q = qE(ctx), pct = Math.round((1 - q) * 100);
-            o = ["Le " + C + " perd environ " + pct + NB + "% de sa valeur chaque année : y ≈ " + fr(kE(ctx), 0) + " × " + fr(q, 3) + "<sup>x</sup>.",
-              "À " + XE + ", la droite prévoit " + centaine(yE) + " : absurde ; le modèle exponentiel prévoit environ " + centaine(val(ctx, "yX", M.yX)) + ", du même ordre que le fond du parc.",
-              "D'après le modèle exponentiel, un " + C + " vaut moins de " + SEUIL + " à partir d'environ " + fr(val(ctx, "xs", M.xs), 1) + NB + "ans.",
+            var q = vu(ctx, "q"), k = vu(ctx, "k"), xs = q > 0 && q < 1 && k > 0 ? Math.log10(SUJET.seuil / k) / Math.log10(q) : NaN;
+            o = ["Le " + C + " perd environ " + nb(Math.round((1 - q) * 100), 0) + NB + "% de sa valeur chaque année : y ≈ " + nb(k, 0) + " × " + nb(q, 3) + "<sup>x</sup>.",
+              "À " + XE + ", la droite prévoit " + centaine(yE) + " : absurde ; le modèle exponentiel prévoit environ " + centaine(vu(ctx, "yX")) + ", du même ordre que le fond du parc.",
+              "D'après le modèle exponentiel, un " + C + " vaut moins de " + SEUIL + " à partir d'environ " + nb(xs, 1) + NB + "ans.",
               "La droite prévoit juste à tout âge, puisque son R² est proche de 1.",
               "Le " + C + " perd chaque année la même somme, environ " + centaine(Math.abs(D.reg.a)) + ".",
               "Le modèle exponentiel prévoit qu'un " + C + " ne vaudra plus rien, 0 €, dans une vingtaine d'années."];

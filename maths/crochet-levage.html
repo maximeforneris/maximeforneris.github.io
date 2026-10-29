@@ -3445,7 +3445,10 @@ table.cl-carnet tr.cl-sep > *{border-top:2.5px solid var(--encre2)}
    L'evidence retournee (partie 4) : le chef d'equipe raccourcit les brins, « chacun porte la moitie » (le quart) ;
    chaque brin tire en fait plus que sa charge maximale, et, a deux brins, plus que la charge entiere.
    DEUX JEUX DE VALEURS : le TD (#ccf) et l'evaluation notee (#note) n'ont ni la meme charge, ni les memes anneaux, ni
-   les memes hauteurs de crochet, ni les memes listes a classer. Dans chaque mode, le poids est tire au sort parmi trois. */
+   les memes hauteurs de crochet, ni les memes listes a classer. Dans chaque mode, le poids est tire au sort parmi trois.
+   ALLEGEMENT du 21 octobre 2026 (« trop dur pour les eleves ») : la longueur du brin est donnee (le choix porte sur le
+   calcul qui la verifie) ; ‖TA‖ = k × L, L donne ; au crochet du chef, k et L sont donnes, T = k × L. Trois calculs d'une
+   operation, la formule dans l'intitule ; le carnet garde ses calculs d'une operation par coordonnee. */
 (function () {
   var P = window.crochetLevage, fr = Sim.fr, el = Sim.el, svg = Sim.svg, NB = " ";
   function nb(v) {
@@ -3786,25 +3789,26 @@ table.cl-carnet tr.cl-sep > *{border-top:2.5px solid var(--encre2)}
             aide: "Le crochet se glisse au doigt, ou avec « Crochet ▲ » et « Crochet ▼ » ; la pointe bleue du crochet montre sa hauteur sur l'axe, et la loupe peut viser l'anneau A.",
             verifier: verifPoints, fini: garderPts,
             methode: "1 m = 10 dm : la hauteur du plan, en carreaux. Chaque coordonnée se compte depuis O, le long de son axe ; à gauche" + (pre() ? "" : " ou vers l'avant") + ", elle est négative." },
-          { type: "action", get lib() { return "Calculez les coordonnées " + (pre() ? "des vecteurs " + V("AK") + " et " + V("BK") : "du vecteur " + V("AK")) + " et notez-les dans le carnet."; },
+          { type: "action", get lib() { return "Calculez les coordonnées " + (pre() ? "des vecteurs " + V("AK") + " et " + V("BK") : "du vecteur " + V("AK")) + " et notez-les dans le carnet : <b>extrémité moins origine</b>, coordonnée par coordonnée (pour " + V("AK") + ", celles de K moins celles de A)."; },
             verifier: verifVecteurs, fini: garderVec,
             methode: "Coordonnées de l'extrémité moins coordonnées de l'origine, coordonnée par coordonnée : pour " + V("AK") + ", celles de K moins celles de A." },
-          { type: "nombre", get lib() { return "Calculez la longueur d'un brin, c'est-à-dire la norme de " + V("AK") + ", avec les coordonnées de votre carnet, en dm."; }, unite: "dm",
-            attendu: function (ctx) { return norme(vecEl(ctx).AK); }, tolerance: 0.01, fini: garde("L"),
-            get methode() { return "La racine carrée de la somme des carrés des coordonnées : √(x² + y²" + (pre() ? "" : " + z²") + ")."; } },
+          { type: "choix", get lib() { var d = D(); return "Le bureau des méthodes a mesuré un brin sur le plan : <b>L = " + nb(d.L(d.hPlan)) + NB + "dm</b>, la norme de " + V("AK") + ". Quel calcul, avec les coordonnées " + (pre() ? "(x ; y)" : "(x ; y ; z)") + " de " + V("AK") + " dans votre carnet, le vérifie ?"; },
+            options: function () { var z = pre() ? "" : " + z²", zs = pre() ? "" : " + z";
+              return ["√(x² + y²" + z + ")", "x + y" + zs, "x² + y²" + z, "√(x + y" + zs + ")"]; }, bonne: 0,
+            methode: "La norme d'un vecteur dans un repère orthonormé : le formulaire de l'annexe. C'est le théorème de Pythagore." },
           { type: "action", get lib() { return pre() ? "Calculez les coordonnées de la somme " + V("AK") + " + " + V("BK") + " et notez-les dans le carnet."
               : "Calculez les coordonnées de la somme " + V("AK") + " + " + V("BK") + " + " + V("CK") + " + " + V("DK") + " et notez-les dans le carnet. Les anneaux B, C et D se lisent sur le dessin comme A."; },
             verifier: verifSomme, fini: garderSom,
             get methode() { return "Une somme de vecteurs se calcule coordonnée par coordonnée : on ajoute les abscisses, puis les ordonnées" + (pre() ? "" : ", puis les cotes") + ". Les brins sont symétriques : regardez ce qui s'annule."; } },
-          { type: "nombre", get lib() { var d = D(); return "Les tensions valent k fois le vecteur de leur brin, avec le même k. Leur somme, k fois votre somme, est égale à S, de norme " + daN(d.P) + ". Calculez k."; },
+          { type: "nombre", get lib() { var d = D(), c = pre() ? "l'ordonnée" : "la cote"; return "Les tensions valent k fois le vecteur de leur brin, avec le même k. Leur somme, k fois votre somme, est égale à S, de norme " + daN(d.P) + ". En égalant " + (pre() ? "les ordonnées" : "les cotes") + " : <b>k = " + fr(d.P, 0) + " ÷ " + c + " de votre somme</b>. Calculez k."; },
             attendu: kAttendu, tolerance: 0.01, fini: garde("k"),
             get methode() { return "S a pour coordonnées (0 ; " + (pre() ? "" : "0 ; ") + "poids). Égalez les " + (pre() ? "ordonnées" : "cotes") + " : k × " + (pre() ? "l'ordonnée" : "la cote") + " de votre somme = le poids."; } },
           { type: "action", get lib() { return "Calculez les coordonnées de la tension " + TAh + " = k × " + V("AK") + ", avec votre k, et notez-les dans le carnet, en daN."; },
             verifier: verifTA, fini: garderTA,
             methode: "Le produit d'un vecteur par un nombre : chaque coordonnée de " + V("AK") + " est multipliée par k." },
-          { type: "nombre", get lib() { return "Calculez la norme de " + TAh + ", la tension du brin A, avec les coordonnées de votre carnet, en daN."; }, unite: "daN",
-            attendu: function (ctx) { return norme(taEl(ctx)); }, tolerance: 0.01, fini: garde("T"),
-            get methode() { return "√(x² + y²" + (pre() ? "" : " + z²") + ") avec les coordonnées de " + TAh + ". On peut aussi faire k × la longueur du brin."; } }
+          { type: "nombre", get lib() { var d = D(); return "Calculez la tension du brin A, la norme de " + TAh + " = k × " + V("AK") + " : <b>‖" + TAh + "‖ = k × L</b>, avec votre k et la longueur d'un brin, L = " + nb(d.L(d.hPlan)) + NB + "dm. En daN."; }, unite: "daN",
+            attendu: function (ctx) { var d = D(); return kEl(ctx) * d.L(d.hPlan); }, tolerance: 0.01, fini: garde("T"),
+            methode: "Multiplier un vecteur par un nombre k positif multiplie sa norme par k : la norme de " + TAh + " est k fois celle de " + V("AK") + ", la longueur du brin." }
         ],
         bravo: "Le crochet est réglé, la tension calculée. Reste l'idée du chef d'équipe."
       },
@@ -3817,9 +3821,9 @@ table.cl-carnet tr.cl-sep > *{border-top:2.5px solid var(--encre2)}
         questions: function (ctx) {
           var d = D(), deux = pre(), tc = tChefEl(ctx), tp = tPlanEl(ctx);
           var q = [
-            { type: "nombre", lib: "Le chef raccourcit les brins : le crochet n'est plus qu'à <b>" + metres(d.hChef) + "</b> au-dessus de la charge. Placez le crochet, puis calculez la tension d'un brin, la norme de " + TAh + ", en daN.", unite: "daN",
+            { type: "nombre", lib: "Le chef raccourcit les brins : le crochet n'est plus qu'à <b>" + metres(d.hChef) + "</b> au-dessus de la charge. Le bureau des méthodes a refait la méthode pour ce crochet : <b>k = " + nb(d.k(d.hChef)) + "</b> et un brin mesure <b>L = " + nb(d.L(d.hChef)) + NB + "dm</b>. Calculez la tension d'un brin, <b>T = k × L</b>, en daN.", unite: "daN",
               attendu: d.T(d.hChef), tolerance: 0.02, fini: garde("Tc"),
-              methode: "La même chaîne : les coordonnées de K, le vecteur " + V("AK") + ", la somme des vecteurs des brins, k, puis la norme de " + TAh + " (ou k × la longueur du brin)." },
+              methode: "Comme en partie 3 : la norme de " + TAh + " est k fois la longueur du brin." },
             { type: "choix", lib: "Le chef avait-il raison de raccourcir les brins ?",
               options: ["Non : chaque brin tirerait plus que sa CMU de " + daN(d.cmu) + (deux ? ", et même plus que le poids " + d.objetDe + " " + (d.fem ? "entière" : "entier") : "") + ".",
                 "Oui : chaque brin porte " + (deux ? "la moitié" : "le quart") + " du poids, " + daN(d.part) + ", sous la CMU, quelle que soit la longueur des brins.",
@@ -3827,7 +3831,7 @@ table.cl-carnet tr.cl-sep > *{border-top:2.5px solid var(--encre2)}
                 "Oui : des brins plus courts tirent moins, le crochet est plus près de la charge."], bonne: 0,
               methode: "Comparez votre tension, crochet abaissé, à la CMU de la plaque (document 4), puis à la part que le chef annonce." }
           ];
-          if (deux) q.splice(1, 0, { type: "action", lib: "Avec le crochet du chef, construisez l'épure : S, puis " + TAh + " et " + TBh + " le long des brins, et le représentant de " + TBh + " au bout de " + TAh + ", de sorte que " + TAh + " + " + TBh + " = S. Comparez la norme de " + TAh + " à votre calcul.",
+          if (deux) q.splice(1, 0, { type: "action", lib: "Placez le crochet comme le chef, à " + metres(d.hChef) + " au-dessus de la charge, puis construisez l'épure : S, puis " + TAh + " et " + TBh + " le long des brins, et le représentant de " + TBh + " au bout de " + TAh + ", de sorte que " + TAh + " + " + TBh + " = S. Comparez la norme de " + TAh + " à votre calcul.",
             aide: "Touchez puis glissez chaque pointe ; « − 10 daN » et « + 10 daN » affinent le dernier vecteur touché. Le représentant se glisse par son trait pointillé.",
             verifier: verifEpure,
             methode: "S d'abord : vertical, vers le haut, sa norme est le poids. Les deux tensions ont la même norme. Mises bout à bout, elles doivent arriver à la pointe de S." });

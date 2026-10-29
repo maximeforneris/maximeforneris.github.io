@@ -3494,7 +3494,11 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
    (une exponentielle de base q < 1, decroissante). La culture reste au mode libre.
    LA PARTIE 4 RETOURNE L'EVIDENCE DU REPRESENTANT DU PERSONNEL : deux machines de 80 dB ne font pas 160 dB, mais 83.
    DEUX JEUX DE VALEURS : le TD (#ccf) et l'evaluation notee (#note) n'ont ni le meme niveau de machine, ni le meme
-   bruit de fond, ni les memes niveaux a classer, ni le meme pas du tableau, ni la meme duree de l'interimaire. */
+   bruit de fond, ni les memes niveaux a classer, ni le meme pas du tableau, ni la meme duree de l'interimaire.
+   ALLEGEMENT du 21 octobre 2026 (« trop dur pour les eleves ») : quatre calculs de deux operations au plus, la formule
+   ecrite dans l'intitule (L = 10 log(...), L = L1 + 10 log 2, L = 80 + x, L = L1 + 10 log N). Le facteur du tableau,
+   le calcul de I1 et la duree admise deviennent des choix ; le nombre de machines, le niveau des machines du chef.
+   Options et conclusion n'affichent que les nombres de l'eleve (« … » avant) : jamais ceux du sujet, qui sont les reponses. */
 (function () {
   var P = window.expoDecibel, fr = Sim.fr, el = Sim.el, svg = Sim.svg, NB = " ";
   function d1(v) { return isFinite(v) ? fr(v, 1) : "…"; }
@@ -3534,6 +3538,10 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
   function T2(ctx) { return val(ctx, "T2", function (c) { return T(Lp(c) - 80); }); }
   function Lmes(ctx) { return val(ctx, "Lmes", function () { var v = L12m(); return isFinite(v) ? v : D.L2th; }); }
   function nmax(ctx) { return val(ctx, "nmax", function () { return Math.floor(Math.pow(10, (85 - uneMachine()) / 10) + 1e-9); }); }
+  /* pour l'affichage : le nombre de l'eleve, ou NaN (« … ») tant qu'il n'a pas repondu ; jamais celui du sujet */
+  function vu(ctx, cle) { var x = ctx.donnees[cle]; return isFinite(x) ? x : NaN; }
+  function t2vu(ctx) { var l = vu(ctx, "Lp"); return isFinite(l) ? T(l - 80) : NaN; }
+  var NCHEF = D.nmax + 2;
   /* l'atelier du sujet est pose a la premiere partie ouverte, quelle qu'elle soit */
   function assurer(ctx) { if (!ctx.donnees.regle) { ctx.donnees.regle = true; P.atelier.regler({ nb: 2, comp: false, L1: D.L1, Lamb: D.Lamb }); P.traceur.vider(); } }
 
@@ -3673,16 +3681,18 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         recit: "Avant de mesurer, on lit. Cinq documents et une annexe : tout ce qui sert est dedans.",
         scene: documents,
         questions: [
-          { type: "nombre", get lib() { return "D'après les documents 2 et 3, calculez le niveau sonore du <b>bruit de fond</b> au poste, I = " + fr(D.Iamb, 1).replace(",0", "") + " × 10⁻⁸ W/m², au dixième de dB."; }, unite: "dB",
+          { type: "nombre", get lib() { var r = fr(D.Iamb, 1).replace(",0", ""); return "Le <b>bruit de fond</b> au poste (documents 2 et 3) : I ÷ I₀ = " + r + " × 10⁻⁸ ÷ 10⁻¹² = " + r + " × 10⁴. Calculez son niveau sonore <b>L = 10 × log(" + r + " × 10⁴)</b>, au dixième de dB."; }, unite: "dB",
             attendu: function () { return D.Lamb; }, tolerance: 0, toleranceAbsolue: 0.1,
-            methode: "L = 10 × log(I ÷ I₀), avec le logarithme décimal (touche log, pas ln) ; I ÷ I₀ = I × 10¹²." },
+            methode: "Le logarithme décimal, touche log (pas ln), de " + fr(D.Iamb, 1).replace(",0", "") + " × 10⁴ ; puis multipliez par 10." },
           { type: "classer", lib: "D'après le document 4, quelle obligation pour chacun de ces niveaux au poste ?",
             items: SUJET.niv.map(function (v) { return v + " dB"; }), categories: ["aucune obligation", "protections mises à disposition", "port des protections obligatoire"],
             bonnes: SUJET.bonnesNiv,
             methode: "Comparez chaque niveau aux seuils de 80 et 85 dB : à partir de 80, à disposition ; à partir de 85, obligatoire." },
-          { type: "nombre", get lib() { return "D'après le tableau du document 5, par combien la durée admise est-elle multipliée quand le niveau augmente de <b>" + SUJET.pas + " dB</b> ?"; },
-            attendu: function () { return SUJET.facteur; }, tolerance: 0, toleranceAbsolue: 0.001,
-            methode: "Lisez deux colonnes du tableau séparées de cet écart de niveau, et divisez la seconde durée par la première." }
+          { type: "choix", get lib() { return "D'après le tableau du document 5, que devient la durée admise quand le niveau augmente de <b>" + SUJET.pas + " dB</b> ?"; },
+            options: SUJET.pas === 3
+              ? ["Elle est multipliée par 0,5 : divisée par 2.", "Elle est multipliée par 2 : elle double.", "Elle diminue de 4 h à chaque fois.", "Elle est multipliée par 0,794, le nombre de la fonction T."]
+              : ["Elle est multipliée par 0,25 : divisée par 4.", "Elle est multipliée par 0,5 : divisée par 2.", "Elle diminue de 6 h à chaque fois.", "Elle est multipliée par 4."], bonne: 0,
+            methode: "Lisez deux colonnes du tableau séparées de cet écart de niveau : la seconde durée est-elle la première moins quelque chose, ou la première multipliée par un nombre ?" }
         ],
         bravo: "Le dossier est lu : un niveau en décibels, des seuils, une durée qui se divise par 2."
       },
@@ -3703,10 +3713,10 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
           { type: "classer", lib: "Dans quel ordre mener le calcul du niveau au poste avec les deux machines ?",
             items: SUJET.ordreMethode.map(function (k) { return METHODE[k]; }), categories: ["1re étape", "2e étape", "3e étape", "4e étape"], bonnes: SUJET.ordreMethode,
             methode: "On ne peut additionner que des intensités : il faut les obtenir à partir des niveaux mesurés, puis revenir au niveau." },
-          { type: "choix", lib: "Les deux machines identiques donnent au poste l'intensité 2 × I₁. Avec les propriétés du logarithme, que vaut L = 10 log(2I₁ ÷ I₀) ?",
-            options: ["10 log 2 + 10 log(I₁ ÷ I₀) = L₁ + 10 log 2, environ L₁ + 3 dB", "2 × 10 log(I₁ ÷ I₀) = 2L₁ : le niveau double avec l'intensité",
-              "10 log 2 × 10 log(I₁ ÷ I₀), soit environ 3 fois L₁, en décibels", "10 log(I₁ ÷ I₀) + 2 = L₁ + 2 dB : deux machines, deux décibels"], bonne: 0,
-            methode: "log(a × b) = log(a) + log(b) : le facteur 2 devient un terme ajouté, 10 log 2." },
+          { type: "choix", lib: "Les deux machines identiques donnent au poste l'intensité 2 × I₁. Le responsable écrit : L = 10 log(2I₁ ÷ I₀) = 10 log 2 + 10 log(I₁ ÷ I₀) = L₁ + 10 log 2, environ L₁ + 3 dB. Quelle propriété de l'annexe justifie la deuxième égalité ?",
+            options: ["log(a × b) = log(a) + log(b) : le produit 2 × (I₁ ÷ I₀) devient une somme de deux logarithmes.", "log(aⁿ) = n × log(a) : le 2 passe devant le logarithme, et le niveau devient 2L₁.",
+              "log(a + b) = log(a) + log(b) : les intensités des deux machines s'ajoutent, leurs logarithmes aussi.", "10<sup>log(a)</sup> = a : le logarithme et la puissance de 10 s'annulent."], bonne: 0,
+            methode: "Regardez ce qui est dans le logarithme : 2I₁ ÷ I₀ est un produit, 2 × (I₁ ÷ I₀). Cherchez dans l'annexe le logarithme d'un produit." },
           { type: "choix", lib: "Le document 5 prolonge le tableau par T(x) = 8 × 0,794^x. Que dire de cette fonction ?",
             options: function () { var p = SUJET.pas, f = fr(SUJET.facteur, 2).replace(/0$/, ""), e = String(p).replace(/\d/g, function (c) { return "⁰¹²³⁴⁵⁶⁷⁸⁹".charAt(Number(c)); });
               return ["T est décroissante, car 0 < 0,794 < 1 ; et T(x + " + p + ") = T(x) × 0,794" + e + " ≈ T(x) × " + f + ", comme le tableau.",
@@ -3740,26 +3750,27 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
           { type: "appel", numero: 2, competence: "REA",
             lib: "Appelez au moment de mesurer la machine 1 seule : vous faites la mesure devant le professeur ; vous lui montrez ensuite le traceur.",
             attendus: ["le sonomètre posé sur le repère du poste, à hauteur d'oreille", "une seule machine en marche à la fois ; la lecture figée par HOLD puis gardée au relevé",
-              "l'intensité I₁ calculée à partir de L₁ : log(I₁ ÷ I₀) = L₁ ÷ 10, donc I₁ = I₀ × 10^(L₁/10)",
+              "le passage du niveau à l'intensité justifié : log(I₁ ÷ I₀) = L₁ ÷ 10, donc I₁ = I₀ × 10^(L₁/10)",
               "au traceur, f(x) = 8 × 0,794^x et la droite g, l'intersection lue au curseur, ou le calcul par le logarithme", "des gestes sûrs, un relevé tenu"] },
           { type: "action", lib: "Mesurez au poste la <b>machine 1 seule</b>, puis la <b>machine 2 seule</b>, et gardez chaque mesure au relevé.",
             aide: "Le sonomètre sur le repère, une machine allumée, HOLD, « Garder la mesure » ; puis l'autre machine seule.",
             verifier: verifMesures,
             methode: "Une machine à la fois, l'autre arrêtée ; le sonomètre exactement sur le repère du poste, là où l'opératrice a les oreilles." },
-          { type: "nombre", lib: "Avec votre niveau mesuré de la machine 1 seule, L₁ (le relevé du sonomètre), calculez son intensité sonore I₁ au poste, d'après le document 3. Donnez-la en <b>× 10⁻⁴ W/m²</b>, au centième.", unite: "× 10⁻⁴ W/m²",
-            attendu: function () { var l = L1m(); return isFinite(l) ? Math.pow(10, l / 10 - 8) : NaN; }, tolerance: 0.02,
-            methode: "L₁ = 10 log(I₁ ÷ I₀), donc log(I₁ ÷ I₀) = L₁ ÷ 10 et I₁ ÷ I₀ = 10^(L₁/10). Multipliez par I₀ = 10⁻¹², puis écrivez le résultat avec 10⁻⁴." },
-          { type: "nombre", lib: "Avant d'allumer les deux machines ensemble, calculez le <b>niveau prévu</b> au poste avec vos deux niveaux mesurés, L₁ et L₂ (le relevé), au dixième de dB.", unite: "dB",
-            attendu: function () { return prevu(); }, tolerance: 0, toleranceAbsolue: 0.1, fini: garde("Lp", function () { var p = prevu(); return isFinite(p) ? p : D.L2th; }),
-            methode: "Chaque niveau donne son intensité, I₀ × 10^(L/10) ; additionnez les deux intensités, puis L = 10 log(I ÷ I₀)." },
+          { type: "choix", lib: "Le document 3 donne L = 10 × log(I ÷ I₀). Pour passer de votre niveau mesuré L₁ à l'intensité I₁ de la machine 1, quel calcul faut-il faire ?",
+            options: ["I₁ = I₀ × 10^(L₁ ÷ 10)", "I₁ = I₀ × log(L₁ ÷ 10)", "I₁ = I₀ × L₁ ÷ 10", "I₁ = 10 × log(L₁ ÷ I₀)"], bonne: 0,
+            methode: "Isolez le logarithme : log(I₁ ÷ I₀) = L₁ ÷ 10. Puis l'annexe : 10<sup>log(a)</sup> = a." },
+          { type: "nombre", lib: "Avant d'allumer les deux machines ensemble, calculez le <b>niveau prévu</b> au poste. Les machines sont identiques : <b>L = L₁ + 10 × log(2)</b>, avec votre niveau mesuré L₁ de la machine 1 seule (le relevé). Au dixième de dB.", unite: "dB",
+            attendu: function () { var l = L1m(); return isFinite(l) ? l + 10 * Math.log10(2) : NaN; }, tolerance: 0, toleranceAbsolue: 0.1, fini: garde("Lp", function () { var l = L1m(); return isFinite(l) ? l + 10 * Math.log10(2) : D.L2th; }),
+            methode: "log(2) à la calculatrice (touche log), multiplié par 10 ; ajoutez le résultat à votre L₁, lu au relevé." },
           { type: "action", lib: "Au traceur, tapez dans la ligne f la durée admise <b>T(x)</b> du document 5, et dans la ligne g la durée qu'un intérimaire passera au poste, <b>" + SUJET.cibleTxt + "</b> par jour, en heures. Puis « Tracer ».", verifier: verifTraceur,
             methode: "f : T(x) recopiée avec x, la puissance s'écrit ^ ; g : un seul nombre, la durée de l'intérimaire convertie en heures." },
-          { type: "nombre", lib: "L'intérimaire passera <b>" + SUJET.cibleTxt + "</b> par jour au poste. Résolvez T(x) = " + nb(SUJET.cible) + ", au traceur ou par le calcul, et donnez le niveau <span class=\"nw\">L = 80 + x</span> jusqu'auquel ses " + SUJET.cibleTxt + " restent dans la durée admise, au dixième de dB.", unite: "dB",
+          { type: "nombre", lib: "L'intérimaire passera <b>" + SUJET.cibleTxt + "</b> par jour au poste. Au traceur, lisez l'abscisse x du point où f croise g, la solution de T(x) = " + nb(SUJET.cible) + ", puis calculez <span class=\"nw\"><b>L = 80 + x</b></span> : le niveau jusqu'auquel ses " + SUJET.cibleTxt + " restent dans la durée admise. Au dixième de dB.", unite: "dB",
             attendu: function () { return D.Lcible; }, tolerance: 0, toleranceAbsolue: 0.1,
-            methode: "Au traceur, lisez l'abscisse x du point où f croise g ; ou résolvez 0,794^x = durée ÷ 8 : x = log(durée ÷ 8) ÷ log(0,794). Puis L = 80 + x." },
-          { type: "nombre", lib: "Calculez la <b>durée admise</b> au poste quand les deux machines tournent, à votre niveau prévu : <span class=\"nw\">x = L − 80</span>, puis T(x). En heures, au dixième.", unite: "h",
-            attendu: function (ctx) { return T(Lp(ctx) - 80); }, tolerance: 0.03, toleranceAbsolue: 0.02, fini: garde("T2", function (ctx) { return T(Lp(ctx) - 80); }),
-            methode: "x = L − 80 avec votre niveau prévu, puis T(x) = 8 × 0,794^x." }
+            methode: "Glissez le curseur « Lire en x » jusqu'à ce que f(x) et g(x) soient égales : c'est x. Puis ajoutez 80." },
+          { type: "choix", lib: "Quand les deux machines tournent, le niveau au poste gagne environ 3 dB sur celui d'une machine seule. D'après le document 5, que devient la durée admise au poste ?",
+            options: ["Elle est divisée par 2 par rapport à une machine seule : 3 dB de plus, c'est la moitié de la durée.", "Elle ne change pas : chaque machine reste au même niveau qu'avant.",
+              "Elle diminue de 3 h : chaque décibel de plus retire une heure.", "Elle devient nulle : au-dessus de 80 dB, on ne peut plus travailler au poste."], bonne: 0,
+            methode: "Relisez la phrase du document 5 sur les 3 dB, et deux colonnes voisines du tableau." }
         ],
         bravo: "Les mesures sont faites, le niveau prévu, la durée calculée. Reste à allumer les deux machines."
       },
@@ -3770,7 +3781,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         paillasse: ["#carteAtelier", "#carteSono"], large: true,
         surOuvrir: assurer,
         questions: function (ctx) {
-          var lp = Lp(ctx), t2 = T2(ctx), L1 = nb(D.L1), dbl = nb(D.double);
+          var lp = vu(ctx, "Lp"), t2 = t2vu(ctx), L1 = nb(D.L1), dbl = nb(D.double);
           return [
             { type: "nombre", lib: "Allumez les <b>deux machines</b>, mesurez le niveau au poste et gardez la mesure au relevé. Quel niveau lisez-vous ?", unite: "dB",
               attendu: function () { return L12m(); }, tolerance: 0, toleranceAbsolue: 0.15, fini: garde("Lmes", function () { var v = L12m(); return isFinite(v) ? v : D.L2th; }),
@@ -3787,10 +3798,10 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
                 "Il se trompe : au-delà de 80 dB, le port des protections devient obligatoire, mais la durée admise ne change pas.",
                 "Il a raison : la durée admise ne dépend que du nombre d'heures passées au poste, pas du nombre de machines en marche."], bonne: 0,
               methode: "Placez votre niveau mesuré entre les seuils du document 4, puis relisez la durée admise calculée en partie 3." },
-            { type: "nombre", lib: "Le chef prévoit d'autres machines identiques : « Jusqu'à " + (D.nmax + 2) + ", on restera sous 85 dB. » Avec votre niveau d'une machine seule, L₁ = " + d1(uneMachine()) + " dB, combien de machines identiques, au plus, peuvent tourner ensemble sans dépasser 85 dB au poste ?",
-              attendu: function () { return Math.floor(Math.pow(10, (85 - uneMachine()) / 10) + 1e-9); }, tolerance: 0, toleranceAbsolue: 0,
-              fini: garde("nmax", function () { return Math.floor(Math.pow(10, (85 - uneMachine()) / 10) + 1e-9); }),
-              methode: "n machines identiques donnent n × I₁, donc L = L₁ + 10 log(n). Résolvez L₁ + 10 log(n) ≤ 85 : log(n) ≤ (85 − L₁) ÷ 10, puis gardez le plus grand entier." }
+            { type: "nombre", lib: "Le chef prévoit d'autres machines identiques : « Jusqu'à " + NCHEF + ", on restera sous 85 dB. » " + NCHEF + " machines donnent " + NCHEF + " × I₁, donc <b>L = L₁ + 10 × log(" + NCHEF + ")</b>. Calculez ce niveau avec votre niveau d'une machine seule, L₁ = " + d1(uneMachine()) + " dB, au dixième de dB.", unite: "dB",
+              attendu: function () { return uneMachine() + 10 * Math.log10(NCHEF); }, tolerance: 0, toleranceAbsolue: 0.1,
+              fini: garde("Lchef", function () { return uneMachine() + 10 * Math.log10(NCHEF); }),
+              methode: "log(" + NCHEF + ") à la calculatrice, multiplié par 10 ; ajoutez L₁. Puis comparez à 85 dB." }
           ];
         },
         bravo: "Deux machines ne doublent pas le niveau : elles doublent l'intensité, et 3 dB suffisent à diviser par deux la durée admise."
@@ -3799,8 +3810,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         competence: "COM", titre: "La note au chef d'atelier",
         recit: "Le responsable de la sécurité affichera la note au poste. Elle tient en trois phrases, avec des nombres et leurs unités.",
         questions: function (ctx) {
-          var lm = d1(Lmes(ctx)), t2 = d1(T2(ctx)), nm = nmax(ctx), dbl = nb(D.double), L1 = nb(D.L1);
-          var mach = nm > 1 ? nm + " machines identiques" : "une machine";
+          var lm = d1(vu(ctx, "Lmes")), t2 = d1(t2vu(ctx)), dbl = nb(D.double), L1 = nb(D.L1);
           return [
             { type: "multi", essais: 2, lib: "Gardez les phrases qui font une note juste.",
               options: ["Avec les deux machines, le sonomètre lit environ " + lm + " dB au poste, et non " + dbl + " dB : l'intensité double, le niveau gagne 10 log 2, environ 3 dB.",
@@ -3811,11 +3821,11 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
                 "On peut ajouter autant de machines qu'on veut : chaque machine de plus n'ajoute que 3 dB."], bonne: [0, 1, 2],
               methode: "Une note juste s'appuie sur vos mesures et vos calculs, avec leurs unités. Ce sont les intensités qui s'ajoutent ; 3 dB de plus, c'est le double d'intensité, pas une machine de plus." },
             { type: "choix", lib: "Quelle consigne afficher au poste ?",
-              options: ["Protections à disposition dès que les deux machines tournent ; au plus " + mach + " ensemble sans en rendre le port obligatoire.",
+              options: ["Protections à disposition dès que les deux machines tournent ; pas les " + NCHEF + " machines du chef : elles dépasseraient 85 dB au poste, et le port deviendrait obligatoire.",
                 "Rien à changer au poste : chaque machine reste à " + L1 + " dB, comme la machine 1 depuis des années.",
                 "Arrêter la machine 2 : deux machines font " + dbl + " dB, plus qu'un avion au décollage, c'est interdit.",
                 "Port des protections obligatoire toute la journée, même quand une seule machine tourne près du poste."], bonne: 0,
-              methode: "Reprenez le seuil franchi avec deux machines (document 4) et le nombre de machines trouvé en partie 4." }
+              methode: "Reprenez le seuil franchi avec deux machines (document 4) et votre niveau des machines du chef, en partie 4." }
           ];
         },
         bravo: "La note est juste, chiffrée, et l'opératrice sait ce qu'elle entend."

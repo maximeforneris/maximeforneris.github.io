@@ -3617,7 +3617,11 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
    evaluation, « au tiers du quart de tour, le tiers de la montee ») ; en terminale, « 6 + 8 = 14 », puis les deux
    tensions de 230 V decalees de 2π/3, entre lesquelles on ne mesure pas 460 V.
    DEUX JEUX DE VALEURS : le TD (#ccf) et l'evaluation notee (#note) n'ont ni les memes reels, ni les memes manetons,
-   ni la meme periode, ni le meme reseau. */
+   ni la meme periode, ni le meme reseau.
+   ALLEGEMENT du 21 octobre 2026 (« trop dur pour les eleves ») : deux operations au plus par calcul, la formule ecrite
+   dans l'intitule. 1re : sin x par cos² + sin² = 1 devient le choix du calcul ; les reels particuliers sont donnes au
+   centieme. Tle : la course passe en partie 3 et donne A = course ÷ 2 ; t1 se lit au curseur ; t2 devient la seconde
+   solution de sin u = c ÷ A a choisir ; u = V × √3. La conclusion n'affiche que les nombres de l'eleve (« … » avant). */
 (function () {
   var P = window.roueBielle, fr = Sim.fr, el = Sim.el, svg = Sim.svg, NB = " ", PI = Math.PI, TOUR = 2 * Math.PI;
   function nb(v) {
@@ -3674,6 +3678,15 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
   function aEleve(ctx) { var m = m3Eleve(ctx); return Math.sqrt(m.x * m.x + m.y * m.y); }
   function phiEleve(ctx) { var m = m3Eleve(ctx); return Math.atan2(m.y, m.x); }
   function tsEleve(ctx) { return P.plateau.instants(val(ctx, "A", aEleve), val(ctx, "phi", phiEleve), TT.c, TT.T); }
+  /* pour l'affichage : le nombre de l'eleve, ou NaN (« … ») tant qu'il n'a pas repondu ; jamais celui du sujet */
+  function vu(ctx, cle) { var x = ctx.donnees[cle]; return isFinite(x) ? x : NaN; }
+  /* la phase attendue, calculee comme l'intitule le demande : arccos(X ÷ A) avec l'A de l'eleve, signe de Y */
+  function phiAttendu(ctx) {
+    var m = m3Eleve(ctx), A = val(ctx, "A", aEleve), r = m.x / A;
+    return Math.abs(r) <= 1 ? (m.y < 0 ? -1 : 1) * Math.acos(r) : phiEleve(ctx);
+  }
+  /* le calage de M2, que la lecture des sommets (partie 4) nomme */
+  var PHI2_TXT = ST.phi2Txt;
 
   /* ---- les dessins du dossier ---- */
   function cercle(s, cx, cy, r) {
@@ -3914,10 +3927,10 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         scene: documents,
         questions: function (ctx) {
           if (ctx.niveau() === "Première") return [
-            { type: "nombre", lib: "D'après le document 2, combien d'unités de ruban le maneton enroule-t-il quand la roue fait <b>" + SP.tour.txt + "</b> ?", unite: "rayons",
+            { type: "nombre", lib: "D'après le document 2, combien d'unités de ruban le maneton enroule-t-il quand la roue fait <b>" + SP.tour.txt + "</b> ? Un tour enroule le périmètre <b>2πR</b>, avec R = 1 rayon (annexe).", unite: "rayons",
               attendu: SP.tour.val, tolerance: 0.01,
               methode: "Le ruban se couche sur la jante : un tour enroule le périmètre de la roue, 2πR, avec R = 1 rayon." },
-            { type: "nombre", lib: "La notice du capteur donne les angles en degrés. Convertissez <b>" + SP.deg + "°</b> en radians.", unite: "rad",
+            { type: "nombre", lib: "La notice du capteur donne les angles en degrés. Convertissez <b>" + SP.deg + "°</b> en radians : <b>angle en rad = angle en degrés × π ÷ 180</b>.", unite: "rad",
               attendu: SP.deg * PI / 180, tolerance: 0.01,
               methode: "Les mesures en degrés et en radians sont proportionnelles : 180° font π rad." },
             { type: "classer", lib: "D'après le document 2, que donne chaque lecture du banc, quand le maneton est au point image du réel x ?",
@@ -3926,13 +3939,13 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
               methode: "Sur le cercle trigonométrique, l'abscisse du point image est cos x, son ordonnée sin x ; la longueur d'arc enroulée depuis A est x." }
           ];
           return [
-            { type: "nombre", lib: "D'après le document 2, le plateau fait un tour en " + TT.T + NB + "s. Calculez sa vitesse angulaire ω.", unite: "rad/s",
+            { type: "nombre", lib: "D'après le document 2, le plateau fait un tour en " + TT.T + NB + "s. Calculez sa vitesse angulaire <b>ω = 2π ÷ T</b> (annexe).", unite: "rad/s",
               attendu: TT.w, tolerance: 0.01, methode: "Un tour, c'est 2π rad : ω = 2π ÷ T." },
             { type: "choix", lib: "D'après les documents 2 et 4, quelle fonction donne la hauteur y₂ de la tige 2, en cm, à l'instant t en secondes ?",
               options: ["y₂(t) = " + TT.a2 + " sin(" + ST.wTxt + " t + " + ST.phi2Txt + ")", "y₂(t) = " + TT.a2 + " sin(" + ST.wTxt + " t) + " + ST.phi2Txt,
                 "y₂(t) = " + TT.a2 + " sin(" + TT.T + "t + " + ST.phi2Txt + ")", "y₂(t) = " + ST.phi2Txt + " sin(" + ST.wTxt + " t + " + TT.a2 + ")"], bonne: 0,
               methode: "a sin(ωt + φ) : a est la distance du maneton au centre, ω la vitesse angulaire, φ le calage à t = 0, dans la parenthèse." },
-            { type: "nombre", lib: "À t = 0, quelle est l'abscisse du maneton M₂, en cm, dans le repère du plateau (document 2) ?", unite: "cm",
+            { type: "nombre", lib: "À t = 0, calculez l'abscisse du maneton M₂ dans le repère du plateau : <b>x₂ = a₂ × cos φ₂</b>, avec a₂ et φ₂ de la fiche de calage (document 2), en cm.", unite: "cm",
               attendu: TT.X2, tolerance: 0, toleranceAbsolue: 0.05,
               methode: "Le maneton M₂ est l'extrémité de son vecteur de Fresnel : son abscisse est a₂ cos φ₂, avec son signe." }
           ];
@@ -4011,10 +4024,10 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
                 : ["le maneton 3 posé au point calculé, ses coordonnées relues sur l'étiquette", "le plateau parti de t = 0, deux tours enregistrés",
                   "la courbe de la tige 3 confondue avec celle de la tige somme", "le curseur utilisé pour lire une amplitude et un instant", "la calculatrice réglée en radians"];
             } },
-          { type: "action", niveau: "Première", lib: "Gardez dans le relevé au moins <b>huit réels</b> de 0 à 2π, dont <b>" + SP.part.map(function (p) { return p[1]; }).join(", ") + "</b>, au centième, avec cos x et sin x lus aux loupes.",
+          { type: "action", niveau: "Première", lib: "Gardez dans le relevé au moins <b>huit réels</b> de 0 à 2π, dont <b>" + SP.part.map(function (p) { return p[1] + " ≈ " + fr(p[0], 2); }).join(", ") + "</b>, au centième, avec cos x et sin x lus aux loupes.",
             aide: "La roue au doigt, puis − 0,01 et + 0,01 ; les trois loupes ; « Garder ».",
             verifier: verifReleve,
-            methode: "Calculez d'abord chaque réel au centième, en radians ; enroulez le ruban jusqu'à lui ; lisez chaque loupe au trait rouge." },
+            methode: "Enroulez le ruban jusqu'à chaque réel, au centième, avec les boutons ; lisez chaque loupe au trait rouge, puis « Garder »." },
           { type: "action", niveau: "Première", lib: SP.trans === "sin"
               ? "La courbe de cosinus s'obtient par translation de celle de sinus. Tapez au traceur, <b>avec sin seulement</b>, une fonction f dont la courbe passe par vos points (x ; cos x)."
               : "La courbe de sinus s'obtient par translation de celle de cosinus. Tapez au traceur, <b>avec cos seulement</b>, une fonction f dont la courbe passe par vos points (x ; sin x).",
@@ -4026,28 +4039,33 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
           { type: "nombre", niveau: "Première", lib: "Placez le maneton à l'image de <b>" + fr(SP.xc, 1) + "</b>. Lisez cos x à la loupe.",
             attendu: Math.cos(SP.xc), tolerance: 0, toleranceAbsolue: 0.015, fini: garde("cLu", function () { return Math.cos(SP.xc); }),
             methode: "Enroulez le ruban jusqu'à " + fr(SP.xc, 1) + " au maneton ; le trait de la coulisse verticale coupe l'axe des cosinus." },
-          { type: "nombre", niveau: "Première", lib: "Sans lire l'autre règle, calculez sin x pour ce réel avec <b>cos² x + sin² x = 1</b> et votre lecture de cos x. Le maneton est dans la moitié haute du cercle.",
-            attendu: function (ctx) { var c = val(ctx, "cLu", function () { return Math.cos(SP.xc); }); return Math.abs(c) <= 1 ? Math.sqrt(1 - c * c) : NaN; }, tolerance: 0.01, toleranceAbsolue: 0.01,
-            methode: "sin² x = 1 − cos² x ; dans la moitié haute du cercle, sin x est positif : on garde la racine positive." },
+          { type: "choix", niveau: "Première", lib: "Sans lire l'autre règle, on peut trouver sin x pour ce réel avec <b>cos² x + sin² x = 1</b> et votre lecture de cos x. Le maneton est dans la moitié haute du cercle. Quel calcul faire ?",
+            options: ["sin x = √(1 − cos² x)", "sin x = 1 − cos x", "sin x = −√(1 − cos² x)", "sin x = √(1 + cos² x)"], bonne: 0,
+            methode: "Isolez sin² x dans l'égalité, puis prenez la racine carrée ; dans la moitié haute du cercle, l'ordonnée sin x est positive." },
           { type: "classer", niveau: "Première", lib: "x est un réel quelconque. Écrivez chaque nombre avec cos x ou sin x, en plaçant les points images sur le cercle.",
             items: SP.sym.items, categories: ["sin x", "−sin x", "cos x", "−cos x"], bonnes: SP.sym.bonnes,
             methode: "Placez l'image de chaque réel sur le cercle : une symétrie change le signe de l'abscisse, de l'ordonnée, ou des deux ; π/2 − x échange abscisse et ordonnée." },
-          { type: "action", niveau: "Terminale", lib: "Posez le <b>maneton 3 au bout du vecteur somme</b> des vecteurs de Fresnel des manetons 1 et 2, au millimètre, puis lancez le moteur depuis t = 0.",
+          { type: "action", niveau: "Terminale", lib: "Posez le <b>maneton 3 au bout du vecteur somme</b> des vecteurs de Fresnel des manetons 1 et 2 : <b>X = a₁ + a₂ cos φ₂</b> et <b>Y = a₂ sin φ₂</b> (M₁ est sur le repère 0). Au millimètre, puis lancez le moteur depuis t = 0.",
             aide: "Le maneton 3 au doigt, puis X ± 0,1 et Y ± 0,1 ; « Lancer : deux tours ».",
             verifier: verifM3, fini: function (ctx, juste) { if (juste || ctx.note) { var m = P.plateau.m3(); ctx.donnees.m3 = { x: m.x, y: m.y }; } },
             methode: "Les coordonnées de M₁ et de M₂ à t = 0 sont (a cos φ ; a sin φ) ; celles de M₃ sont leurs sommes." },
-          { type: "nombre", niveau: "Terminale", lib: "Calculez l'amplitude A de la tige somme : la norme du vecteur somme, en cm.", unite: "cm",
-            attendu: function (ctx) { return aEleve(ctx); }, tolerance: 0.01, fini: garde("A", aEleve),
-            methode: "A = √(X² + Y²), avec les coordonnées du maneton 3." },
-          { type: "nombre", niveau: "Terminale", lib: "Calculez la phase φ de la tige somme, dans ]−π ; π] : résolvez cos φ = X ÷ A, et gardez la solution qui a le signe de Y.", unite: "rad",
-            attendu: function (ctx) { return phiEleve(ctx); }, tolerance: 0, toleranceAbsolue: 0.02, fini: garde("phi", phiEleve),
-            methode: "cos φ = X ÷ A a deux solutions opposées dans ]−π ; π] ; sin φ a le signe de Y. La calculatrice, en radians, donne la solution positive." },
-          { type: "nombre", niveau: "Terminale", get lib() { return "Le détecteur est à <b>" + TT.c + NB + "cm</b> (document 1). Résolvez A sin(ωt + φ) = " + TT.c + " avec vos A et φ : le <b>premier instant</b> du premier tour, entre 0 et " + TT.T + NB + "s."; }, unite: "s",
-            attendu: function (ctx) { var t = tsEleve(ctx); return t.length ? t[0] : NaN; }, tolerance: 0.01, toleranceAbsolue: 0.03, fini: garde("t1", function (ctx) { return tsEleve(ctx)[0]; }),
-            get methode() { return "sin(u) = " + TT.c + " ÷ A a deux solutions par tour, u₀ et π − u₀ ; avec u = ωt + φ, ramenez chaque instant entre 0 et T en ajoutant ou retirant 2π à u."; } },
-          { type: "nombre", niveau: "Terminale", get lib() { return "Le <b>second instant</b> du premier tour où la tige somme passe devant le détecteur, entre 0 et " + TT.T + NB + "s."; }, unite: "s",
-            attendu: function (ctx) { var t = tsEleve(ctx); return t.length > 1 ? t[1] : NaN; }, tolerance: 0.01, toleranceAbsolue: 0.03, fini: garde("t2", function (ctx) { return tsEleve(ctx)[1]; }),
-            get methode() { return "L'autre solution de sin(u) = " + TT.c + " ÷ A dans le tour ; vérifiez-la au curseur de la centrale, sur la ligne du détecteur."; } }
+          { type: "nombre", niveau: "Terminale", lib: "Lisez au curseur de la centrale la <b>course de la tige somme</b> : de son point le plus bas à son point le plus haut, en cm.", unite: "cm",
+            attendu: function () { return 2 * TT.A; }, tolerance: 0.02, toleranceAbsolue: 0.1, fini: garde("course", function () { return 2 * TT.A; }),
+            methode: "Cherchez au curseur le plus haut et le plus bas de la courbe noire, et faites la différence." },
+          { type: "nombre", niveau: "Terminale", lib: "Calculez l'amplitude de la tige somme : <b>A = course ÷ 2</b>, avec votre course lue, en cm.", unite: "cm",
+            attendu: function (ctx) { return val(ctx, "course", function () { return 2 * TT.A; }) / 2; }, tolerance: 0.01, toleranceAbsolue: 0.03, fini: garde("A", function (ctx) { return val(ctx, "course", function () { return 2 * TT.A; }) / 2; }),
+            methode: "L'amplitude va du milieu de la course à son point le plus haut : c'est la moitié de la course." },
+          { type: "nombre", niveau: "Terminale", lib: "Calculez la phase φ de la tige somme, dans ]−π ; π] : <b>φ = arccos(X ÷ A)</b>, avec X l'abscisse du maneton 3 (son étiquette) et votre A ; si Y est négatif, prenez l'opposé.", unite: "rad",
+            attendu: function (ctx) { return phiAttendu(ctx); }, tolerance: 0, toleranceAbsolue: 0.02, fini: garde("phi", phiAttendu),
+            methode: "La calculatrice en radians : la touche cos⁻¹ (arccos) de X ÷ A donne un angle entre 0 et π ; sin φ a le signe de Y." },
+          { type: "nombre", niveau: "Terminale", get lib() { return "Le détecteur est à <b>" + TT.c + NB + "cm</b> (document 1). Lisez au curseur de la centrale le <b>premier instant</b> où la tige somme passe devant lui, entre 0 et " + TT.T + NB + "s : sa courbe noire croise la ligne pointillée du détecteur."; }, unite: "s",
+            attendu: function () { return TT.ts[0]; }, tolerance: 0, toleranceAbsolue: 0.03, fini: garde("t1", function () { return TT.ts[0]; }),
+            methode: "Glissez le curseur jusqu'à ce que la hauteur de la tige somme soit celle du détecteur, au plus près ; lisez l'instant." },
+          { type: "choix", niveau: "Terminale", get lib() { return "Par le calcul, l'instant vient de sin u = " + TT.c + " ÷ A, avec u = ωt + φ. Sur un tour, cette équation a deux solutions. Si u₀ est celle que donne la calculatrice (sin⁻¹), quelle est l'autre ?"; },
+            options: ["π − u₀ : deux points du cercle ont la même ordonnée, symétriques par rapport à l'axe vertical ; la tige passe deux fois par tour devant le détecteur.",
+              "−u₀ : le point symétrique par rapport à l'axe horizontal a la même ordonnée.", "u₀ + π : la tige repasse devant le détecteur un demi-tour plus tard.",
+              "π/2 − u₀ : la solution complémentaire, comme pour le cosinus."], bonne: 0,
+            methode: "Placez u₀ sur le cercle trigonométrique : quel autre point a la même ordonnée, sin u₀ ?" }
         ],
         bravo: "La mesure et le calcul se répondent. Reste la règle du régleur."
       },
@@ -4069,7 +4087,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
               { type: "nombre", lib: "Tournez la roue, dans le premier quart de tour, jusqu'à ce que la tige soit à <b>" + V.cibleTxt + "</b> sur l'axe des sinus : " + V.cibleNom + ". Lisez le réel x au ruban.",
                 attendu: Math.asin(V.cible), tolerance: 0, toleranceAbsolue: 0.015, fini: garde("xC", function () { return Math.asin(V.cible); }),
                 methode: "Ajustez au centième avec les boutons en regardant la loupe des sinus, puis lisez la loupe du ruban." },
-              { type: "nombre", lib: "Quelle fraction du quart de tour la roue a-t-elle faite ? Calculez x ÷ (π/2) avec votre réel x.",
+              { type: "nombre", lib: "Quelle fraction du quart de tour la roue a-t-elle faite ? Calculez <b>x ÷ 1,571</b> avec votre réel x : un quart de tour, c'est π/2 ≈ 1,571.",
                 attendu: function (c2) { return val(c2, "xC", function () { return Math.asin(V.cible); }) / (PI / 2); }, tolerance: 0.02, toleranceAbsolue: 0.005,
                 methode: "Un quart de tour enroule π/2 ≈ 1,57 unité de ruban : divisez votre réel par π/2." },
               { type: "choix", lib: "Le régleur avait-il raison de fixer le capteur à " + V.angleTxt + " ?",
@@ -4093,22 +4111,25 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
             ];
           }
           return [
-            { type: "nombre", lib: "Lisez au curseur de la centrale la <b>course de la tige somme</b> : de son point le plus bas à son point le plus haut, en cm.", unite: "cm",
-              attendu: 2 * TT.A, tolerance: 0.02, toleranceAbsolue: 0.1,
-              methode: "Cherchez au curseur le plus haut et le plus bas de la courbe noire, et faites la différence." },
+            { type: "choix", lib: "Sur la centrale, regardez les courbes des tiges 1 et 2. Passent-elles par leur point le plus haut au même instant ?",
+              options: ["Non : leurs sommets sont décalés de " + PHI2_TXT + " rad, le calage de M₂ ; quand l'une est en haut, l'autre ne l'est pas.",
+                "Oui : les deux manetons tournent sur le même arbre, à la même vitesse, donc les tiges passent en haut ensemble.",
+                "Non : la tige du maneton le plus proche du centre va plus vite, et passe en haut plus souvent.",
+                "Oui, à un dixième de seconde près : le palonnier remet les deux tiges en phase."], bonne: 0,
+              methode: "Glissez le curseur jusqu'au sommet de la courbe de la tige 1, puis jusqu'à celui de la tige 2 : lisez les deux instants." },
             { type: "choix", lib: "Le régleur avait-il raison ?",
               options: ["Non : l'amplitude est bien plus petite que " + (TT.a1 + TT.a2) + NB + "cm ; les deux tiges ne passent pas en haut au même instant.",
                 "Oui : les deux hauteurs s'ajoutent à chaque instant, donc les deux amplitudes s'ajoutent aussi.", "Non : l'amplitude vaut √(" + TT.a1 + "² + " + TT.a2 + "²) ≈ " + nb(Math.sqrt(TT.a1 * TT.a1 + TT.a2 * TT.a2)) + NB + "cm, comme l'hypoténuse d'un triangle rectangle.",
                 "Oui, à la lecture près : le petit écart observé vient du jeu dans le palonnier."], bonne: 0,
-              methode: "Comparez la moitié de la course lue à " + TT.a1 + " + " + TT.a2 + ", puis regardez sur la centrale les instants où chaque tige passe en haut." },
+              methode: "Comparez votre amplitude A, la moitié de la course, à " + TT.a1 + " + " + TT.a2 + ", puis regardez sur la centrale les instants où chaque tige passe en haut." },
             { type: "choix", lib: "Dans quel cas l'amplitude de la tige somme vaudrait-elle " + TT.a1 + " + " + TT.a2 + " = " + (TT.a1 + TT.a2) + NB + "cm ?",
               options: ["s'ils étaient calés au même angle : leurs vecteurs seraient de même sens",
                 "s'ils étaient à la même distance du centre, quel que soit leur calage", "s'ils étaient calés à angle droit, à π/2 l'un de l'autre",
                 "jamais : un palonnier perd toujours un peu de course en route"], bonne: 0,
               methode: "La norme d'une somme de deux vecteurs n'est la somme des normes que s'ils sont de même direction et de même sens." },
-            { type: "nombre", lib: "Document 5 : calculez la valeur de la tension u = v₁ − v₂, la longueur du vecteur V₁ − V₂, en volts.", unite: "V",
+            { type: "nombre", lib: "Document 5 : la tension u = v₁ − v₂ a pour vecteur V₁ − V₂, dont la longueur vaut <b>" + ST.V + " × √3</b> (deux vecteurs de même longueur décalés de 2π/3). Calculez la valeur de u, en volts.", unite: "V",
               attendu: ST.V * Math.sqrt(3), tolerance: 0.01,
-              methode: "Coordonnées de V₁ : (" + ST.V + " ; 0) ; de V₂ : (" + ST.V + " cos(−2π/3) ; " + ST.V + " sin(−2π/3)). Soustrayez, puis calculez la norme." },
+              methode: "La racine carrée de 3 à la calculatrice, multipliée par " + ST.V + "." },
             { type: "choix", lib: "La plaque de ce réseau porte « " + ST.plaque + " ». Pourquoi pas « " + ST.V + "/" + (2 * ST.V) + " V » ?",
               options: ["Les tensions sont décalées : leurs vecteurs de Fresnel se soustraient, et la différence vaut " + ST.V + " × √3.",
                 "Les pertes dans les câbles réduisent la tension entre phases de " + (2 * ST.V) + " V à " + ST.plaque.split("/")[1] + ".",
@@ -4124,7 +4145,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         recit: function (ctx) { return ctx.niveau() === "Première" ? "La fiche de réglage du capteur sera collée sur le banc. Elle tient en trois phrases, avec des nombres." : "La fiche du maneton unique part au bureau d'études. Elle tient en trois phrases, avec des nombres et leurs unités."; },
         questions: function (ctx) {
           if (ctx.niveau() === "Première") {
-            var V = SP.val, x = val(ctx, "xC", function () { return Math.asin(V.cible); }), h = val(ctx, "hReg", function () { return Math.sin(V.angle); }), X = nb(x), DEG = fr(x * 180 / PI, 0);
+            var V = SP.val, x = vu(ctx, "xC"), h = vu(ctx, "hReg"), X = nb(x), DEG = isFinite(x) ? fr(x * 180 / PI, 0) : "…";
             return [
               { type: "multi", essais: 2, lib: "Gardez les phrases justes de la fiche.",
                 options: [(TD ? "Le capteur de mi-course se fixe quand le ruban marque " : "Le capteur du tiers de la montée se fixe quand le ruban marque ") + X + " au maneton, vers " + DEG + "°, et non à " + V.angleTxt + ".",
@@ -4142,7 +4163,8 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
                 methode: "Le réel que vous avez trouvé en partie 4, lu au ruban, et sa mesure en degrés." }
             ];
           }
-          var A = val(ctx, "A", aEleve), ph = val(ctx, "phi", phiEleve), ts = tsEleve(ctx), t1 = val(ctx, "t1", function () { return ts[0]; }), t2 = val(ctx, "t2", function () { return ts[1]; });
+          var A = vu(ctx, "A"), ph = vu(ctx, "phi"), t1 = vu(ctx, "t1"), ts = isFinite(A) && isFinite(ph) ? P.plateau.instants(A, ph, TT.c, TT.T) : [];
+          var t2 = ts.length > 1 && isFinite(t1) ? (Math.abs(ts[0] - t1) <= Math.abs(ts[1] - t1) ? ts[1] : ts[0]) : NaN;
           return [
             { type: "multi", essais: 2, lib: "Gardez les phrases justes de la fiche.",
               options: ["Les deux manetons de " + TT.a1 + " et " + TT.a2 + NB + "cm donnent une tige somme d'amplitude " + nb(A) + NB + "cm, et non " + (TT.a1 + TT.a2) + NB + "cm.",

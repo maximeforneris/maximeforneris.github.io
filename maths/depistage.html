@@ -3394,7 +3394,12 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
    La partie 4 retourne l'evidence de l'affiche : « fiable a 99 % » ne veut pas dire « malade a 99 % » ; la plupart
    des positifs ne sont pas malades quand la maladie est rare.
    DEUX JEUX DE VALEURS : le TD (#ccf) avec 1 personne sur 200 et un test a 99 % ; l'evaluation notee (#note) avec
-   1 sur 125 et un test a 98 % ; un autre groupe a risque, un autre document 4 (independant en TD, pas en note). */
+   1 sur 125 et un test a 98 % ; un autre groupe a risque, un autre document 4 (independant en TD, pas en note).
+   ALLEGEMENT du 21 octobre 2026 (« trop dur pour les eleves ») : deux operations au plus par calcul, la formule ecrite
+   dans l'intitule. 1re : f(M ∪ T) devient l'effectif n(M) + n(T) − n(M ∩ T). Tle : P(T) devient P(M ∩ T), puis
+   P_T(M) = P(M ∩ T) ÷ P(T) avec P(T) donne (une eleve avait rendu P(M ∩ T) pour P_T(M)) ; les deux tests, un choix.
+   Le groupe a risque dit de changer la molette de rarete (une eleve l'avait laissee a 1 sur 125). La conclusion
+   n'affiche que les nombres de l'eleve (« … » avant). */
 (function () {
   var P = window.depistage, fr = Sim.fr, el = Sim.el, svg = Sim.svg, NB = " ", N = P.N;
   var SUJET = Sim.note
@@ -3461,10 +3466,14 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
       return 100 * (n.a + n.b + n.c) / tot;
     },
     pT: function () { var w = arbre(); return w.M * w.TM + w.Mb * w.TMb; },
-    ptm: function (ctx) { var w = arbre(); return w.M * w.TM / val(ctx, "pT", MES.pT); },
+    pMT: function () { var w = arbre(); return w.M * w.TM; },
+    ptm: function (ctx) { return val(ctx, "pMT", MES.pMT) / TH.pT; },
     freqR: function () { var c = MES.campR(); return c && c.n.a + c.n.c ? 100 * c.n.a / (c.n.a + c.n.c) : NaN; },
     deux: function () { var w = arbre(), a = w.M * w.TM * w.TM, b = w.Mb * w.TMb * w.TMb; return a / (a + b); }
   };
+  /* pour l'affichage : le nombre de l'eleve, ou « … » tant qu'il n'a pas repondu ; jamais celui du sujet */
+  function vu(ctx, cle) { var x = ctx.donnees[cle]; return isFinite(x) ? x : NaN; }
+  function n0(v) { return isFinite(v) ? fr(v, 0) : "…"; }
 
   /* ---- les documents ---- */
   function documents(zone, ctx) {
@@ -3619,7 +3628,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         recit: "Avant de lancer quoi que ce soit, on lit. Quatre documents et une annexe : tout ce qui sert est dedans.",
         scene: documents,
         questions: [
-          { type: "nombre", lib: "D'après le document 3, combien de personnes malades peut-on s'attendre à trouver parmi les " + nb(N) + " personnes testées ?", unite: "personnes",
+          { type: "nombre", lib: "D'après le document 3, combien de personnes malades peut-on s'attendre à trouver parmi les " + nb(N) + " personnes testées ? « 1 personne sur " + SUJET.sur + " » : calculez <b>" + nb(N) + " ÷ " + SUJET.sur + "</b>.", unite: "personnes",
             attendu: SUJET.nM, tolerance: 0, fini: garde("nM", function () { return SUJET.nM; }),
             methode: "« 1 personne sur " + SUJET.sur + " » : l'effectif de la campagne divisé par " + SUJET.sur + "." },
           { type: "classer", lib: "Avec les notations de l'annexe, quel événement chaque phrase décrit-elle ?",
@@ -3651,7 +3660,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
             options: ["la fréquence des personnes malades parmi les personnes positives", "la fréquence des personnes positives parmi les personnes malades",
               "le nombre de personnes positives", "la fréquence des personnes malades parmi les " + nb(N) + " personnes testées"], bonne: 0,
             methode: "Suivez la valeur renvoyée : malades_positifs compte les personnes malades et positives, positifs compte toutes les personnes positives." },
-          { type: "nombre", niveau: "Première", lib: "Prévoyez : parmi les malades attendus (votre réponse de la partie 1), combien auront un test positif, d'après la notice (" + NOTICE + ") ?", unite: "personnes",
+          { type: "nombre", niveau: "Première", lib: "Prévoyez : parmi les malades attendus, combien auront un test positif, d'après la notice (" + NOTICE + ") ? Calculez <b>votre nombre de malades de la partie 1 × " + dec(s) + "</b>.", unite: "personnes",
             attendu: function (ctx) { return val(ctx, "nM", function () { return SUJET.nM; }) * s; }, tolerance: 0, toleranceAbsolue: 0.5,
             methode: "Le test est positif chez " + NOTICE + " des malades : on prend " + NOTICE + " du nombre de malades attendus." },
           { type: "choix", niveau: "Terminale", lib: "Sur un arbre pondéré, M puis T, comment calculer P(T), la probabilité qu'un test soit positif ?",
@@ -3688,21 +3697,21 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
           { type: "action", niveau: "Première", lib: "Avec le compteur, remplissez le tableau croisé des effectifs de votre campagne : les quatre cases, puis les totaux.",
             verifier: verifTableau,
             methode: "Le compteur, deux filtres à la fois : 1er test positif et laboratoire malade, et ainsi de suite pour les quatre cases. Les totaux : la somme de chaque ligne et de chaque colonne." },
-          { type: "nombre", lib: "Parmi les personnes dont le test est positif, quelle part est vraiment malade ? Calculez la fréquence conditionnelle n(M ∩ T) ÷ n(T) avec vos comptages, en %.", unite: "%",
+          { type: "nombre", lib: "Parmi les personnes dont le test est positif, quelle part est vraiment malade ? Calculez la fréquence conditionnelle <b>n(M ∩ T) ÷ n(T) × 100</b> avec vos deux comptages, en %.", unite: "%",
             attendu: MES.freq, tolerance: 0.01, toleranceAbsolue: 0.3, fini: garde("freq", MES.freq),
             methode: "Deux comptages : les positifs, puis les positifs malades. Le second divisé par le premier, multiplié par 100." },
-          { type: "nombre", niveau: "Première", lib: "Le centre recevra en consultation toute personne malade <b>ou</b> positive. Avec votre tableau, calculez la fréquence de M ∪ T, en % : f(M ∪ T) = f(M) + f(T) − f(M ∩ T).", unite: "%",
-            attendu: MES.union, tolerance: 0, toleranceAbsolue: 0.02,
-            methode: "Chaque fréquence est un effectif du tableau divisé par le total général. On ajoute f(M) et f(T), puis on retire f(M ∩ T), comptée deux fois." },
+          { type: "nombre", niveau: "Première", lib: "Le centre recevra en consultation toute personne malade <b>ou</b> positive. Combien de personnes recevra-t-il ? Avec votre tableau, calculez <b>n(M ∪ T) = n(M) + n(T) − n(M ∩ T)</b>.", unite: "personnes",
+            attendu: function () { var x = tab(), c = MES.camp(), n = x || (c ? c.n : null); return n ? n.a + n.b + n.c : NaN; }, tolerance: 0, toleranceAbsolue: 0.5,
+            methode: "n(M) est le total de la colonne des malades, n(T) celui de la ligne des positifs, n(M ∩ T) leur case commune : comptée dans les deux, on la retire une fois." },
           { type: "action", niveau: "Terminale", lib: "Complétez l'arbre pondéré avec les documents 2 et 3 : une probabilité sur chacune des six branches, en nombre décimal.",
             verifier: verifArbre,
             methode: "Premier niveau : M et M̄, avec le document 3. Second niveau : T et T̄ sachant M, puis sachant M̄, avec la notice. Les deux branches issues d'un même nœud font 1." },
-          { type: "nombre", niveau: "Terminale", lib: "Avec votre arbre et la formule des probabilités totales, calculez P(T), la probabilité qu'un test soit positif, en nombre décimal.",
-            attendu: MES.pT, tolerance: 0.01, toleranceAbsolue: 0.00005, fini: garde("pT", MES.pT),
-            methode: "P(T) = P(M) × P<sub>M</sub>(T) + P(M̄) × P<sub>M̄</sub>(T) : les deux chemins qui mènent à T." },
-          { type: "nombre", niveau: "Terminale", lib: "Calculez P<sub>T</sub>(M) = P(M ∩ T) ÷ P(T), avec votre P(T), arrondie au centième.",
+          { type: "nombre", niveau: "Terminale", lib: "Avec votre arbre, calculez <b>P(M ∩ T) = P(M) × P<sub>M</sub>(T)</b> : le chemin M puis T, le produit de ses deux branches. En nombre décimal.",
+            attendu: MES.pMT, tolerance: 0.01, toleranceAbsolue: 0.000005, fini: garde("pMT", MES.pMT),
+            methode: "Suivez le chemin M puis T sur votre arbre : la branche de M (document 3), puis celle de T sachant M (la notice) ; multipliez-les." },
+          { type: "nombre", niveau: "Terminale", lib: "La personne demande P<sub>T</sub>(M), et non P(M ∩ T). Calculez <b>P<sub>T</sub>(M) = P(M ∩ T) ÷ P(T)</b>, avec votre P(M ∩ T) et <b>P(T) = " + dec(TH.pT) + "</b> (les deux chemins de l'arbre qui mènent à T). Arrondie au centième.",
             attendu: MES.ptm, tolerance: 0.01, toleranceAbsolue: 0.004, fini: garde("ptm", MES.ptm),
-            methode: "P(M ∩ T) est le chemin M puis T, le produit de ses deux branches ; on le divise par P(T)." }
+            methode: "Une probabilité conditionnelle se calcule par une division : la probabilité de l'intersection divisée par celle de la condition, T." }
         ],
         bravo: "La campagne est faite, comptée et calculée."
       },
@@ -3719,11 +3728,11 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
               "Non : le test laisse passer la plupart des malades, il est mal fabriqué.",
               "On ne peut rien dire : la simulation tire au hasard, et une autre campagne donnerait " + NOTICE + "."], bonne: 0,
             methode: "Comparez votre résultat, la part des malades parmi les positifs, aux " + NOTICE + " de la notice : ce n'est pas la même condition." },
-          { type: "action", lib: "Le centre prévoit la même campagne dans un groupe à risque, où la maladie touche <b>1 personne sur " + SUJET.risqueSur + "</b> (document 3). Même test. Réglez la simulation pour ce groupe, puis TESTER et LABORATOIRE.",
+          { type: "action", lib: "Le centre prévoit la même campagne dans un groupe à risque, où la maladie touche <b>1 personne sur " + SUJET.risqueSur + "</b> (document 3). Même test. <b>Changez la molette de rareté</b> : 1 personne sur " + SUJET.risqueSur + ", et non plus 1 sur " + SUJET.sur + " comme en partie 3. Puis TESTER et LABORATOIRE.",
             aide: "Seule la rareté change ; puis TESTER, puis LABORATOIRE.",
             verifier: verifCampagne(SUJET.risquePc, true),
             methode: "La rareté du groupe à risque, le même test à " + NOTICE + " ; puis TESTER, la fin du test, et LABORATOIRE." },
-          { type: "nombre", lib: "Dans ce groupe à risque, quelle part des personnes positives est vraiment malade ? En %, avec le compteur.", unite: "%",
+          { type: "nombre", lib: "Dans ce groupe à risque, quelle part des personnes positives est vraiment malade ? Avec le compteur de la campagne réglée sur <b>1 sur " + SUJET.risqueSur + "</b>, calculez <b>n(M ∩ T) ÷ n(T) × 100</b>, en %.", unite: "%",
             attendu: MES.freqR, tolerance: 0.01, toleranceAbsolue: 0.3, fini: garde("freqR", MES.freqR),
             methode: "Comme en partie 3 : les positifs malades divisés par les positifs, multipliés par 100, dans la campagne du groupe à risque." },
           { type: "choix", lib: "Comparez vos deux résultats, dans la population visée et dans le groupe à risque. Qu'en conclure ?",
@@ -3738,9 +3747,12 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
           { type: "choix", niveau: "Terminale", lib: "Document 4 : les événements M « la personne est malade » et J « la personne a moins de 40 ans » sont-ils indépendants ?",
             options: OPT_AGE_TLE, bonne: 0,
             methode: "M et J sont indépendants si P(M ∩ J) = P(M) × P(J). Chaque probabilité se lit dans le tableau : un effectif divisé par le total." },
-          { type: "nombre", niveau: "Terminale", lib: "Tout positif refait un second test, d'un autre fabricant, avec la même notice ; son résultat ne dépend que de l'état de la personne, pas du premier test. Prolongez votre arbre (ci-contre) : quelle est la probabilité qu'une personne positive aux deux tests soit malade ? Arrondie au centième.",
-            attendu: MES.deux, tolerance: 0, toleranceAbsolue: 0.006,
-            methode: "Le chemin M, T₁, T₂ est le produit de ses trois branches ; ajoutez le chemin M̄, T₁, T₂ ; la probabilité cherchée est le premier divisé par la somme." }
+          { type: "choix", niveau: "Terminale", lib: "Tout positif refait un second test, d'un autre fabricant, avec la même notice ; son résultat ne dépend que de l'état de la personne, pas du premier test (l'arbre prolongé, ci-contre). Parmi les personnes positives aux deux tests, la part des malades…",
+            options: ["augmente nettement : un non-malade est rarement positif deux fois de suite (" + dec(1 - t) + " × " + dec(1 - t) + "), un malade presque toujours (" + dec(s) + " × " + dec(s) + ").",
+              "reste la même qu'après un seul test : c'est la même notice, donc la même fiabilité.",
+              "baisse : deux tests donnent deux fois plus de faux positifs.",
+              "double : deux tests positifs, deux fois plus de chances d'être malade."], bonne: 0,
+            methode: "Sur l'arbre prolongé, comparez le chemin M, T₁, T₂ au chemin M̄, T₁, T₂ : par quel nombre chacun est-il multiplié au second test ?" }
         ],
         bravo: "« Fiable à " + NOTICE + " » ne veut pas dire « malade à " + NOTICE + " »."
       },
@@ -3748,10 +3760,7 @@ pre.code-py{margin:6px 0 0;padding:8px 10px;background:var(--carte);border:1px s
         competence: "COM", titre: "La fiche « Questions fréquentes »",
         recit: "L'infirmière affiche la réponse dans la salle d'attente. Trois phrases justes, avec vos nombres.",
         questions: function (ctx) {
-          var f = val(ctx, "freq", MES.freq), fr2 = val(ctx, "freqR", MES.freqR);
-          if (!isFinite(f)) f = 100 * TH.ptm;
-          if (!isFinite(fr2)) fr2 = 100 * TH.risque;
-          var F1 = fr(f, 0), F2 = fr(fr2, 0);
+          var F1 = n0(vu(ctx, "freq")), F2 = n0(vu(ctx, "freqR"));
           return [
             { type: "multi", essais: 2, lib: "Gardez les phrases justes pour la fiche.",
               options: ["Un test positif n'est pas un diagnostic : dans notre campagne, environ " + F1 + NB + "% seulement des personnes positives étaient malades.",

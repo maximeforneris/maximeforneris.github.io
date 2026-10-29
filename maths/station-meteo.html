@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>La station météo du lycée</title>
-<meta name="description" content="Sur le toit du lycée, la station du club météo relève chaque jour la température maximale. Le bulletin du mois est à faire, et le journal de la ville attend les chiffres. Lire le relevé, choisir des classes, ranger les fiches au doigt, compter, calculer au tableur, puis trouver la valeur qui fausse tout avant de publier. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.">
+<meta name="description" content="Sur le toit du lycée, la station du club météo relève chaque jour la température maximale. Le bulletin du mois est à faire, et le journal de la ville attend les chiffres. Lire le relevé, choisir des classes, ranger les fiches au doigt, compter, calculer au tableur, puis trouver la valeur qui fausse tout avant de publier. En TD, la page guide ; en évaluation notée, dans l&#x27;espace d&#x27;évaluation, elle finit par un fichier.">
 <meta name="etiquette" content="Simulation · Parcours PARM-04">
 <style>
 /* Simulations des TP · feuille commune, inlinee dans chaque page par assembler-simulations.py.
@@ -2762,7 +2762,7 @@ var Sim = (function () {
 <header class="tete">
 <div class="surtitre">Mathématiques · parcours CAP et seconde · une heure sur tablette</div>
 <h1>La station météo du lycée</h1>
-<p class="chapeau">Sur le toit du lycée, la station du club météo relève chaque jour la température maximale. Le bulletin du mois est à faire, et le journal de la ville attend les chiffres. Lire le relevé, choisir des classes, ranger les fiches au doigt, compter, calculer au tableur, puis trouver la valeur qui fausse tout avant de publier. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.</p>
+<p class="chapeau">Sur le toit du lycée, la station du club météo relève chaque jour la température maximale. Le bulletin du mois est à faire, et le journal de la ville attend les chiffres. Lire le relevé, choisir des classes, ranger les fiches au doigt, compter, calculer au tableur, puis trouver la valeur qui fausse tout avant de publier. En TD, la page guide ; en évaluation notée, dans l'espace d'évaluation, elle finit par un fichier.</p>
 </header>
 <style>
 .sm-msg{margin:8px 2px 0;min-height:1.4em;font-size:.92rem;font-weight:600;color:var(--encre2)}
@@ -3244,14 +3244,14 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
     function majTable() {
       if (tabW === labo.w && tab.children.length) return;
       tabW = labo.w; tab.innerHTML = "";
-      tab.appendChild(el("tr", null, [el("th", { texte: "Classe (°C)" }), el("th", { texte: "Effectif (jours)" }), el("th", { texte: "Fréquence (%)" })]));
+      /* les effectifs seulement (21 octobre 2026, allegement) : ils se comptent dans les bacs ; une seule frequence se
+         calcule, celle de la classe la plus fournie, dans une question */
+      tab.appendChild(el("tr", null, [el("th", { texte: "Classe (°C)" }), el("th", { texte: "Effectif (jours)" })]));
       classes(labo.w).forEach(function (k) {
-        var t = labo.table[k] || (labo.table[k] = { n: "", f: "" });
+        var t = labo.table[k] || (labo.table[k] = { n: "" });
         var iN = el("input", { type: "text", inputmode: "decimal", autocomplete: "off", "aria-label": "Effectif de la classe " + classeTxt(k, labo.w), value: t.n });
-        var iF = el("input", { type: "text", inputmode: "decimal", autocomplete: "off", "aria-label": "Fréquence en pour cent de la classe " + classeTxt(k, labo.w), value: t.f });
         iN.addEventListener("input", function () { t.n = iN.value; });
-        iF.addEventListener("input", function () { t.f = iF.value; });
-        tab.appendChild(el("tr", null, [el("td", { classe: "cl", texte: classeTxt(k, labo.w) }), el("td", null, [iN]), el("td", null, [iF])]));
+        tab.appendChild(el("tr", null, [el("td", { classe: "cl", texte: classeTxt(k, labo.w) }), el("td", null, [iN])]));
       });
     }
     // le tableur, partage avec la phase 4
@@ -3275,14 +3275,15 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
         });
       },
       effectifs: function () { return classes(labo.w).map(function (k) { return dans(k).length; }); },
-      remplir: function (nf) {                           // nf : [[n, f], …] dans l'ordre des classes ; sans argument, ce qu'on lit dans les bacs
-        var cl = classes(labo.w), tot = 0;
-        cl.forEach(function (k) { tot += dans(k).length; });
-        cl.forEach(function (k, i) {
-          var n = dans(k).length, x = nf ? nf[i] : [String(n), fr(Math.round(100 * n / tot), 0)];
-          labo.table[k] = { n: String(x[0]), f: String(x[1]) };
-        });
+      remplir: function (ns) {                           // ns : [n, …] dans l'ordre des classes ; sans argument, ce qu'on lit dans les bacs
+        classes(labo.w).forEach(function (k, i) { labo.table[k] = { n: String(ns ? ns[i] : dans(k).length) }; });
         tabW = null; majTable();
+      },
+      /* la classe la plus fournie des bacs de l'eleve, son effectif, et le nombre de fiches rangees en classe */
+      plusFournie: function () {
+        var best = -1, tot = 0;
+        classes(labo.w).forEach(function (k) { var n = dans(k).length; tot += n; if (n > best) best = n; });
+        return { n: best, tot: tot };
       }
     };
     maj();
@@ -3580,6 +3581,11 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
 
   /* ── Le parcours ── */
   var JA = SUJET.aber === 1 ? "1er" : String(SUJET.aber);
+  /* la frequence a calculer : l'effectif de la classe la plus fournie ÷ les fiches rangees, ecrit dans la question et
+     tenu a jour quand les fiches bougent (21 octobre 2026) */
+  function txtFreq() { if (!labo.p3 || pioche().length) return "… ÷ … (rangez d'abord toutes les fiches)"; var x = labo.p3.plusFournie(); return x.n + " ÷ " + x.tot; }
+  function vFreq() { return "<span class=\"sm-v\">" + txtFreq() + "</span>"; }
+  majs.push(function () { [].forEach.call(document.querySelectorAll(".sm-v"), function (s) { s.textContent = txtFreq(); }); });
   var p = S.parcours("#parcours", {
     code: "PARM-04",
     titre: "La station météo du lycée",
@@ -3682,37 +3688,37 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
                   [!panneMal.length, "la fiche " + (panneMal.length ? duJour(panneMal[0]) : "") + " n'a pas de relevé : elle ne va dans aucune classe"]] };
             },
             methode: "Une fiche va dans la classe [a ; b[ si a ≤ valeur < b. Une fiche sans relevé ne va dans aucune classe : à part." },
-          { type: "action", lib: "Complétez le tableau du bulletin : l'<b>effectif</b> de chaque classe (les fiches de son bac) et sa <b>fréquence en %</b>, arrondie à l'unité.",
+          { type: "action", lib: "Complétez le tableau du bulletin : l'<b>effectif</b> de chaque classe, c'est-à-dire le nombre de fiches de son bac.",
             aide: "Tableau rempli, puis vérifiez.",
             verifier: function () {
-              var cl = classes(labo.w), touche = cl.some(function (k) { var t = labo.table[k]; return t && (t.n !== "" || t.f !== ""); });
+              var cl = classes(labo.w), touche = cl.some(function (k) { var t = labo.table[k]; return t && t.n !== ""; });
               if (!touche) return null;
-              if (pioche().length) return { attente: "Rangez d'abord toutes les fiches : le tableau se lit dans les bacs." };
-              var vides = cl.filter(function (k) { var t = labo.table[k] || {}; return !isFinite(S.lire(t.n)) || !isFinite(S.lire(t.f)); });
+              if (pioche().length) return { attente: "Rangez d'abord toutes les fiches : le tableau se lit dans les bacs." };
+              var vides = cl.filter(function (k) { var t = labo.table[k] || {}; return !isFinite(S.lire(t.n)); });
               if (vides.length) return { attente: "La ligne " + classeTxt(vides[0], labo.w) + " n'est pas remplie (une classe vide s'écrit 0)." };
-              var tot = 0; cl.forEach(function (k) { tot += dans(k).length; });
               var ctr = [], lus = [];
               cl.forEach(function (k) {
-                var t = labo.table[k], n = dans(k).length, vn = S.lire(t.n), vf = S.lire(t.f);
-                lus.push(classeMot(k, labo.w) + " : " + fr(vn, 0) + " j, " + t.f.replace(/\s/g, "").replace(/%$/, "") + NB + "%");
+                var n = dans(k).length, vn = S.lire(labo.table[k].n);
+                lus.push(classeMot(k, labo.w) + " : " + fr(vn, 0) + " j");
                 ctr.push([vn === n, "l'effectif de la classe " + classeTxt(k, labo.w) + " ne correspond pas aux fiches de son bac"]);
-                ctr.push([vn !== n || Math.abs(vf - 100 * n / tot) <= 0.5 + 1e-9, "la fréquence de la classe " + classeTxt(k, labo.w) + " n'est pas juste"]);
               });
               return { controles: ctr, reponse: lus.join(" · "), lu: cl.length + " lignes remplies" };
             },
-            methode: "Effectif : le nombre de fiches du bac. Fréquence en % = effectif ÷ effectif total × 100, arrondie à l'unité." },
-          { type: "nombre", lib: "Au tableur ou à la calculatrice, calculez la <b>moyenne</b> des relevés du mois, tels que la station les a enregistrés. Arrondie au dixième.", unite: "°C",
+            methode: "Effectif : le nombre de fiches du bac, à compter sur la pile. Une classe sans fiche a l'effectif 0." },
+          { type: "nombre", get lib() { return "La <b>fréquence</b> d'une classe = son effectif ÷ l'effectif total. Calculez celle de la classe qui a le plus de fiches : " + vFreq() + " (vos bacs). En écriture décimale, arrondie au centième."; },
+            attendu: function () { if (pioche().length) return NaN; var x = labo.p3.plusFournie(); return x.tot ? x.n / x.tot : NaN; }, tolerance: 0, toleranceAbsolue: 0.0051,
+            methode: "Divisez l'effectif de la classe la plus haute du diagramme par le nombre de fiches rangées dans les classes, puis arrondissez au centième (deux chiffres après la virgule)." },
+          { type: "nombre", lib: "Dans une case libre du tableur, tapez <b>=MOYENNE(" + PLAGE + ")</b> : la <b>moyenne</b> des relevés du mois, tels que la station les a enregistrés. Arrondie au dixième.", unite: "°C",
             attendu: MOY, tolerance: 0, toleranceAbsolue: 0.05,
-            methode: "Dans une case libre du tableur : =MOYENNE(" + PLAGE + "). Ou : la somme des relevés divisée par leur nombre, puis l'arrondi au dixième.",
+            methode: "Touchez une case vide des colonnes C ou D, écrivez la formule, validez : le tableur fait la somme des relevés et la divise par leur nombre. Une case vide ne compte pas. Arrondissez au dixième.",
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.m1 = rep; } },
-          { type: "nombre", niveau: "Seconde", lib: "Quelle est la <b>médiane</b> des relevés du mois ?", unite: "°C",
+          { type: "nombre", niveau: "Seconde", lib: "Au tableur, <b>=MEDIANE(" + PLAGE + ")</b> donne la <b>médiane</b> des relevés du mois. Quelle est-elle ?", unite: "°C",
             attendu: MED, tolerance: 0, toleranceAbsolue: 0.05,
-            methode: "Rangés dans l'ordre croissant, la médiane partage les " + N + " relevés en deux groupes de même effectif : c'est le " + ((N + 1) / 2) + "e. Au tableur : =MEDIANE(" + PLAGE + ").",
+            methode: "Rangés dans l'ordre croissant, la médiane partage les relevés en deux groupes de même effectif. Écrivez la formule dans une case libre du tableur.",
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.med = rep; } },
-          { type: "nombre", niveau: "Seconde", lib: "Quelle est l'<b>étendue</b> des relevés du mois ?", unite: "°C",
-            attendu: ETENDUE, tolerance: 0, toleranceAbsolue: 0.05,
-            methode: "Étendue = plus haute valeur − plus basse valeur. Au tableur : =MAX(" + PLAGE + ")-MIN(" + PLAGE + ").",
-            apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.et = rep; } }
+          { type: "choix", niveau: "Seconde", lib: "Que mesure l'<b>étendue</b> d'une série de relevés ?",
+            options: ["L'écart entre la plus haute et la plus basse valeur", "La valeur du milieu de la série rangée", "La valeur qui revient le plus souvent", "La moitié de la somme de la plus haute et de la plus basse valeur"], bonne: 0,
+            methode: "Pensez au mot : l'étendue dit sur quelle largeur s'étalent les valeurs de la série, de la plus petite à la plus grande." }
         ],
         bravo: "M. Vidal : « Le diagramme est rangé, les calculs sont faits. Reste à relire avant de publier. »" },
       { competence: "VAL", titre: "Le " + JA + " " + SUJET.mois, large: true,
@@ -3720,13 +3726,14 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
         consigne: "Lisez le carnet de la station. Corrigez la valeur fausse dans le tableur : vos formules se recalculent toutes seules.",
         scene: sceneCarnet,
         questions: [
-          { type: "nombre", lib: "Remplacez la valeur " + (SUJET.aber === 1 ? "du 1er" : "du " + SUJET.aber) + " " + SUJET.mois + " par celle de l'aérodrome, <b>" + deg(SUJET.vrai) + "</b> : quelle est la nouvelle <b>moyenne</b> du mois ? Arrondie au dixième.", unite: "°C",
+          { type: "nombre", lib: "Dans le tableur, remplacez la valeur " + (SUJET.aber === 1 ? "du 1er" : "du " + SUJET.aber) + " " + SUJET.mois + " (case " + CASE_ABER + ", " + deg(V_ABER) + ") par celle de l'aérodrome, <b>" + deg(SUJET.vrai) + "</b> : votre formule =MOYENNE se recalcule. Quelle est la nouvelle <b>moyenne</b> du mois ? Arrondie au dixième.", unite: "°C",
             attendu: MOY2, tolerance: 0, toleranceAbsolue: 0.05,
-            methode: "Dans le tableur, la case " + CASE_ABER + " : remplacez " + fr(V_ABER, 1) + " par " + fr(SUJET.vrai, 1) + " ; la formule de la moyenne se recalcule. Ou : (somme − " + fr(V_ABER, 1) + " + " + fr(SUJET.vrai, 1) + ") ÷ " + N + ".",
+            methode: "Touchez la case " + CASE_ABER + ", écrivez " + fr(SUJET.vrai, 1) + ", validez : la case de votre moyenne change toute seule. Sans tableur : (somme − " + fr(V_ABER, 1) + " + " + fr(SUJET.vrai, 1) + ") ÷ " + N + ".",
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.m2 = rep; } },
-          { type: "nombre", niveau: "CAP", lib: "De combien de degrés la valeur fausse faisait-elle monter la moyenne du mois ?", unite: "°C",
-            attendu: DECALAGE, tolerance: 0, toleranceAbsolue: 0.05,
-            methode: "Moyenne des relevés bruts − moyenne corrigée." },
+          { type: "choix", niveau: "CAP", lib: "Comparez vos deux moyennes, avant et après la correction. La valeur fausse faisait monter la moyenne du mois :",
+            options: ["De quelques dixièmes de degré : l'erreur d'un jour se partage entre les " + N + " relevés", "D'autant que l'erreur du capteur, " + deg(V_ABER - SUJET.vrai),
+              "Pas du tout : une seule valeur ne change pas une moyenne", "De plusieurs degrés : c'est elle qui fait le record"], bonne: 0,
+            methode: "Faites la différence entre la moyenne des relevés bruts et la moyenne corrigée, puis comparez-la à l'erreur du capteur ce jour-là." },
           { type: "multi", niveau: "Seconde", lib: "La valeur " + (SUJET.aber === 1 ? "du 1er" : "du " + SUJET.aber) + " corrigée, quels indicateurs ont <b>changé</b> ? Plusieurs réponses.",
             options: ["La moyenne", "La médiane", "L'étendue", "L'effectif total", "La plus basse valeur", "La plus haute valeur"], bonne: [0, 2, 5],
             methode: "Recalculez chaque indicateur après la correction : vos formules du tableur le font. Une valeur extrême pèse dans la somme, mais elle ne change pas l'ordre des valeurs du milieu." },

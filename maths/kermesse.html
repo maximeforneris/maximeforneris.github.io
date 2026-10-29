@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Le stand de la kermesse</title>
-<meta name="description" content="Samedi, kermesse de l&#x27;école : le stand des jeux a perdu de l&#x27;argent l&#x27;an dernier, et la trésorière veut savoir quel jeu garder. Lire les règles des trois jeux, compter les issues, faire tourner la roue au doigt puis cent et dix mille fois, calculer les fréquences et les comparer à la probabilité, répondre à la joueuse qui croit que la chance tourne, puis rédiger le conseil. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.">
+<meta name="description" content="Samedi, kermesse de l&#x27;école : le stand des jeux a perdu de l&#x27;argent l&#x27;an dernier, et la trésorière veut savoir quel jeu garder. Lire les règles des trois jeux, compter les issues, faire tourner la roue au doigt puis cent et dix mille fois, calculer les fréquences et les comparer à la probabilité, répondre à la joueuse qui croit que la chance tourne, puis rédiger le conseil. En TD, la page guide ; en évaluation notée, dans l&#x27;espace d&#x27;évaluation, elle finit par un fichier.">
 <meta name="etiquette" content="Simulation · Parcours PARM-01">
 <style>
 /* Simulations des TP · feuille commune, inlinee dans chaque page par assembler-simulations.py.
@@ -2762,7 +2762,7 @@ var Sim = (function () {
 <header class="tete">
 <div class="surtitre">Mathématiques · parcours CAP et seconde · une heure sur tablette</div>
 <h1>Le stand de la kermesse</h1>
-<p class="chapeau">Samedi, kermesse de l'école : le stand des jeux a perdu de l'argent l'an dernier, et la trésorière veut savoir quel jeu garder. Lire les règles des trois jeux, compter les issues, faire tourner la roue au doigt puis cent et dix mille fois, calculer les fréquences et les comparer à la probabilité, répondre à la joueuse qui croit que la chance tourne, puis rédiger le conseil. En TD, la page guide ; en évaluation notée, par le lien du professeur, elle finit par un fichier.</p>
+<p class="chapeau">Samedi, kermesse de l'école : le stand des jeux a perdu de l'argent l'an dernier, et la trésorière veut savoir quel jeu garder. Lire les règles des trois jeux, compter les issues, faire tourner la roue au doigt puis cent et dix mille fois, calculer les fréquences et les comparer à la probabilité, répondre à la joueuse qui croit que la chance tourne, puis rédiger le conseil. En TD, la page guide ; en évaluation notée, dans l'espace d'évaluation, elle finit par un fichier.</p>
 </header>
 <style>
 :root{--papier:#f8f6f0;--encre-papier:#1d1d1b;--papier-trait:#8a8579;--toile:#d8cfbd;--bois:#c8b89c;--metal:#9aa3ad;
@@ -2849,6 +2849,8 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
 (function () {
   var S = Sim, svg = S.svg, el = S.el, fr = S.fr, borne = S.borne;
   var u = Math.random;
+  /* la ponctuation haute et le symbole d'une unite ne commencent jamais une ligne */
+  function T(s) { return String(s).replace(/ ([?:;!%»€])/g, " $1").replace(/« /g, "« "); }
 
   /* ── Le sujet ── DEUX JEUX DE VALEURS (19 octobre 2026, le parcours nait avec les deux modes) : le TD et
      l'evaluation notee (#note) n'ont pas les memes nombres. Le prix d'une partie, la roue (secteurs, secteurs
@@ -2879,7 +2881,14 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
   var JEUX = { roue: "la roue", sac: "le sac de billes", des: "les deux dés" };
   var COUT = { roue: P_ROUE * SUJET.roue.prixLot, sac: P_SAC * SUJET.sac.prixLot, des: P_DES * SUJET.des.prixLot };   // par partie, en moyenne
   var DEPENSE_ROUE = 1000 * COUT.roue;               // 1 200 € (TD) ou 2 500 € (note) de lots sur 1 000 parties
-  var DEPENSE_GARDE = 1000 * COUT[SUJET.garder];     // 750 € (TD) ou 1 667 € (note)
+  var DEPENSE_GARDE = 1000 * COUT[SUJET.garder];     // 750 € (TD) ou 1 667 € (note)
+  /* ALLEGEMENT DU 21 OCTOBRE 2026 (« trop dur pour les eleves ») : trois calculs en CAP (la probabilite du sac, la
+     frequence des 100 parties, la frequence apres cinq perdues), quatre en seconde (le prix maximal d'un lot de la
+     roue). Le carnet de Sonia donne ce que les lots ont coute l'an dernier, ramene a 1 000 parties de chaque jeu :
+     des nombres proches de 1 000 × probabilite × prix du lot, que l'eleve compare a ce que le jeu encaisse, sans
+     les calculer. Des multiples du prix du lot, inventes. */
+  var CARNET = S.note ? { roue: 2470, sac: 2430, des: 1644 } : { roue: 1218, sac: 740, des: 1352 };
+  var PRIX_MAX = SUJET.prix / P_ROUE;                  // le lot le plus cher que la roue paie sans perte : 5 € ou 8 €
 
   /* ── Le sac vide sur le plateau : les billes melangees, le meme tas d'une phase a l'autre ── */
   var BILLES = (function () {
@@ -3029,7 +3038,7 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
   /* ── L'etat partage entre les phases, et la porte des essais ── */
   var labo = {
     SUJET: SUJET, P_ROUE: P_ROUE, P_SAC: P_SAC, P_DES: P_DES, N_BILLES: N_BILLES, N_ROUGES: N_ROUGES, N_DES: N_DES, N_MAIN: N_MAIN,
-    DEPENSE_ROUE: DEPENSE_ROUE, DEPENSE_GARDE: DEPENSE_GARDE, COUT: COUT, BILLES: BILLES,
+    DEPENSE_ROUE: DEPENSE_ROUE, DEPENSE_GARDE: DEPENSE_GARDE, COUT: COUT, BILLES: BILLES, CARNET: CARNET, PRIX_MAX: PRIX_MAX,
     sacVide: false,
     cases: {},                                          // les issues touchees dans le tableau des des, "r-b"
     main: [],                                           // la serie au doigt : true pour un lot
@@ -3392,17 +3401,18 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
       dessinGrille(cvB, labo.B, SUJET.nB > 100 ? 20 : 10);
       dessinGrille(cvC, labo.C, 100);
       capB.textContent = labo.B ? nb(labo.B.vus) + " parties, " + nb(lotsDe(labo.B)) + " lots" + (labo.B.fini ? "" : "…") : "pas encore jouées : " + nb(SUJET.nB) + " parties";
-      capC.textContent = labo.C ? nb(labo.C.vus) + " parties, " + nb(lotsDe(labo.C)) + " lots" + (labo.C.fini ? "" : "…") : "pas encore jouées : " + nb(SUJET.nC) + " parties";
+      capC.textContent = labo.C ? nb(labo.C.vus) + " parties, " + nb(lotsDe(labo.C)) + " lots" + (labo.C.fini ? " : fréquence " + fr(lotsDe(labo.C) / labo.C.n, 3) + ", calculée par la machine" : "…") : "pas encore jouées : " + nb(SUJET.nC) + " parties";
       bB.disabled = !!labo.B; bC.disabled = !!labo.C; bDix.disabled = labo.dix.length >= 16;
       tab.innerHTML = "";
-      tab.appendChild(el("tr", null, [el("th", { texte: "Série" }), el("th", { texte: "Parties jouées" }), el("th", { texte: "Lots gagnés" })]));
-      tab.appendChild(el("tr", null, [el("td", { texte: "La roue, au doigt" }), el("td", { texte: String(labo.main.length) }), el("td", { texte: labo.main.length ? String(nLotsMain()) : "—" })]));
+      tab.appendChild(el("tr", null, [el("th", { texte: "Série" }), el("th", { texte: "Parties jouées" }), el("th", { texte: "Lots gagnés" }), el("th", { texte: "Fréquence" })]));
+      tab.appendChild(el("tr", null, [el("td", { texte: "La roue, au doigt" }), el("td", { texte: String(labo.main.length) }), el("td", { texte: labo.main.length ? String(nLotsMain()) : "—" }), el("td", { texte: "à vous" })]));
       [["B", SUJET.nB], ["C", SUJET.nC]].forEach(function (c) {
         var x = labo[c[0]];
-        tab.appendChild(el("tr", null, [el("td", { texte: "La machine" }), el("td", { texte: x ? nb(x.vus) : "—" }), el("td", { texte: x ? nb(lotsDe(x)) : "—" })]));
+        tab.appendChild(el("tr", null, [el("td", { texte: "La machine" }), el("td", { texte: x ? nb(x.vus) : "—" }), el("td", { texte: x ? nb(lotsDe(x)) : "—" }),
+          el("td", { texte: c[0] === "B" ? "à vous" : x && x.fini ? fr(lotsDe(x) / x.n, 3) + " (la machine)" : "—" })]));
       });
       tab.appendChild(el("tr", null, [el("td", { texte: "Séries de 10 de la machine" }), el("td", { texte: labo.dix.length ? labo.dix.length + " × 10" : "—" }),
-        el("td", { texte: labo.dix.length ? labo.dix.join(" · ") : "—" })]));
+        el("td", { texte: labo.dix.length ? labo.dix.join(" · ") : "—" }), el("td", { texte: "" })]));
       if (!labo.C || !labo.C.fini) courbe.setAttribute("d", "");
       dessinerGraphique();
     }
@@ -3471,13 +3481,13 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
     { cle: "grand", options: ["proche de 0,5", "exactement 0,25", "proche de 0,25, la probabilité"], bonne: 2 },
     { cle: "suite", options: ["ne change pas", "augmente", "diminue"], bonne: 0 },
     { cle: "jeu", options: ["les deux dés", "la roue", "le sac de billes"], bonne: 0 },
-    { cle: "cout", options: [euros(Math.round(DEPENSE_GARDE)), euros(Math.round(1000 * P_DES)), euros(1000 * SUJET.prix)], bonne: 0 }
+    { cle: "cout", options: ["plus que", "autant que", "moins que"], bonne: 2 }
   ] : [
     { cle: "dix", options: ["varie d'une série à l'autre", "vaut toujours 2", "vaut toujours 0"], bonne: 0 },
     { cle: "grand", options: ["exactement 0,2", "proche de 0,2, la probabilité", "proche de 0,5"], bonne: 1 },
     { cle: "suite", options: ["augmente", "diminue", "ne change pas"], bonne: 2 },
     { cle: "jeu", options: ["la roue", "le sac de billes", "les deux dés"], bonne: 1 },
-    { cle: "cout", options: [euros(Math.round(1000 * P_SAC)), euros(Math.round(DEPENSE_GARDE)), euros(1000 * SUJET.prix)], bonne: 1 }
+    { cle: "cout", options: ["moins que", "plus que", "autant que"], bonne: 0 }
   ];
   labo.TROUS = TROUS;
   var mesures5 = null;
@@ -3502,7 +3512,7 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
     f.appendChild(ligne(["2. Sur " + nb(SUJET.nC) + " parties, la fréquence des lots est ", trou(TROUS[1]), "."]));
     f.appendChild(ligne(["3. Après cinq parties perdues de suite, la probabilité d'un lot ", trou(TROUS[2]), "."]));
     f.appendChild(ligne(["4. Le jeu à garder : ", trou(TROUS[3]), "."]));
-    f.appendChild(ligne(["5. Sur 1 000 parties, ce jeu donne environ ", trou(TROUS[4]), " de lots, pour " + euros(1000 * SUJET.prix) + " encaissés."]));
+    f.appendChild(ligne(["5. Sur 1 000 parties, ses lots coûtent ", trou(TROUS[4]), " les " + euros(1000 * SUJET.prix) + " encaissés."]));
     zone.appendChild(f);
     mesures5 = el("div"); zone.appendChild(mesures5);
     remplirMesures(ctx);
@@ -3512,10 +3522,11 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
     if (!mesures5) return;
     var d = ctx.donnees, li = [];
     if (d.psac) li.push("Probabilité d'une bille rouge : " + d.psac);
-    if (d.pdes) li.push("Probabilité de gagner aux dés : " + d.pdes);
-    if (d.fC) li.push("Fréquence des lots sur " + nb(SUJET.nC) + " parties : " + d.fC);
+    if (d.fB) li.push("Fréquence des lots sur " + nb(SUJET.nB) + " parties : " + d.fB);
+    if (labo.C && labo.C.fini) li.push("Fréquence des lots sur " + nb(SUJET.nC) + " parties (la machine) : " + fr(lotsDe(labo.C) / labo.C.n, 3));
     if (d.apres5) li.push("Après cinq perdues de suite : " + d.apres5);
-    if (d.roue1000) li.push("La roue, sur 1 000 parties : " + d.roue1000 + " de lots");
+    if (d.prixMax) li.push("Le prix maximal d'un lot de la roue : " + d.prixMax);
+    li.push(T("Le carnet de Sonia, sur 1 000 parties : lots de la roue " + euros(CARNET.roue) + ", du sac " + euros(CARNET.sac) + ", des dés " + euros(CARNET.des) + ", pour " + euros(1000 * SUJET.prix) + " encaissés"));
     mesures5.innerHTML = "<p class=\"consigne\" style=\"margin:14px 0 0\"><b>Vos résultats</b>, pour vous aider :</p><ul class=\"vos-mesures\">" +
       (li.length ? li.map(function (x) { return "<li>" + x + "</li>"; }).join("") : "<li>(les phases précédentes les rempliront)</li>") + "</ul>";
   }
@@ -3569,9 +3580,9 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
         consigne: "Comptez les billes sur le plateau. Dans le tableau des deux dés, chaque case est une issue : la ligne du dé rouge, la colonne du dé bleu ; les sommes manquantes se complètent de tête.",
         scene: sceneDes,
         questions: [
-          { type: "nombre", lib: "Comptez les billes du sac (sur le plateau). Quelle est la probabilité de tirer une bille <b>rouge</b> ? Écriture décimale.",
+          { type: "nombre", lib: T("Comptez les billes du sac (sur le plateau). Probabilité de tirer une bille <b>rouge</b> = nombre de billes rouges ÷ nombre total de billes : calculez-la, en écriture décimale."),
             attendu: P_SAC, tolerance: 0, toleranceAbsolue: 0.002,
-            methode: "Probabilité = nombre de billes rouges ÷ nombre total de billes. Comptez toutes les billes, de toutes les couleurs.",
+            methode: T("Comptez toutes les billes, de toutes les couleurs, puis divisez le nombre de billes rouges par ce total."),
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.psac = rep; } },
           { type: "action", lib: "Aux deux dés, on gagne si " + SUJET.des.regle + ". Touchez dans le tableau <b>toutes les issues gagnantes</b>.",
             aide: "Cases touchées, puis vérifiez.",
@@ -3586,10 +3597,10 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
                   [!manque, "il manque au moins une issue gagnante : reprenez le tableau ligne par ligne, y compris le coin à compléter de tête"]] };
             },
             methode: "Une case par issue, 36 en tout. Pour chaque ligne (le dé rouge), cherchez la ou les colonnes (le dé bleu) qui réalisent « " + SUJET.des.court + " »." },
-          { type: "nombre", lib: "Quelle est la probabilité de gagner aux deux dés ? Écriture décimale, <b>arrondie au centième</b>.",
-            attendu: P_DES, tolerance: 0, toleranceAbsolue: 0.005,
-            methode: "Probabilité = nombre d'issues gagnantes ÷ nombre d'issues (36), puis l'arrondi au centième.",
-            apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.pdes = rep; } },
+          { type: "choix", lib: T("Comment calcule-t-on la <b>probabilité de gagner</b> aux deux dés ?"),
+            options: [T("Nombre de cases gagnantes ÷ 36, le nombre de cases du tableau"), T("Nombre de cases gagnantes ÷ 6, le nombre de faces d'un dé"),
+              T("Nombre de cases gagnantes ÷ 11, le nombre de sommes possibles (de 2 à 12)"), T("Nombre de cases gagnantes ÷ 12, les faces des deux dés ensemble")], bonne: 0,
+            methode: T("Probabilité = nombre d'issues gagnantes ÷ nombre d'issues, quand toutes les issues ont la même chance. Chaque case du tableau est une issue : comptez-les toutes.") },
           { type: "choix", lib: "Avant de jouer : sur <b>" + SUJET.conj + " parties</b> de la roue (" + N_LOTS + " secteurs étoilés sur " + N_SECT + "), combien de lots donnerez-vous ?",
             options: S.note ? ["Environ 3, mais ce peut être 1, 2, 4, 5 ou plus", "Exactement 3 : 3 secteurs sur 12", "Au moins 1 : sur 12 parties, on gagne forcément une fois", "On ne peut rien prévoir du tout"]
               : ["Environ 2, mais ce peut être 0, 1, 3, 4 ou plus", "Exactement 2 : 2 secteurs sur 10", "Au moins 1 : sur 10 parties, on gagne forcément une fois", "On ne peut rien prévoir du tout"], bonne: 0,
@@ -3597,17 +3608,14 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
         ],
         bravo: "Sonia : « Des probabilités calculées, et une prévision prudente. Reste à jouer pour de vrai. »" },
       { competence: "REA", titre: N_MAIN + ", " + nb(SUJET.nB) + ", " + nb(SUJET.nC) + " parties", large: true,
-        recit: "La roue se lance au doigt. Pour les grandes séries, la machine du stand (un programme) joue la roue à votre place et compte les lots. <b>La fréquence, c'est vous qui la calculez.</b>",
+        recit: T("La roue se lance au doigt. Pour les grandes séries, la machine du stand (un programme) joue la roue à votre place et compte les lots. Elle calcule la fréquence de sa longue série ; <b>celle des " + nb(SUJET.nB) + " parties, c'est vous qui la calculez.</b>"),
         consigne: "Jouez les " + N_MAIN + " parties au doigt, puis faites jouer la machine. Les nombres sont dans « Ce que la classe a relevé ».",
         scene: sceneParties,
         questions: [
-          { type: "nombre", lib: "Quelle est la fréquence des lots sur les <b>" + nb(SUJET.nB) + " parties</b> de la machine ? Arrondie au centième.",
+          { type: "nombre", lib: T("Fréquence = nombre de lots ÷ nombre de parties. Calculez la fréquence des lots sur les <b>" + nb(SUJET.nB) + " parties</b> de la machine (les deux nombres sont dans « Ce que la classe a relevé »), arrondie au centième."),
             attendu: function () { return freqSerie(1); }, tolerance: 0, toleranceAbsolue: 0.0051,
-            methode: "Fréquence = nombre de lots ÷ nombre de parties : les deux nombres sont dans « Ce que la classe a relevé »." },
-          { type: "nombre", lib: "Quelle est la fréquence des lots sur les <b>" + nb(SUJET.nC) + " parties</b> de la machine ? Arrondie au millième.",
-            attendu: function () { return freqSerie(2); }, tolerance: 0, toleranceAbsolue: 0.00051,
-            methode: "Fréquence = nombre de lots ÷ " + nb(SUJET.nC) + ", puis l'arrondi au millième (trois chiffres après la virgule).",
-            apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.fC = rep; } },
+            methode: T("Divisez le nombre de lots de la machine par " + nb(SUJET.nB) + ", puis arrondissez au centième (deux chiffres après la virgule)."),
+            apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.fB = rep; } },
           { type: "action", lib: "Sur le graphique, placez les <b>trois fréquences</b> (" + N_MAIN + ", " + nb(SUJET.nB) + " et " + nb(SUJET.nC) + " parties) et la droite <b>p</b> à la hauteur de la probabilité de gagner à la roue.",
             aide: "Points et droite placés, puis vérifiez.",
             verifier: function () {
@@ -3625,6 +3633,10 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
             },
             methode: "Chaque point va à la hauteur de la fréquence de sa série, lue sur l'axe vertical (une ligne tous les 0,05). La droite p, à la hauteur de la probabilité : secteurs étoilés ÷ nombre de secteurs.",
             apres: function (ctx, ok) { if (ok && !ctx.note) montrerCourbe(); } },
+          { type: "choix", lib: T("Sur le graphique, que fait la fréquence des lots quand le nombre de parties augmente ?"),
+            options: [T("Elle varie de moins en moins, et se rapproche de la probabilité p"), T("Elle augmente : plus on joue, plus on gagne de lots"),
+              T("Elle vaut exactement p dès " + nb(SUJET.nB) + " parties"), T("Elle varie de plus en plus : le hasard s'accumule")], bonne: 0,
+            methode: T("Comparez la hauteur des trois points à la droite p : l'écart entre la fréquence et la probabilité, sur " + N_MAIN + ", " + nb(SUJET.nB) + " puis " + nb(SUJET.nC) + " parties.") },
           { type: "choix", niveau: "Seconde", lib: "Le programme de la machine est sous le graphique. Que renvoie <code>frequence(" + SUJET.nC + ")</code> ?",
             options: ["La fréquence des lots sur " + nb(SUJET.nC) + " parties simulées : proche de " + fr(P_ROUE, 2).replace(/0$/, "") + ", un peu différente à chaque exécution",
               "La probabilité de gagner, exactement " + fr(P_ROUE, 2).replace(/0$/, ""), "Le nombre de lots gagnés sur " + nb(SUJET.nC) + " parties", "Toujours le même nombre, puisque le programme ne change pas"], bonne: 0,
@@ -3633,12 +3645,12 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
         bravo: "Sonia : « Plus on joue, plus la fréquence se rapproche de la probabilité : c'est elle qui fera nos comptes. »" },
       { competence: "VAL", titre: "Cinq perdants de suite",
         recit: "Mme Lefèvre, au stand : « La roue vient de perdre cinq fois de suite. La prochaine va gagner, c'est obligé : je joue ! »",
-        consigne: "Le journal de la machine garde ses " + nb(SUJET.nC) + " parties dans l'ordre. Réglez le nombre de parties perdues de suite : la page compte, vous calculez.",
+        consigne: T("Le journal de la machine garde ses " + nb(SUJET.nC) + " parties dans l'ordre. Réglez le nombre de parties perdues de suite : la page compte, vous calculez. Puis lisez le carnet de Sonia."),
         scene: sceneJournal,
         questions: [
-          { type: "nombre", lib: "Dans le journal, après <b>5 parties perdues de suite</b>, quelle est la fréquence des lots à la partie suivante ? Arrondie au centième.",
+          { type: "nombre", lib: T("Réglez la recherche sur <b>5 parties perdues de suite</b>. Fréquence = lots ÷ parties jouées juste après (les deux nombres sous le journal) : calculez-la, arrondie au centième."),
             attendu: function () { var c = compte(5); return c && c.n ? c.m / c.n : NaN; }, tolerance: 0, toleranceAbsolue: 0.0051,
-            methode: "Réglez la recherche sur 5 parties perdues de suite. Fréquence = lots ÷ parties jouées juste après, les deux nombres sous le journal.",
+            methode: T("Les deux nombres sont sous le journal, une fois la recherche réglée sur 5. Divisez les lots par les parties, puis arrondissez au centième."),
             apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.apres5 = "fréquence des lots " + rep; } },
           { type: "choix", lib: "Que répondre à Mme Lefèvre ?",
             options: S.note ? ["Elle se trompe : la roue n'a pas de mémoire, la probabilité d'un lot reste 0,25 à chaque partie", "Elle a raison : après cinq perdants, un lot devient plus probable",
@@ -3646,18 +3658,15 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
               : ["Elle se trompe : la roue n'a pas de mémoire, la probabilité d'un lot reste 0,2 à chaque partie", "Elle a raison : après cinq perdants, un lot devient plus probable",
               "Elle a raison : la roue doit rattraper ses 2 lots sur 10", "Elle se trompe : après cinq perdants, la roue va plutôt continuer à perdre"], bonne: 0,
             methode: "Comparez la fréquence après cinq perdues à la probabilité de gagner à la roue : chaque partie recommence à zéro." },
-          { type: "nombre", lib: "Sur un grand nombre de parties, la fréquence des lots est proche de la probabilité. Sur <b>1 000 parties</b> de la roue, combien le stand dépense-t-il en lots (" + SUJET.roue.lot + " à " + euros(SUJET.roue.prixLot) + ") ?", unite: "€",
-            attendu: DEPENSE_ROUE, tolerance: 0.05,
-            methode: "Nombre de lots attendus = 1 000 × probabilité ; la dépense = ce nombre × " + euros(SUJET.roue.prixLot) + ". Comparez aux " + euros(1000 * SUJET.prix) + " encaissés.",
-            apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.roue1000 = rep; } },
-          { type: "choix", niveau: "CAP", lib: "Sur un grand nombre de parties, quel jeu le stand peut-il garder <b>sans perdre d'argent</b> ? (l'affiche du stand)",
-            options: ["La roue", "Le sac de billes", "Les deux dés", "Aucun des trois"], bonne: S.note ? 2 : 1,
-            methode: "Pour chaque jeu, sur 1 000 parties : 1 000 × probabilité × prix du lot, à comparer aux " + euros(1000 * SUJET.prix) + " encaissés." },
-          { type: "multi", niveau: "Seconde", lib: "Sonia peut changer un lot. Quels jeux le stand peut-il proposer <b>sans perdre d'argent</b>, sur un grand nombre de parties ? Plusieurs réponses.",
-            options: S.note ? ["Les deux dés, avec leur boîte à 12 €", "Le sac, avec sa peluche géante à 15 €", "La roue, avec un lot à 7 €", "La roue, avec son ballon de foot à 10 €", "Le sac, avec un lot à 11 €", "Les deux dés, avec un lot à 15 €"]
-              : ["Le sac, avec sa peluche à 5 €", "La roue, avec son ballon à 6 €", "La roue, avec un lot à 4 €", "Les deux dés, avec leur boîte à 8 €", "Les deux dés, avec un lot à 5 €", "La roue, avec un lot à 5,50 €"],
-            bonne: S.note ? [0, 2, 4] : [0, 2, 4],
-            methode: "Pour chaque proposition, sur 100 parties : 100 × probabilité × prix du lot, à comparer aux " + euros(100 * SUJET.prix) + " encaissés." }
+          { type: "classer", lib: T("Le carnet de Sonia : l'an dernier, pour 1 000 parties de chaque jeu, soit " + euros(1000 * SUJET.prix) + " encaissés, les lots de la roue ont coûté " + euros(CARNET.roue) + ", ceux du sac " + euros(CARNET.sac) + ", ceux des dés " + euros(CARNET.des) + ". Pour chaque jeu, le stand gagne-t-il ou perd-il de l'argent ?"),
+            items: ["La roue", "Le sac de billes", "Les deux dés"],
+            categories: ["Le stand gagne de l'argent", "Le stand perd de l'argent"],
+            bonnes: ["roue", "sac", "des"].map(function (j) { return CARNET[j] > 1000 * SUJET.prix ? 1 : 0; }),
+            methode: T("Comparez, jeu par jeu, ce que les lots ont coûté à ce que le jeu a encaissé : le stand perd de l'argent quand les lots coûtent plus.") },
+          { type: "nombre", niveau: "Seconde", lib: T("Sonia garderait la roue avec un lot moins cher. Prix maximal d'un lot, pour ne pas perdre d'argent = prix d'une partie ÷ probabilité de gagner, soit " + PRIX + " ÷ " + fr(P_ROUE, 2).replace(/0$/, "") + ". Calculez-le, en euros."), unite: "€",
+            attendu: PRIX_MAX, tolerance: 0, toleranceAbsolue: 0.01,
+            methode: T("Sur un grand nombre de parties, la fréquence des lots est proche de p : un lot pour 1 ÷ p parties, qui doivent le payer. Divisez le prix d'une partie par la probabilité."),
+            apres: function (ctx, ok, rep) { if (ok || ctx.note) ctx.donnees.prixMax = rep; } }
         ],
         bravo: "Sonia : « La roue n'a pas de mémoire, et nos comptes non plus ne s'arrangent pas tout seuls. Merci. »" },
       { competence: "COM", titre: "Le conseil à la trésorière",
@@ -3675,7 +3684,7 @@ pre.k-python{background:var(--carte2);border:1px solid var(--trait);border-radiu
               return { controles: TROUS.map(function (t, k) { return [labo.fiche[t.cle] === t.bonne, "le mot de la ligne " + (k + 1) + " n'est pas juste"]; }),
                 reponse: TROUS.map(function (t) { return t.options[labo.fiche[t.cle]]; }).join(" ; ") };
             },
-            methode: "Reprenez vos résultats : la fluctuation sur " + N_MAIN + " parties, la fréquence sur " + nb(SUJET.nC) + ", le journal après cinq perdues, et pour chaque jeu 1 000 × probabilité × prix du lot." },
+            methode: T("Reprenez vos résultats : la fluctuation sur " + N_MAIN + " parties, la fréquence sur " + nb(SUJET.nC) + ", le journal après cinq perdues, et le carnet de Sonia, jeu par jeu.") },
           { type: "choix", lib: S.note ? "Sur l'affiche, comment écrire la chance de gagner aux <b>deux dés</b> (une somme de 8) ?" : "Sur l'affiche, comment écrire la chance de gagner au <b>sac</b> (une bille rouge) ?",
             options: S.note ? ["5 chances sur 31", "5 chances sur 36, soit environ 14 %", "14 lots garantis pour 100 parties", "1 chance sur 5"]
               : ["3 chances sur 20, soit 15 %", "3 chances sur 17", "15 lots garantis pour 100 parties", "1 chance sur 3"], bonne: S.note ? 1 : 0,

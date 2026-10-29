@@ -3419,7 +3419,10 @@ var Sim = (function () {
    a une plaque de format fixe : V(x) = x(a − 2x)(b − 2x), et des formats ou V′ a une racine simple dans le domaine.
    La partie 4 retourne l'evidence du chef d'atelier : « plus les bords sont hauts, plus la boite contient ».
    DEUX JEUX DE VALEURS : le TD (#ccf) et l'evaluation notee (#note) n'ont ni les memes formats, ni la meme
-   decoupe de la partie 1, ni les memes ordres de classement. */
+   decoupe de la partie 1, ni les memes ordres de classement.
+   ALLEGEMENT du 21 octobre 2026 (« trop dur pour les eleves ») : le volume pour x = 2 (partie 1) devient le choix de son
+   calcul ; V(x0) se lit au curseur du traceur. Le calcul reste dans la derivee et le developpement. La conclusion
+   n'affiche que les nombres de l'eleve (« … » avant). */
 (function () {
   var P = window.boiteCarton, fr = Sim.fr, el = Sim.el, svg = Sim.svg, NB = " ";
   function nb(v) {
@@ -3479,6 +3482,16 @@ var Sim = (function () {
   function garde(cle, mesure) { return function (ctx, juste, rep, v) { ctx.donnees[cle] = (juste || ctx.note) && isFinite(v) ? v : mesure(ctx); }; }
   function val(ctx, cle, mesure) { var x = ctx.donnees[cle]; return isFinite(x) ? x : mesure(ctx); }
   function xsD() { return D().xs; }
+  /* pour l'affichage : le nombre de l'eleve, ou NaN (« … ») tant qu'il n'a pas repondu ; jamais celui du sujet */
+  function vu(ctx, cle) { var x = ctx.donnees[cle]; return isFinite(x) ? x : NaN; }
+  /* le calcul du volume pour x = xQ, et trois erreurs reelles */
+  function calculOptions() {
+    var d = D(), x = nb(SUJET.xQ), x2 = nb(2 * SUJET.xQ);
+    if (d.type === "plaque") return [x + " × (" + nb(d.a) + " − 2 × " + x + ") × (" + nb(d.b) + " − 2 × " + x + ")", x + " × (" + nb(d.a) + " − " + x + ") × (" + nb(d.b) + " − " + x + ")",
+      "(" + nb(d.a) + " − 2 × " + x + ") × (" + nb(d.b) + " − 2 × " + x + ")", x + " × " + nb(d.a) + " × " + nb(d.b)];
+    return [nb(d.L) + " × " + x + " × (" + nb(d.l) + " − 2 × " + x + ")", nb(d.L) + " × " + x + " × (" + nb(d.l) + " − " + x + ")",
+      nb(d.L) + " × (" + nb(d.l) + " − 2 × " + x + ")", "(" + nb(d.L) + " + " + x2 + ") × " + x + " × (" + nb(d.l) + " − 2 × " + x + ")"];
+  }
   /* le carton du sujet est pose sur l'etabli a la premiere partie ouverte, quelle qu'elle soit */
   function assurer(ctx) { if (ctx.donnees.regle !== ctx.niveau()) { ctx.donnees.regle = ctx.niveau(); P.regler(D()); } }
   /* le volume de riz de la derniere boite versee a une decoupe donnee */
@@ -3622,7 +3635,7 @@ var Sim = (function () {
     if (!r.fn) return { ok: false, corriger: ["f ne se lit pas : vérifiez les signes, les puissances (x^2 ou x²) et les parenthèses"], reponse: r.lu, lu: r.lu };
     if (egales(r.fn, d.V, d.dom)) return { ok: true, reponse: r.lu, lu: r.lu };
     var e = egales(r.fn, d.Vp, d.dom) ? "f est la dérivée de V : tapez V(x) lui-même dans la ligne f"
-      : "f n'est pas V : pour x = " + SUJET.xQ + ", votre f donne " + fr(r.fn(SUJET.xQ), 1) + " ; comparez au volume calculé en partie 1";
+      : "f n'est pas V : pour x = " + SUJET.xQ + ", votre f donne " + fr(r.fn(SUJET.xQ), 1) + " ; comparez au calcul du volume de la partie 1";
     return { ok: false, corriger: [e], reponse: r.lu, lu: r.lu };
   }
   function verifG() {
@@ -3696,9 +3709,9 @@ var Sim = (function () {
               items: ["la longueur du fond", "la largeur du fond", "la hauteur de la boîte"], categories: perm.map(function (k) { return canon[k]; }),
               bonnes: [0, 1, 2].map(function (k) { return perm.indexOf(k); }),
               methode: "Le fond est ce qui reste entre les pointillés : chaque côté perd un carré à chaque bout, soit 2x. La hauteur est le côté du carré relevé." },
-            { type: "nombre", lib: "Calculez le volume de la boîte pour une découpe de <b>" + SUJET.xQ + NB + "cm</b>, le carton supposé sans épaisseur, en cm³.", unite: "cm³",
-              attendu: d.vQ, tolerance: 0.01,
-              methode: "Les trois dimensions pour x = " + SUJET.xQ + ", puis longueur × largeur × hauteur." },
+            { type: "choix", lib: "Le volume d'un pavé : longueur × largeur × hauteur (annexe). Quel calcul donne le volume de la boîte pour une découpe de <b>" + SUJET.xQ + NB + "cm</b>, le carton supposé sans épaisseur, en cm³ ?",
+              options: calculOptions(), bonne: 0,
+              methode: "Remplacez x par " + SUJET.xQ + " dans chacune des trois dimensions de la question précédente : chaque côté du fond perd deux carrés, un à chaque bout." },
             { type: "choix", lib: "Quelles valeurs la découpe x peut-elle prendre, en cm ?", options: domaineOptions(), bonne: 0,
               methode: "La découpe est une longueur positive, et il doit rester un fond : deux découpes prises sur le petit côté font moins que ce petit côté." }
           ];
@@ -3765,9 +3778,9 @@ var Sim = (function () {
           { type: "classer", lib: "Le tableau de variations de V : complétez chaque case. x₀ est la découpe où V′ s'annule.",
             get items() { return itemsVariations(); }, categories: ["positif", "négatif", "croissante", "décroissante"], bonnes: SUJET.ordreVar,
             methode: "Le signe de V′ se lit sur la courbe de g, de part et d'autre de x₀. Là où la dérivée est positive, la fonction est croissante ; négative, décroissante." },
-          { type: "nombre", lib: "Calculez le plus grand volume, <b>V(x₀)</b>, avec votre découpe x₀, le carton supposé sans épaisseur, en cm³.", unite: "cm³",
+          { type: "nombre", lib: "Placez le curseur du traceur sur votre découpe x₀ : la ligne de lecture donne f(x₀), c'est-à-dire <b>V(x₀)</b>. Relevez ce plus grand volume, le carton supposé sans épaisseur, en cm³.", unite: "cm³",
             attendu: function (ctx) { return D().V(val(ctx, "x0", xsD)); }, tolerance: 0.01, fini: garde("vmax", function (ctx) { return D().V(val(ctx, "x0", xsD)); }),
-            methode: "Remplacez x par x₀ dans V(x), la forme factorisée de préférence." }
+            methode: "Glissez le curseur « Lire en x » jusqu'à x₀, ou touchez la courbe à cet endroit ; f(x) se lit sous le graphique." }
         ],
         bravo: "Les boîtes sont mesurées, la dérivée calculée, le maximum trouvé. Reste la règle du chef d'atelier."
       },
@@ -3818,14 +3831,13 @@ var Sim = (function () {
         competence: "COM", titre: "La consigne de l'atelier",
         recit: "Le chef d'atelier affichera la nouvelle consigne au-dessus de la machine. Elle tient en trois phrases, avec des nombres et leurs unités.",
         questions: function (ctx) {
-          var d = D(), x0 = val(ctx, "x0", xsD), vm = val(ctx, "vmax", function () { return d.V(x0); }), vc = val(ctx, "vChef", function () { return P.Vin(d.xChef); });
-          if (!isFinite(vc)) vc = d.V(d.xChef);
-          var X0 = nb(x0), VM = fr(vm, 0), VL = fr(vm / 1000, 2);
+          var d = D(), x0 = vu(ctx, "x0"), vm = vu(ctx, "vmax"), vc = vu(ctx, "vChef");
+          var X0 = nb(x0), VM = isFinite(vm) ? fr(vm, 0) : "…", VL = isFinite(vm) ? fr(vm / 1000, 2) : "…";
           return [
             { type: "multi", essais: 2, lib: "Gardez les phrases qui font une consigne juste.",
               options: ["Avec cette " + (d.type === "plaque" ? d.carton : "bande de " + nb(d.l) + NB + "cm") + ", la découpe de " + X0 + NB + "cm donne la plus grande boîte : environ " + VM + NB + "cm³, soit " + VL + NB + "L.",
                 "Au-delà de " + X0 + NB + "cm, la boîte est plus haute mais contient moins : V′(x) est négatif, V diminue.",
-                "La découpe du chef, " + nb(d.xChef) + NB + "cm, ne donne qu'environ " + fr(vc, 0) + NB + "mL.",
+                "La découpe du chef, " + nb(d.xChef) + NB + "cm, ne donne qu'environ " + (isFinite(vc) ? fr(vc, 0) : "…") + NB + "mL.",
                 "Plus la découpe est grande, plus la boîte contient.",
                 "Le volume est le plus grand quand V(x) = 0.",
                 "La découpe de " + X0 + NB + "cm donne la plus grande boîte parce que V′(" + X0 + ") est le plus grand nombre dérivé."], bonne: [0, 1, 2],

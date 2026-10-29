@@ -3432,7 +3432,11 @@ pre.code-py{font-family:ui-monospace,Consolas,monospace;font-size:.86rem;line-he
    de seconde) et on constate qu'il n'est pas arithmetique. La premiere etudie a fond L'Etabli, arithmetique.
    La partie 4 retourne l'evidence du commercial : « 7 %, c'est moins que 156 € : chez nous, c'est plus doux. »
    DEUX JEUX DE VALEURS : le TD (#ccf) et l'evaluation notee (#note) n'ont ni les memes offres, ni le meme ordre de
-   classement ; trois offres tirees au sort dans chaque mode (donnees.py, scratchpad). */
+   classement ; trois offres tirees au sort dans chaque mode (donnees.py, scratchpad).
+   ALLEGEMENT du 21 octobre 2026 (« trop dur pour les eleves ») : chaque calcul ecrit sa formule, valeurs comprises,
+   deux operations au plus (u2 = u1 + r, v2 = v1 × q, u20 = u1 + 19 × r, v20 = v1 × q^19, l'ecart des SOMME) ; l'annee
+   ou la hausse depasse r se lit dans une colonne E dont l'intitule donne la formule. La conclusion n'affiche que les
+   nombres de l'eleve (« … » avant). */
 (function () {
   var P = window.abonnement, fr = Sim.fr, el = Sim.el, svg = Sim.svg, NB = " ";
   function nb(x) {
@@ -3470,6 +3474,9 @@ pre.code-py{font-family:ui-monospace,Consolas,monospace;font-size:.86rem;line-he
   /* en mode note, fini est appele a chaque enregistrement : la valeur est gardee quelle qu'elle soit */
   function garde(cle, mesure) { return function (ctx, juste, rep, x) { ctx.donnees[cle] = (juste || ctx.note) && isFinite(x) ? x : mesure(ctx); }; }
   function val(ctx, cle, mesure) { var x = ctx.donnees[cle]; return isFinite(x) ? x : mesure(ctx); }
+  /* pour l'affichage : le nombre de l'eleve, ou « … » tant qu'il n'a pas repondu ; jamais celui du sujet */
+  function vu(ctx, cle) { var x = ctx.donnees[cle]; return isFinite(x) ? x : NaN; }
+  function an4(x) { return isFinite(x) ? String(x) : "…"; }
   /* les offres du sujet sont posees dans le tableur a la premiere partie ouverte */
   function assurer(ctx) { if (!ctx.donnees.regle) { ctx.donnees.regle = true; P.regler(J); } }
 
@@ -3623,10 +3630,10 @@ pre.code-py{font-family:ui-monospace,Consolas,monospace;font-size:.86rem;line-he
         recit: "Avant de comparer, on lit. Quatre documents et une annexe : tout ce qui sert est dedans.",
         scene: documents,
         questions: [
-          { type: "nombre", lib: "D'après le document 2, quel tarif Sami paierait-il à <b>L'Établi en 2028</b> ?", unite: "€",
+          { type: "nombre", lib: "D'après le document 2, quel tarif Sami paierait-il à <b>L'Établi en 2028</b> ? Calculez <b>" + nb(J.u1) + " + " + nb(J.r) + "</b> : le tarif de 2027 plus la hausse.", unite: "€",
             attendu: CALC.u2, tolerance: 0, toleranceAbsolue: 0.5,
             methode: "Le tarif de 2027, plus la hausse annuelle de L'Établi." },
-          { type: "nombre", lib: "D'après le document 3, quel tarif paierait-il à <b>La Fabrique en 2028</b> ? Au centime.", unite: "€",
+          { type: "nombre", lib: "D'après le document 3, quel tarif paierait-il à <b>La Fabrique en 2028</b> ? Augmenter de " + E.p + ", c'est multiplier par " + E.q + " (annexe) : calculez <b>" + nb(J.v1) + " × " + E.q + "</b>, au centime.", unite: "€",
             attendu: CALC.v2, tolerance: 0, toleranceAbsolue: 0.6,
             methode: "Le tarif de 2027, plus " + E.p + " de ce tarif ; ou le tarif de 2027 multiplié par " + E.q + "." },
           { type: "classer", lib: "D'après les documents 2 et 3, et vos deux calculs, quelle offre correspond à chaque phrase ?",
@@ -3709,10 +3716,10 @@ pre.code-py{font-family:ui-monospace,Consolas,monospace;font-size:.86rem;line-he
               "Les points de La Fabrique restent sous ceux de L'Établi : elle reste la moins chère.",
               "Les points de L'Établi montent de plus en plus vite, ceux de La Fabrique sont alignés."], bonne: 0,
             methode: "Une hausse fixe donne des points alignés (une fonction affine de n). Une hausse en pour cent d'un tarif qui augmente donne des marches de plus en plus hautes." },
-          { type: "nombre", lib: "Le contrat pourrait courir au-delà de 2041. Avec l'expression du terme de rang n, calculez " + U("20") + ", le tarif de L'Établi en 2046 (" + U("1") + " = " + E.u1 + " ; raison " + E.r + ").", unite: "€",
+          { type: "nombre", lib: "Le contrat pourrait courir au-delà de 2041. Avec l'expression du terme de rang n, calculez " + U("20") + ", le tarif de L'Établi en 2046 : <b>" + U("20") + " = " + U("1") + " + (20 − 1) × r = " + nb(J.u1) + " + 19 × " + nb(J.r) + "</b>.", unite: "€",
             attendu: CALC.u20, tolerance: 0, toleranceAbsolue: 0.5,
             methode: U("n") + " = " + U("1") + " + (n − 1) × r, avec n = 20 : le tarif de 2027 plus dix-neuf hausses." },
-          { type: "nombre", niveau: "Terminale", lib: "Avec l'expression du terme de rang n, calculez " + V("20") + ", le tarif de La Fabrique en 2046, au centime (" + V("1") + " = " + E.v1 + " ; raison " + E.q + ").", unite: "€",
+          { type: "nombre", niveau: "Terminale", lib: "Avec l'expression du terme de rang n, calculez " + V("20") + ", le tarif de La Fabrique en 2046, au centime : <b>" + V("20") + " = " + V("1") + " × q<sup>20 − 1</sup> = " + nb(J.v1) + " × " + E.q + "<sup>19</sup></b>.", unite: "€",
             attendu: CALC.v20, tolerance: 0.0005, toleranceAbsolue: 0.5,
             methode: V("n") + " = " + V("1") + " × q<sup>n−1</sup>, avec n = 20 : l'exposant est 19, pas 20." },
           { type: "choix", niveau: "Première", lib: "La suite (" + U("n") + ") des tarifs de L'Établi est croissante. Pourquoi ?",
@@ -3735,12 +3742,12 @@ pre.code-py{font-family:ui-monospace,Consolas,monospace;font-size:.86rem;line-he
         questions: [
           { type: "action", lib: "Arrêtez la balance sur la <b>première année où elle penche du côté de La Fabrique</b>.",
             verifier: verifBalance,
-            fini: function (ctx, juste) { if (juste || ctx.note) ctx.donnees.an = P.balance.etat().annee; },
+            fini: function (ctx, juste) { ctx.donnees.an = juste || ctx.note ? P.balance.etat().annee : anEtoileEleve(); },
             methode: "Avancez année par année depuis 2027 : la balance pèse les cases C et D de la même ligne. L'année cherchée est la première où elle passe du côté de La Fabrique." },
-          { type: "nombre", lib: "La hausse d'une année, c'est le tarif de cette année moins celui de l'année d'avant. En quelle année la hausse de La Fabrique dépasse-t-elle pour la première fois les " + E.r + " de L'Établi ? (Colonne D du tableur.)",
+          { type: "nombre", lib: "La hausse d'une année, c'est le tarif de cette année moins celui de l'année d'avant. Au tableur, écrivez en E5 la formule <b>=D5-D4</b> (la hausse de La Fabrique en 2028) et recopiez-la jusqu'à la ligne 18. En quelle année cette hausse dépasse-t-elle pour la première fois les " + E.r + " de L'Établi ?",
             attendu: anHausseEleve, tolerance: 0, toleranceAbsolue: 0, fini: garde("anH", anHausseEleve),
-            methode: "Une colonne E des hausses : en E5, =D5-D4, recopiée vers le bas. Cherchez la première ligne où E dépasse " + nb(J.r) + "." },
-          { type: "nombre", lib: "Avec la fonction SOMME, comparez les totaux de 2027 à 2041 : combien Sami paierait-il <b>de plus à La Fabrique</b> qu'à L'Établi, sur les quinze ans ?", unite: "€",
+            methode: "Lisez la colonne E de haut en bas : la première case qui dépasse " + nb(J.r) + " ; son année est en colonne A, sur la même ligne." },
+          { type: "nombre", lib: "Combien Sami paierait-il <b>de plus à La Fabrique</b> qu'à L'Établi, sur les quinze ans ? Au tableur, dans deux cases libres, <b>=SOMME(D4:D18)</b> et <b>=SOMME(C4:C18)</b> ; puis calculez le total de La Fabrique moins celui de L'Établi.", unite: "€",
             attendu: d15Eleve, tolerance: 0.002, toleranceAbsolue: 1, fini: garde("d15", d15Eleve),
             methode: "Dans deux cases libres, =SOMME(C4:C18) et =SOMME(D4:D18), puis la différence : total de La Fabrique moins total de L'Établi." },
           { type: "choix", lib: "Et si Sami ne gardait l'abonnement que dix ans, de 2027 à 2036 ? Comparez les totaux sur ces dix années (lignes 4 à 13).",
@@ -3757,7 +3764,7 @@ pre.code-py{font-family:ui-monospace,Consolas,monospace;font-size:.86rem;line-he
         competence: "COM", titre: "Le conseil à Sami",
         recit: "Sami signe la semaine prochaine. Votre conseil tient en quelques phrases, avec des nombres et leurs unités.",
         questions: function (ctx) {
-          var an = val(ctx, "an", anEtoileEleve), anH = val(ctx, "anH", anHausseEleve), d15 = val(ctx, "d15", d15Eleve);
+          var an = an4(vu(ctx, "an")), anH = an4(vu(ctx, "anH")), d15 = vu(ctx, "d15");
           var o = [
             "La Fabrique est moins chère en 2027 et sa première hausse est plus petite ; mais son tarif dépasse celui de L'Établi dès " + an + ", et le reste ensuite.",
             "Sa hausse grandit chaque année, parce que " + E.p + " se calculent sur un tarif qui augmente : dès " + anH + ", elle dépasse les " + E.r + " de L'Établi.",
