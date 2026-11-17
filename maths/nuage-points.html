@@ -1890,8 +1890,12 @@ var Sim = (function () {
       });
     }
 
+    /* « textes: » (16 novembre 2026, les escape games de la 2de CIEL) : les mots d'une page qui n'est ni un projet
+       ni une epreuve. { plan, partir, suivante, sansNote } ; « nomCourt » sur une phase la nomme (« Énigme 3 »).
+       Sans eux, rien ne change. */
+    var T = o.textes || {};
     function nomPhase(i) {
-      if (!epreuve) return "Phase " + (i + 1);
+      if (!epreuve) return o.phases[i].nomCourt || "Phase " + (i + 1);
       if (o.phases[i].nom) return o.phases[i].nom;
       if (o.phases[i].facultative) return "Pour aller plus loin";
       return i === nPh - 1 && (o.phases[i].conclusion || (ccf && o.phases[i].competence === "COM")) ? "Conclusion" : "Partie " + (i + 1);
@@ -1970,14 +1974,14 @@ var Sim = (function () {
     var illus = el("div", { classe: "scene pc-illus" });
     if (c.illustration) c.illustration(illus);
     var choixNiv = el("div", { classe: "pc-choix-niveau" });
-    var partir = el("button", { type: "button", classe: "bouton principal pc-partir", texte: NOTE ? "Commencer l'évaluation" : ccf ? "Commencer l'épreuve" : u41 ? "Commencer" : "Accepter la mission" });
+    var partir = el("button", { type: "button", classe: "bouton principal pc-partir", texte: NOTE ? "Commencer l'évaluation" : ccf ? "Commencer l'épreuve" : u41 ? "Commencer" : T.partir || "Accepter la mission" });
     /* le mode, dit a l'accueil : en TD, des indications et rien a rendre ; en note, ni verdict ni aide, et un fichier */
     var bandeauMode = el("p", { classe: "pc-bandeau-mode", html: NOTE
       ? "<b>Évaluation notée.</b> La page ne dit ni juste ni faux. <b>Trois indices</b> pour toute l'évaluation : « Voir l'indice » montre la méthode d'une question, jamais la valeur" + (ccf ? ", et fait perdre le bonus d'autonomie" : "") + ". « Enregistrer » garde votre réponse, " +
         "que vous pouvez changer jusqu'à rendre votre copie. Rendre la copie produit le fichier pour le professeur et verrouille tout. " +
         "<b>Restez sur cette page</b> : changer d'onglet, d'application ou de fenêtre, fermer ou recharger la page s'écrit dans votre copie, avec l'heure et la durée."
       : "<b>TD, non noté.</b> La page dit juste ou pas encore et donne la méthode quand ça coince. À la fin, un bilan à l'écran : " +
-        "rien à rendre. L'évaluation notée se fait dans l'espace d'évaluation, avec la clé que donne le professeur, et d'autres valeurs." });
+        "rien à rendre." + (T.sansNote ? "" : " L'évaluation notée se fait dans l'espace d'évaluation, avec la clé que donne le professeur, et d'autres valeurs.") });
     if (niveaux.length > 1) {
       choixNiv.appendChild(el("p", { classe: "pc-surtitre", texte: "Ma classe" }));
       var rang = el("div", { classe: "rangee" });
@@ -2064,7 +2068,7 @@ var Sim = (function () {
       });
       accueil.appendChild(el("div", { classe: "plan pc-plan-accueil" }, [
         el("div", null, [carteCmd, illus]),
-        el("div", { classe: "carte" }, [el("h2", { texte: "Le projet en cinq phases" }), etapes,
+        el("div", { classe: "carte" }, [el("h2", { texte: T.plan || "Le projet en cinq phases" }), etapes,
           el("p", { classe: "consigne", html: "Une heure en tout. On passe d'une phase à l'autre comme on veut, par le chemin en haut ; " +
             (NOTE ? "à la fin, vous produisez un <b>fichier</b> à remettre au professeur." : "à la fin, un bilan de vos réussites.") }),
           bandeauMode, choixNiv, partir])
@@ -2120,7 +2124,7 @@ var Sim = (function () {
       etat.fiches[i] = qs.map(function (q, j) { return q.type === "appel" ? poserAppel(colQ, q, i) : poserQuestion(colQ, q, i, j); });
       var bravo = el("p", { classe: "pc-bravo", hidden: "hidden", html: ph.bravo || "" });
       var suite = el("button", { type: "button", classe: "bouton principal pc-suite", disabled: "disabled",
-        texte: i + 1 < nPh ? (o.phases[i + 1].facultative ? "Pour aller plus loin, facultatif" : epreuve ? (nomPhase(i + 1) === "Conclusion" ? "La conclusion" : "Partie suivante") : "Phase suivante") : MOT_FIN });
+        texte: i + 1 < nPh ? (o.phases[i + 1].facultative ? "Pour aller plus loin, facultatif" : epreuve ? (nomPhase(i + 1) === "Conclusion" ? "La conclusion" : "Partie suivante") : T.suivante || "Phase suivante") : MOT_FIN });
       suite.addEventListener("click", function () { ouvrir(i + 1); });
       var versFin = null;
       if (i + 1 < nPh) {
@@ -2673,8 +2677,8 @@ var Sim = (function () {
         }
         if (!NOTE) {                                       // en TD : rien a rendre
           var rien = el("div", { classe: "carte pc-remise" }, [el("h2", { texte: "Rien à rendre" }),
-            el("p", { classe: "consigne", html: "En TD, la page ne produit <b>aucun fichier</b> : ce bilan vous montre ce qui est acquis et ce qui reste à revoir. " +
-              "L'évaluation notée se fait dans l'<b>espace d'évaluation</b>, avec la clé que donne le professeur : d'autres valeurs, aucune indication." })]);
+            el("p", { classe: "consigne", html: "En TD, la page ne produit <b>aucun fichier</b> : ce bilan vous montre ce qui est acquis et ce qui reste à revoir." +
+              (T.sansNote ? "" : " L'évaluation notée se fait dans l'<b>espace d'évaluation</b>, avec la clé que donne le professeur : d'autres valeurs, aucune indication.") })]);
           final.appendChild(el("div", { classe: "plan" }, [recap, el("div", null, [rien, simpl])]));
           return construireFinal();
         }
