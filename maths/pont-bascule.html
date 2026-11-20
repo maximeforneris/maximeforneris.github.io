@@ -1772,6 +1772,130 @@ var Sim = (function () {
         ["-----FIN DE LA COPIE CHIFFREE-----", ""]).join("\r\n");
     });
   }
+  /* LES SCEAUX (20 novembre 2026, « pour les évaluations, les sorties de site et l'export, la base 64 est trop facile à
+     lire pour les élèves : fais-le avec une méthode de chiffrement publique et privée type RSA ») : la copie rendue
+     l'etait deja (LA COPIE CHIFFREE) ; le travail garde sur l'appareil, lui, n'etait que du JSON en base 64. Un eleve
+     qui ouvrait les outils du navigateur y lisait le verdict de chaque reponse enregistree, et pouvait y effacer ses
+     sorties de la page, ses indices, ou y changer la cote d'un appel. En evaluation notee, chaque evenement qui compte
+     est desormais SCELLE a l'instant ou il arrive, par la cle publique RSA des copies (CLE_COPIES, RSA-OAEP 3072 bits,
+     SHA-256) : le depart (d), le verdict d'une reponse enregistree (v), un indice vu (a), la cote d'un appel (c), une
+     sortie de la page (x). Le travail garde ne porte plus aucun verdict en clair, seulement la liste des sceaux, que la
+     cle privee seule ouvre. La copie ecrit chaque verdict « [⟦v 2.3⟧] », chaque appel lance « ⟦c 2.5⟧ », puis les
+     sceaux ; NOTER-LES-BILANS, eprouver-bilan.js et cle-copies.py les ouvrent avec la cle privee, y remettent
+     « [juste] », « [faux] », la cote et ses points, et refont la vigilance et les indices d'apres les sceaux. Chaque
+     sceau porte le numero de la copie (nonce) et son rang : un sceau retire du milieu, venu d'une autre copie ou
+     double se voit, et l'outil l'ecrit sous « Vigilance ». CE QUE CELA NE FAIT PAS : effacer tout le stockage efface
+     la copie (c'est « Repartir de zero ») ; un sceau retire tout a la fin, juste apres une sortie et avant tout autre
+     geste, ne se voit pas ; qui ecrirait du code avec la cle publique fabriquerait des sceaux : le fichier reste
+     declaratif. LA VEILLE (20 novembre 2026, le soir : « dans le localStorage du navigateur, ils ont modifie les
+     valeurs de sorties de site ») : tant que la page est devant l'eleve et qu'il la tient (visible, la main, aucune
+     sortie en cours), un sceau « t » part toutes les 30 s au plus (VEILLE) s'il n'en est parti aucun autre ; un sceau
+     « f » marque le rendu. Un temps sans aucun sceau, plus long que deux veilles, est donc un temps hors de la page :
+     l'outil le compare aux sorties scellees (chaque sceau « x » porte son debut, de, et sa duree, d), et ecrit sous
+     « Vigilance » une absence qu'aucune ne couvre. C'est ce qui voit le geste deja constate en classe : sortir, revenir,
+     fermer l'onglet, effacer la sortie du stockage, rouvrir. La copie fermee ou rechargee compte jusqu'au toucher de
+     « Reprendre ». LE CHIFFREMENT EST FAIT ICI, SYNCHRONE (BigInt, SHA-256, OAEP de la RFC 8017), pour que le sceau
+     existe au moment meme du geste, avant une fermeture de la page : WebCrypto ne chiffre qu'en differe. Un sceau
+     tient en 318 octets ; une reponse trop longue y est tronquee (rt). Un navigateur sans BigInt ne scelle pas :
+     le travail garde y reste comme avant, et la copie le dit sous « Vigilance ». */
+  var MAX_SCEAU = 318;
+  var SHA_K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98,
+    0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6,
+    0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3,
+    0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e,
+    0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116,
+    0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814,
+    0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+  function sha256(m) {
+    var l = m.length, nb = ((l + 9 + 63) >> 6) << 6, b = new Uint8Array(nb), bits = l * 8, t;
+    b.set(m); b[l] = 0x80;
+    b[nb - 5] = Math.floor(l / 0x20000000) & 255;
+    b[nb - 4] = (bits >>> 24) & 255; b[nb - 3] = (bits >>> 16) & 255; b[nb - 2] = (bits >>> 8) & 255; b[nb - 1] = bits & 255;
+    var h = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
+    var w = new Uint32Array(64);
+    for (var o = 0; o < nb; o += 64) {
+      for (t = 0; t < 16; t++) w[t] = (b[o + 4 * t] << 24) | (b[o + 4 * t + 1] << 16) | (b[o + 4 * t + 2] << 8) | b[o + 4 * t + 3];
+      for (t = 16; t < 64; t++) {
+        var x = w[t - 15], y = w[t - 2];
+        w[t] = (w[t - 16] + (((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3)) + w[t - 7] +
+          (((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10))) | 0;
+      }
+      var a = h[0], bb = h[1], c = h[2], d = h[3], e = h[4], f = h[5], g = h[6], hh = h[7];
+      for (t = 0; t < 64; t++) {
+        var t1 = (hh + (((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7))) + ((e & f) ^ (~e & g)) + SHA_K[t] + w[t]) | 0;
+        var t2 = ((((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10))) + ((a & bb) ^ (a & c) ^ (bb & c))) | 0;
+        hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = bb; bb = a; a = (t1 + t2) | 0;
+      }
+      h[0] += a; h[1] += bb; h[2] += c; h[3] += d; h[4] += e; h[5] += f; h[6] += g; h[7] += hh;
+    }
+    var out = new Uint8Array(32);
+    for (t = 0; t < 8; t++) { out[4 * t] = h[t] >>> 24; out[4 * t + 1] = (h[t] >>> 16) & 255; out[4 * t + 2] = (h[t] >>> 8) & 255; out[4 * t + 3] = h[t] & 255; }
+    return out;
+  }
+  function mgf1(graine, long) {
+    var out = new Uint8Array(long), tampon = new Uint8Array(graine.length + 4), n = 0, g = graine.length;
+    tampon.set(graine);
+    for (var c = 0; n < long; c++) {
+      tampon[g] = c >>> 24; tampon[g + 1] = (c >>> 16) & 255; tampon[g + 2] = (c >>> 8) & 255; tampon[g + 3] = c & 255;
+      var hh = sha256(tampon);
+      for (var i = 0; i < 32 && n < long; i++) out[n++] = hh[i];
+    }
+    return out;
+  }
+  /* un entier BigInt depuis des octets, et le DER de la cle publique (SubjectPublicKeyInfo) lu a la main */
+  function grand(u) { var x = "0x0"; for (var i = 0; i < u.length; i++) x += (u[i] < 16 ? "0" : "") + u[i].toString(16); return BigInt(x); }
+  function derLire(u, p) {
+    var tag = u[p++], lg = u[p++];
+    if (lg & 0x80) { var nb = lg & 0x7f; lg = 0; while (nb--) lg = lg * 256 + u[p++]; }
+    return { tag: tag, debut: p, fin: p + lg };
+  }
+  function clePubliqueRSA(der) {
+    var spki = derLire(der, 0), algo = derLire(der, spki.debut), bits = derLire(der, algo.fin);
+    var rsa = derLire(der, bits.debut + 1), n = derLire(der, rsa.debut), e = derLire(der, n.fin);
+    if (spki.tag !== 0x30 || bits.tag !== 0x03 || n.tag !== 0x02 || e.tag !== 0x02) throw new Error("cle publique illisible");
+    var N = grand(der.subarray(n.debut, n.fin));
+    return { n: N, e: grand(der.subarray(e.debut, e.fin)), k: Math.ceil(N.toString(16).length / 2) };
+  }
+  function puissance(b, e, m) {
+    var un = BigInt(1), zero = BigInt(0), r = un;
+    b = b % m;
+    while (e > zero) { if ((e & un) !== zero) r = r * b % m; b = b * b % m; e = e >> un; }
+    return r;
+  }
+  function rsaOaep(cle, msg) {
+    var k = cle.k, hLen = 32, mLen = msg.length, dbLen = k - hLen - 1, i;
+    if (mLen > k - 2 * hLen - 2) throw new Error("sceau trop long");
+    var db = new Uint8Array(dbLen);
+    db.set(sha256(new Uint8Array(0)), 0); db[dbLen - mLen - 1] = 1; db.set(msg, dbLen - mLen);
+    var graine = crypto.getRandomValues(new Uint8Array(hLen)), m1 = mgf1(graine, dbLen);
+    for (i = 0; i < dbLen; i++) db[i] ^= m1[i];
+    var m2 = mgf1(db, hLen);
+    for (i = 0; i < hLen; i++) graine[i] ^= m2[i];
+    var em = new Uint8Array(k); em.set(graine, 1); em.set(db, 1 + hLen);
+    var c = puissance(grand(em), cle.e, cle.n).toString(16);
+    while (c.length < 2 * k) c = "0" + c;
+    var out = new Uint8Array(k);
+    for (i = 0; i < k; i++) out[i] = parseInt(c.substr(2 * i, 2), 16);
+    return out;
+  }
+  var CLE_SCEAUX = null;
+  function sceauxPossibles() {
+    if (CLE_SCEAUX === null) {
+      try { CLE_SCEAUX = typeof BigInt === "function" && window.crypto && crypto.getRandomValues && CLE_COPIES ? clePubliqueRSA(octets(CLE_COPIES)) : false; }
+      catch (e) { CLE_SCEAUX = false; }
+    }
+    return !!CLE_SCEAUX;
+  }
+  /* un sceau : l'objet en JSON, chiffre par la cle publique ; une reponse trop longue est tronquee pour tenir */
+  function sceller(obj) {
+    var o = {}; Object.keys(obj).forEach(function (k) { if (obj[k] !== undefined) o[k] = obj[k]; });
+    var b = new TextEncoder().encode(JSON.stringify(o));
+    while (b.length > MAX_SCEAU && typeof o.r === "string" && o.r.length) {
+      o.r = o.r.slice(0, Math.max(0, o.r.length - Math.ceil((b.length - MAX_SCEAU) / 2) - 1)); o.rt = 1;
+      b = new TextEncoder().encode(JSON.stringify(o));
+    }
+    return enB64(rsaOaep(CLE_SCEAUX, b));
+  }
   var POINTS_COTE = { NA: 0, ECA: 1, A: 2 };
   /* Le code du professeur pour valider un appel : seule son empreinte est dans la page. Pour le
      changer : node -e "..." avec la fonction empreinte ci-dessous sur « labo|<code> », et remplacer
@@ -1793,13 +1917,45 @@ var Sim = (function () {
   function parcours(parent, o) {
     var ccf = !!o.ccf, u41 = !!o.u41, epreuve = ccf || u41;
     var NOTE = NOTE_COPIE;
+    var SCELLE = NOTE && sceauxPossibles();             // LES SCEAUX (en-tete de ce fichier) : en note, si le navigateur sait
     /* une question a une reponse : verifiee (TD), ou enregistree (note) ; un appel, des qu'il est lance */
     function fait(f) { return !!f && (NOTE && !f.appel ? !!f.enr : !!f.fini); }
     var NOMS = u41 ? U41 : COMPETENCES, ORDRE = u41 ? ORDRE_U41 : ORDRE_COMP;
     function nomComp(k) { return NOMS[k] || COMPETENCES[k] || U41[k] || k; }
     var niveaux = o.niveaux || ["CAP", "Seconde"];
     var etat = { niveau: niveaux.length === 1 ? niveaux[0] : null, debut: null, courante: -1, ouverte: -1,
-      fiches: [], construites: [], colonnes: [], exporte: false, aides: 0, indices: [], ident: "" };
+      fiches: [], construites: [], colonnes: [], exporte: false, aides: 0, indices: [], ident: "", nonce: "", sceaux: [] };
+    /* LES SCEAUX : un evenement qui compte, scelle a l'instant, range dans l'ordre ; le rang et le numero de la copie
+       sont dans le sceau. La cle d'une question : partie.question, comptees a partir de 1 (« 2.3 »). */
+    var VEILLE = 30000, veille = null, dernierSceau = 0;
+    function sceau(e, k, x) {
+      if (!SCELLE || !etat.nonce || (etat.rendu && e !== "v")) return;
+      var o = { n: etat.nonce, i: etat.sceaux.length, e: e, h: Date.now() };
+      dernierSceau = o.h;
+      if (k) o.k = k;
+      if (x) Object.keys(x).forEach(function (y) { o[y] = x[y]; });
+      try { etat.sceaux.push(sceller(o)); } catch (err) { etat.sceaux.push("!"); }
+    }
+    /* une copie scellee : le navigateur sait, et la copie a commence scellee ; un travail garde avant les sceaux
+       (20 novembre 2026) se finit comme avant, verdicts en clair, et la copie le dit */
+    function scelle() { return SCELLE && !!etat.nonce; }
+    function commencerSceaux() {
+      if (!SCELLE || etat.nonce) return;                  // une seule fois par copie : un second depart ne l'efface pas
+      var r = crypto.getRandomValues(new Uint8Array(8));
+      etat.nonce = [].map.call(r, function (b) { return (b < 16 ? "0" : "") + b.toString(16); }).join("");
+      etat.sceaux = [];
+      sceau("d", "", { p: o.code || "", v: etat.niveau || "", t: VEILLE / 1000 });
+      veiller();
+    }
+    /* LA VEILLE (en-tete de ce fichier) : un sceau toutes les 30 s au plus, tant que l'eleve tient la page */
+    function veiller() {
+      if (veille || !scelle()) return;
+      veille = setInterval(function () {
+        if (!scelle() || etat.rendu) { clearInterval(veille); veille = null; return; }
+        if (!surveille() || vigil.o || document.visibilityState !== "visible" || !document.hasFocus()) return;
+        if (Date.now() - dernierSceau >= VEILLE) { sceau("t"); garderBientot(); }
+      }, 5000);
+    }
     var enReprise = false;                               // pendant la reprise : ni defilement, ni sauvegarde
     var donnees = {};                                    // partage entre les phases d'un parcours
     var appels = [];                                     // les fiches des appels lances ou a lancer
@@ -2003,7 +2159,7 @@ var Sim = (function () {
       etat.debut = Date.now();
       niv.textContent = etat.niveau;
       document.body.classList.add("pc-en-cours");
-      if (NOTE) { pleinEcran(); verrouEcran(); majVigil(false); }
+      if (NOTE) { commencerSceaux(); pleinEcran(); verrouEcran(); majVigil(false); }
       ouvrir(0);
     });
     if (epreuve) {
@@ -2122,7 +2278,7 @@ var Sim = (function () {
       else { zone.insertBefore(boutonAgrandir(), zone.firstChild); plan.classList.toggle("pc-grand", grand); }
       var qs = questionsDe(i);
       etat.colonnes[i] = colQ;
-      etat.fiches[i] = qs.map(function (q, j) { return q.type === "appel" ? poserAppel(colQ, q, i) : poserQuestion(colQ, q, i, j); });
+      etat.fiches[i] = qs.map(function (q, j) { return q.type === "appel" ? poserAppel(colQ, q, i, j) : poserQuestion(colQ, q, i, j); });
       var bravo = el("p", { classe: "pc-bravo", hidden: "hidden", html: ph.bravo || "" });
       var suite = el("button", { type: "button", classe: "bouton principal pc-suite", disabled: "disabled",
         texte: i + 1 < nPh ? (o.phases[i + 1].facultative ? "Pour aller plus loin, facultatif" : epreuve ? (nomPhase(i + 1) === "Conclusion" ? "La conclusion" : "Partie suivante") : T.suivante || "Phase suivante") : MOT_FIN });
@@ -2139,7 +2295,7 @@ var Sim = (function () {
 
     /* une question : son interface, ses essais, sa note */
     function poserQuestion(parentQ, q, i, j) {
-      var f = { q: q, essais: 0, juste: false, fini: false, passe: false, reponse: "", note: false, aide: false };
+      var f = { q: q, essais: 0, juste: false, fini: false, passe: false, reponse: "", note: false, aide: false, cle: (i + 1) + "." + (j + 1) };
       var maxNote = q.essais || ((q.type === "nombre" || q.type === "action" || q.type === "classer") ? 2 : 1);
       var bloc = el("div", { classe: "pc-q", "data-etat": "a-faire" });
       var libNoeud = el("p", { classe: "pc-q-lib", html: "<span class=\"pc-q-num\">" + (j + 1) + "</span>" + insecables(propre(q.lib)) });   // pas de « ? » seul en debut de ligne
@@ -2287,6 +2443,7 @@ var Sim = (function () {
         }
         f.enr = true; f.modifiee = false; f.enAttente = ok === "attente"; f.note = ok === true; f.juste = f.note;
         f.reponse = lireReponse(); f.heureEnr = new Date();
+        sceau("v", f.cle, { j: f.note ? 1 : 0, r: f.reponse });
         bloc.setAttribute("data-etat", "enregistree");
         var vu = q.type === "action" ? (f.lu !== undefined ? f.lu : f.reponse) : "";
         retour.innerHTML = "Réponse enregistrée à " + heure(f.heureEnr) + "." + (vu ? " <span class=\"pc-lu\">La page a gardé : " + insecables(vu) + ".</span>" : "") +
@@ -2306,7 +2463,7 @@ var Sim = (function () {
       /* au rendu de la copie : rejuger ce qui attendait une mesure, puis tout fermer */
       f.verrouiller = function () {
         if (f.fini) return;
-        if (f.enr && f.enAttente && !f.modifiee) { var ok = verifierOk(); f.note = ok === true; f.juste = f.note; }
+        if (f.enr && f.enAttente && !f.modifiee) { var ok = verifierOk(); f.note = ok === true; f.juste = f.note; sceau("v", f.cle, { j: f.note ? 1 : 0, r: f.reponse }); }
         if (f.enr) f.fini = true;
         bVerif.disabled = true;
         controles.forEach(function (x) { x.disabled = true; });
@@ -2373,17 +2530,21 @@ var Sim = (function () {
           }
         }
         f.aide = true; etat.aides++;
+        if (NOTE) sceau("a", f.cle);
         bAide.hidden = true; methodeVue.hidden = false;
         if (NOTE) majIndices();
       });
       /* LE TRAVAIL GARDE : ce qui a ete tape ou choisi, meme pas encore verifie, et tout ce que la question sait */
       f.garde = function () {
-        return { t: q.type, lib: f.lib !== undefined ? f.lib : q.lib, ld: libNoeud.innerHTML,
+        var g = { t: q.type, lib: f.lib !== undefined ? f.lib : q.lib, ld: libNoeud.innerHTML,
           s: q.type === "nombre" ? inp.value : q.type === "choix" || q.type === "multi" ? choisis : q.type === "classer" ? places : undefined,
           e: f.essais, a: f.appuis || 0, j: f.juste, fi: f.fini, p: f.passe, n: f.note, ai: f.aide, r: f.reponse,
           v: isFinite(f.valeur) ? f.valeur : undefined, en: f.enr, m: f.modifiee, at: f.enAttente, h: f.heureEnr ? +f.heureEnr : 0,
           bp: f.bienPlaces, lu: f.lu, c: f.corriger, de: bloc.getAttribute("data-etat"), rc: retour.className, rh: retour.innerHTML,
           vu: !methodeVue.hidden, pa: !bPasser.hidden, ia: bAide ? !bAide.hidden : false };
+        /* LES SCEAUX : en note, le verdict n'est plus garde en clair (ni ce qui le trahirait : cases bien placees, erreurs) */
+        if (scelle()) { delete g.j; delete g.n; delete g.bp; delete g.c; }
+        return g;
       };
       f.restaurer = function (g) {
         if (!g || g.t !== q.type) return;
@@ -2433,9 +2594,9 @@ var Sim = (function () {
     function decimalesDe(txt) { var m = String(txt).replace(",", ".").match(/\.(\d+)/); return m ? Math.min(m[1].length, 4) : 0; }
 
     /* un appel professeur : l'eleve appelle et continue ; le professeur valide quand il passe */
-    function poserAppel(parentQ, q, i) {
+    function poserAppel(parentQ, q, i, j) {
       var f = { q: q, appel: true, essais: 0, juste: false, fini: false, passe: false, reponse: "", note: false,
-        appele: null, cote: null, heureCote: null, phase: i };
+        appele: null, cote: null, heureCote: null, phase: i, cle: (i + 1) + "." + (j + 1) };
       var bloc = el("div", { classe: "pc-q pc-appel", "data-etat": "a-faire" });
       bloc.appendChild(el("p", { classe: "pc-q-lib", html: "<span class=\"pc-main\" aria-hidden=\"true\">✋</span><b>Appel n° " + q.numero + "</b> · " + q.lib }));
       var bAppel = el("button", { type: "button", classe: "bouton principal", texte: "J'appelle le professeur" });
@@ -2534,7 +2695,7 @@ var Sim = (function () {
         ["NA", "ECA", "A"].forEach(function (x) {
           var b = el("button", { type: "button", classe: "pc-option", "aria-pressed": f.cote === x ? "true" : "false", html: "<b>" + x + "</b> · " + COTES[x] });
           b.addEventListener("click", function () {
-            f.cote = x; f.heureCote = new Date(); f.note = x === "A";
+            f.cote = x; f.heureCote = new Date(); f.note = x === "A"; sceau("c", f.cle, { c: x });
             [].forEach.call(rangee.children, function (y) { y.setAttribute("aria-pressed", y === b ? "true" : "false"); });
             f.afficher(); majPhase(f.phase); majTete(); majAppels(); garder();
             if (finalFait && etat.courante === nPh) construireFinal();
@@ -2610,7 +2771,7 @@ var Sim = (function () {
       if (etat.rendu || !etat.construites[i] || typeof ph.questions !== "function" || !colQ || !intacte(i)) return;
       var pied = etat.fiches[i].pied;
       while (colQ.children.length > 1) colQ.removeChild(colQ.lastChild);
-      sousTirage(i, function () { etat.fiches[i] = questionsDe(i).map(function (q, j) { return q.type === "appel" ? poserAppel(colQ, q, i) : poserQuestion(colQ, q, i, j); }); });
+      sousTirage(i, function () { etat.fiches[i] = questionsDe(i).map(function (q, j) { return q.type === "appel" ? poserAppel(colQ, q, i, j) : poserQuestion(colQ, q, i, j); }); });
       etat.fiches[i].pied = pied;
       majPhase(i);
     }
@@ -2848,7 +3009,9 @@ var Sim = (function () {
     function rendre() {
       if (!NOTE || etat.rendu) return;
       fermerSortie();
+      sceau("f");                                          // LA VEILLE : la fin de la copie
       etat.rendu = true;
+      if (veille) { clearInterval(veille); veille = null; }
       quitterPleinEcran(); libererEcran(); majVigil(false);
       etat.fiches.forEach(function (fs) { (fs || []).forEach(function (f) { if (f.verrouiller) f.verrouiller(); }); });
       majIndices();
@@ -2893,7 +3056,7 @@ var Sim = (function () {
             var etatCase, rep;
             if (!f || !f.fini) { etatCase = "non vérifié"; rep = "(non faite)" + (f && f.aide ? ", avec indice" : ""); }
             else {
-              etatCase = f.note ? "juste" : "faux";
+              etatCase = scelle() ? "⟦v " + f.cle + "⟧" : f.note ? "juste" : "faux";   // LES SCEAUX : le verdict est dans son sceau
               var det = NOTE ? "enregistrée à " + heure(f.heureEnr) + (f.modifiee ? ", modifiée ensuite sans être enregistrée" : "") : f.passe ? (f.essais ? "passée après " + f.essais + " essai" + (f.essais > 1 ? "s" : "") : "passée sans réponse")
                 : (f.essais === 1 ? "juste au 1er essai" : "trouvée au " + f.essais + "e essai");
               if (f.aide) det += NOTE ? ", avec indice" : ", avec aide";
@@ -2910,6 +3073,7 @@ var Sim = (function () {
           var f = fs && fs[j], k = q.competence || ph.competence;
           out.push("EXERCICE — [" + k + "] Appel n° " + q.numero + " · " + nomComp(k) + " : " + texteSeul(q.lib));
           if (!f || !f.appele) out.push("  réponse : appel non fait", "  verdict : appel non fait", "  points retrouvés : 0 sur 2");
+          else if (scelle()) out.push("  réponse : appel lancé à " + heure(f.appele), "  ⟦c " + f.cle + "⟧");   // la cote est dans son sceau
           else if (!f.cote) out.push("  réponse : appel lancé à " + heure(f.appele), "  verdict : non évalué par le professeur, ne compte pas");
           else out.push("  réponse : appel lancé à " + heure(f.appele) + ", évalué à " + heure(f.heureCote),
             "  verdict : " + f.cote + " — " + COTES[f.cote], "  points retrouvés : " + POINTS_COTE[f.cote] + " sur 2");
@@ -2919,6 +3083,8 @@ var Sim = (function () {
       out.push(new Array(64).join("-"));
       out.push("Fichier produit dans le navigateur de l'élève.");
       out.push("Rien n'a été envoyé, rien n'a été enregistré ailleurs.");
+      /* LES SCEAUX, a la fin : la cle privee les ouvre, dans NOTER-LES-BILANS ou cle-copies.py */
+      if (scelle()) { out.push("", "SCEAUX     : " + etat.sceaux.length + " · copie " + etat.nonce + " · ils s'ouvrent avec la clé du professeur"); out.push.apply(out, etat.sceaux); }
       return out.join("\r\n");
     }
 
@@ -2938,6 +3104,7 @@ var Sim = (function () {
       return { graine: GRAINE, niveau: etat.niveau, ecoule: Date.now() - etat.debut, courante: etat.courante, ouverte: etat.ouverte,
         aides: etat.aides, rendu: !!etat.rendu, exporte: etat.exporte, ident: etat.ident, donnees: d,
         vigil: NOTE ? vigil : undefined, abandons: NOTE && abandons.length ? abandons : undefined,
+        nc: scelle() ? etat.nonce : undefined, sc: scelle() ? etat.sceaux : undefined,
         fiches: o.phases.map(function (ph, i) { return etat.fiches[i] ? etat.fiches[i].map(function (f) { return f.garde(); }) : null; }) };
     }
     function garder() {
@@ -2964,8 +3131,10 @@ var Sim = (function () {
       var d = Date.now() - o.de;
       if (o.t === "fenetre" && d < SEUIL_FENETRE) return;   // un clic dans la barre d'adresse, une notification : rien
       vigil.s.push({ t: o.t, de: o.de, d: d });
+      sceau("x", "", { l: ligneSortie(vigil.s[vigil.s.length - 1]), d: d, de: o.de });
       majVigil(true); garderBientot();
     }
+    function ligneSortie(x) { return heure(new Date(x.de)) + ", " + duree(x.d) + " : " + SORTES[x.t]; }
     function horsPage() { return vigil.s.reduce(function (a, x) { return a + x.d; }, 0); }
     function nSorties(n) { return n + " sortie" + (n > 1 ? "s" : "") + " de la page"; }
     /* la tete compte les sorties ; au retour, un bandeau le dit a l'eleve */
@@ -3003,7 +3172,8 @@ var Sim = (function () {
     function lignesVigil(d) {
       var out = [], n = vigil.s.length, marge = "             ";
       out.push("Vigilance  : " + (n ? nSorties(n) + ", " + duree(horsPage()) + " hors de la page en tout" : "aucune sortie de la page"));
-      vigil.s.forEach(function (x) { out.push(marge + heure(new Date(x.de)) + ", " + duree(x.d) + " : " + SORTES[x.t]); });
+      vigil.s.forEach(function (x) { out.push(marge + ligneSortie(x)); });
+      if (NOTE && !scelle()) out.push(marge + "⚠ " + (SCELLE ? "copie commencée avant les sceaux" : "navigateur sans sceaux") + " : les verdicts sont restés en clair sur l'appareil");
       var jour = d.toDateString(), ab = abandons.filter(function (a) { return new Date(a.efface).toDateString() === jour; });
       if (ab.length) {
         out.push("Effacées   : " + ab.length + " copie" + (ab.length > 1 ? "s" : "") + " effacée" + (ab.length > 1 ? "s" : "") + " sur cet appareil le même jour, avant celle-ci");
@@ -3025,7 +3195,14 @@ var Sim = (function () {
          sortie, depuis le moment ou la page s'est cachee, ou a defaut depuis la derniere sauvegarde */
       if (NOTE) {
         vigil.s = (t.vigil && t.vigil.s) || []; vigil.o = null;
-        if (!t.rendu) { var de = t.vigil && t.vigil.o ? t.vigil.o.de : t.quand; vigil.s.push({ t: "fermee", de: de, d: Math.max(0, chargeA - de) }); }
+        etat.nonce = t.nc || ""; etat.sceaux = (t.sc || []).slice();
+        if (!t.rendu) {
+          /* fermee ou rechargee : jusqu'a ce que l'eleve touche « Reprendre » (la carte de reprise, c'est encore dehors) */
+          var de = t.vigil && t.vigil.o ? t.vigil.o.de : t.quand, ici = Math.max(chargeA, Date.now());
+          vigil.s.push({ t: "fermee", de: de, d: Math.max(0, ici - de) });
+          sceau("x", "", { l: ligneSortie(vigil.s[vigil.s.length - 1]), d: Math.max(0, ici - de), de: de });
+          veiller();
+        }
       }
       /* d.cfg, le tirage d'une page, revient AVANT les scenes : il ne se refait pas. Le reste revient APRES : d.regle et
          d.prepare gardent le reglage unique d'une scene (32 pages), et, restaures trop tot, ils l'auraient empeche. */
@@ -3101,10 +3278,11 @@ var Sim = (function () {
     /* la porte d'essai : etat interne et fichier, pour les controles */
     return window.__parcours = { etat: etat, donnees: donnees, ouvrir: ouvrir, fabriquer: fabriquer, rendre: rendre, note: NOTE, garder: garder, fiches: function () { return etat.fiches; },
       vigilance: function () { return { sorties: vigil.s, ouverte: vigil.o, abandons: abandons }; },
-      appels: appels, mode: mode, dossier: function () { if (dossierFn) basculerDossier(); return panDos; }, coter: function (f, x) { f.cote = x; f.heureCote = new Date(); f.note = x === "A"; f.afficher(); majPhase(f.phase); majAppels(); garder(); },
+      appels: appels, mode: mode, dossier: function () { if (dossierFn) basculerDossier(); return panDos; }, coter: function (f, x) { f.cote = x; f.heureCote = new Date(); f.note = x === "A"; sceau("c", f.cle, { c: x }); f.afficher(); majPhase(f.phase); majAppels(); garder(); },
       choisirNiveau: function (n) { etat.niveau = n; niv.textContent = n; }, demarrer: function (n) {
         if (libre) mode(true);
         etat.niveau = n || etat.niveau || niveaux[0]; niv.textContent = etat.niveau; etat.debut = Date.now();
+        if (NOTE) commencerSceaux();
         document.body.classList.add("pc-en-cours"); ouvrir(0); } };
   }
 
